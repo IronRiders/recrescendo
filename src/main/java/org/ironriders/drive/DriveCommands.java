@@ -4,6 +4,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import org.ironriders.lib.Constants.Drive;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -36,9 +38,8 @@ public class DriveCommands {
 
 		return drive(
 				() -> new Translation2d(inputTranslationX.getAsDouble(), inputTranslationY.getAsDouble())
-						.times(DriveConstants.SWERVE_DRIVE_MAX_SPEED)
-						.times(invert),
-				() -> inputRotation.getAsDouble() * DriveConstants.SWERVE_DRIVE_MAX_SPEED * invert,
+						.times(Drive.SWERVE_MAX_TRANSLATION_TELEOP * invert),
+				() -> inputRotation.getAsDouble() * Drive.SWERVE_MAX_ANGULAR_TELEOP * invert,
 				() -> fieldRelative);
 	}
 }
