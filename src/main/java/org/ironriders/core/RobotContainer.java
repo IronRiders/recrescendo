@@ -8,6 +8,8 @@ import org.ironriders.climber.ClimberCommands;
 import org.ironriders.climber.ClimberSubsystem;
 import org.ironriders.drive.DriveCommands;
 import org.ironriders.drive.DriveSubsystem;
+import org.ironriders.lights.LightsCommands;
+import org.ironriders.lights.LightsSubsystem;
 import org.ironriders.manipulation.intake.IntakeCommands;
 import org.ironriders.manipulation.intake.IntakeSubsystem;
 import org.ironriders.manipulation.launcher.LauncherCommands;
@@ -34,6 +36,10 @@ public class RobotContainer {
 
 	public ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 	public ClimberCommands climberCommands = climberSubsystem.getCommands();
+
+	public LightsSubsystem lightsSubsystem = new LightsSubsystem();
+	public LightsCommands lightsCommands = lightsSubsystem.getCommands();
+
 
 	public RobotContainer() {
 		configureBindings();
