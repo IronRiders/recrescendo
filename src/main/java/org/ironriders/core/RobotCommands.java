@@ -7,8 +7,6 @@ import org.ironriders.drive.DriveCommands;
 import org.ironriders.manipulation.intake.IntakeCommands;
 import org.ironriders.manipulation.launcher.LauncherCommands;
 import org.ironriders.manipulation.pivot.PivotCommands;
-
-import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class RobotCommands {
