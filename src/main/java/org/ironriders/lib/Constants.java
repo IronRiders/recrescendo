@@ -1,11 +1,11 @@
 package org.ironriders.lib;
-
 import java.io.File;
 
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.wpilibj.Filesystem;
+
 
 public class Constants {
 
@@ -55,6 +55,19 @@ public class Constants {
     }
 
     public class Launcher {
+        public static final int LAUNCHER_MOTOR_STALL_LIMIT = 40;
+        public static final double LAUNCHER_ACC = 5;
+        
+        public enum State {
+            LAUNCH(1),
+            STOP(0),
+            BACK(-1);
 
+            public double speed;
+
+            private State(double speed) {
+                this.speed = speed;
+            }
+        } 
     }
 }
