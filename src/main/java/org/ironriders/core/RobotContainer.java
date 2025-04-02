@@ -77,11 +77,11 @@ public class RobotContainer {
 								Constants.Drive.ROTATION_CONTROL_DEADBAND)));
 		
 
-		primaryController.leftTrigger().onTrue(robotCommands.Launch().unless(() -> !intakeSubsystem.geLimitSwitch().isPressed()));
+		primaryController.leftTrigger().onTrue(robotCommands.Launch().unless(() -> !intakeSubsystem.hasNote()));
 
         primaryController.rightTrigger()
                 .onTrue(robotCommands.GroundIntakeAndLaunch())
-                .onFalse(robotCommands.CancelGroundAction().unless(() -> intakeSubsystem.geLimitSwitch().isPressed()));
+                .onFalse(robotCommands.CancelGroundAction().unless(() -> intakeSubsystem.hasNote()));
 
         primaryController.x().onTrue(robotCommands.GroundEject()).onFalse(robotCommands.CancelGroundAction());
 

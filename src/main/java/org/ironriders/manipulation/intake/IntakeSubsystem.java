@@ -37,6 +37,10 @@ public class IntakeSubsystem extends IronSubsystem {
         return hasNoteLimitSwitch;
     }
 
+    public boolean hasNote() {
+        return hasNoteLimitSwitch.isPressed();
+    }
+
     public IntakeCommands getCommands() {
         return commands;
     }
