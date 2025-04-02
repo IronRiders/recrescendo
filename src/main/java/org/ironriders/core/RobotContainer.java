@@ -8,8 +8,8 @@ import org.ironriders.climber.ClimberCommands;
 import org.ironriders.climber.ClimberSubsystem;
 import org.ironriders.drive.DriveCommands;
 import org.ironriders.drive.DriveSubsystem;
-import org.ironriders.lights.LightsCommands;
-import org.ironriders.lights.LightsSubsystem;
+import org.ironriders.lib.Constants;
+import  org.ironriders.lib.Utils;
 import org.ironriders.manipulation.intake.IntakeCommands;
 import org.ironriders.manipulation.intake.IntakeSubsystem;
 import org.ironriders.manipulation.launcher.LauncherCommands;
@@ -19,6 +19,9 @@ import org.ironriders.manipulation.pivot.PivotSubsystem;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
 
@@ -37,16 +40,53 @@ public class RobotContainer {
 	public ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 	public ClimberCommands climberCommands = climberSubsystem.getCommands();
 
-	public LightsSubsystem lightsSubsystem = new LightsSubsystem();
-	public LightsCommands lightsCommands = lightsSubsystem.getCommands();
+	private final CommandXboxController primaryController = new CommandXboxController(
+		Constants.Identifiers.CONTROLLER_PRIMARY_PORT);
+		
+	private final CommandGenericHID secondaryController = new CommandJoystick(
+		Constants.Identifiers.CONTROLLER_SECONDARY_PORT);
 
+	public RobotCommands robotCommands = new RobotCommands(
+		driveCommands,
+		launcherCommands,
+		pivotCommands,
+		intakeCommands, 
+		climberCommands
+	);
 
 	public RobotContainer() {
 		configureBindings();
 	}
 
 	private void configureBindings() {
+		// DRIVE CONTROLS
+		driveSubsystem.setDefaultCommand(
+				robotCommands.driveTeleop(
+						() -> Utils.controlCurve(
+								-primaryController.getLeftY()* driveSubsystem.ControlSpeedMultipler *driveSubsystem.getinversionStatus(),
+								Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
+								Constants.Drive.TRANSLATION_CONTROL_DEADBAND),
+						() -> Utils.controlCurve(
+								-primaryController.getLeftX()* driveSubsystem.ControlSpeedMultipler *driveSubsystem.getinversionStatus(),
+								Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
+								Constants.Drive.TRANSLATION_CONTROL_DEADBAND),
+						() -> Utils.controlCurve(
+								primaryController.getRightX()* driveSubsystem.ControlSpeedMultipler *driveSubsystem.getinversionStatus(),
+								Constants.Drive.ROTATION_CONTROL_EXPONENT,
+								Constants.Drive.ROTATION_CONTROL_DEADBAND)));
 		
+
+		primaryController.leftTrigger().onTrue(robotCommands.Launch().unless(() -> !intakeSubsystem.hasNote()));
+
+        primaryController.rightTrigger()
+                .onTrue(robotCommands.GroundIntakeAndLaunch())
+                .onFalse(robotCommands.CancelGroundAction().unless(() -> intakeSubsystem.hasNote()));
+
+        primaryController.x().onTrue(robotCommands.GroundEject()).onFalse(robotCommands.CancelGroundAction());
+
+        primaryController.a().onTrue(robotCommands.GroundIntake()).onFalse(robotCommands.CancelGroundAction());
+
+        primaryController.b().onTrue(launcherCommands.set(Constants.Launcher.State.STOP));
 	}
 
 	public Command getAutonomousCommand() {
