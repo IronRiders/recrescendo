@@ -42,6 +42,7 @@ public class RobotContainer {
 
 	private final CommandXboxController primaryController = new CommandXboxController(
 		Constants.Identifiers.CONTROLLER_PRIMARY_PORT);
+		
 	private final CommandGenericHID secondaryController = new CommandJoystick(
 		Constants.Identifiers.CONTROLLER_SECONDARY_PORT);
 
@@ -73,6 +74,10 @@ public class RobotContainer {
 								primaryController.getRightX()* driveSubsystem.ControlSpeedMultipler *driveSubsystem.getinversionStatus(),
 								Constants.Drive.ROTATION_CONTROL_EXPONENT,
 								Constants.Drive.ROTATION_CONTROL_DEADBAND)));
+		
+		
+		primaryController.a().onTrue(robotCommands.GroundIntakeAndLaunch());
+
 	}
 
 	public Command getAutonomousCommand() {
