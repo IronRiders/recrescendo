@@ -9,13 +9,13 @@ import org.ironriders.climber.ClimberSubsystem;
 import org.ironriders.drive.DriveCommands;
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants;
+import  org.ironriders.lib.Utils;
 import org.ironriders.manipulation.intake.IntakeCommands;
 import org.ironriders.manipulation.intake.IntakeSubsystem;
 import org.ironriders.manipulation.launcher.LauncherCommands;
 import org.ironriders.manipulation.launcher.LauncherSubsystem;
 import org.ironriders.manipulation.pivot.PivotCommands;
 import org.ironriders.manipulation.pivot.PivotSubsystem;
-import  org.ironriders.lib.Utils;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -42,6 +42,7 @@ public class RobotContainer {
 
 	private final CommandXboxController primaryController = new CommandXboxController(
 		Constants.Identifiers.CONTROLLER_PRIMARY_PORT);
+		
 	private final CommandGenericHID secondaryController = new CommandJoystick(
 		Constants.Identifiers.CONTROLLER_SECONDARY_PORT);
 
@@ -73,6 +74,19 @@ public class RobotContainer {
 								primaryController.getRightX()* driveSubsystem.ControlSpeedMultipler *driveSubsystem.getinversionStatus(),
 								Constants.Drive.ROTATION_CONTROL_EXPONENT,
 								Constants.Drive.ROTATION_CONTROL_DEADBAND)));
+		
+
+		primaryController.leftTrigger().onTrue(robotCommands.Launch().unless(() -> !intakeSubsystem.hasNote()));
+
+        primaryController.rightTrigger()
+                .onTrue(robotCommands.GroundIntakeAndLaunch())
+                .onFalse(robotCommands.CancelGroundAction().unless(() -> intakeSubsystem.hasNote()));
+
+        primaryController.x().onTrue(robotCommands.GroundEject()).onFalse(robotCommands.CancelGroundAction());
+
+        primaryController.a().onTrue(robotCommands.GroundIntake()).onFalse(robotCommands.CancelGroundAction());
+
+        primaryController.b().onTrue(launcherCommands.set(Constants.Launcher.State.STOP));
 	}
 
 	public Command getAutonomousCommand() {
