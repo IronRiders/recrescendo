@@ -47,7 +47,18 @@ public class Constants {
     }
 
     public class Pivot {
+        public static final int PIVOT_MOTOR_STALL_LIMIT = 40;
 
+        public enum State {
+            GROUND(-1),
+            LAUNCHER(1);
+
+            public double pos;
+
+            private State(double pos) {
+                this.pos = pos;
+            }
+        } 
     }
 
     public class Intake {

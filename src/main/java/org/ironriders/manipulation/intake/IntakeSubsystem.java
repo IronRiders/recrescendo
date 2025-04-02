@@ -5,6 +5,7 @@ import org.ironriders.lib.IronSubsystem;
 
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -15,6 +16,8 @@ public class IntakeSubsystem extends IronSubsystem {
     public IntakeCommands commands = new IntakeCommands(this);
 
     private final SparkMax motor = new SparkMax(Constants.Identifiers.INTAKE_MOTOR, MotorType.kBrushless); 
+
+    private final SparkLimitSwitch hasNoteLimitSwitch = motor.getReverseLimitSwitch();
 
     public IntakeSubsystem() {
         SparkMaxConfig motorConfig = new SparkMaxConfig();
@@ -28,6 +31,10 @@ public class IntakeSubsystem extends IronSubsystem {
 
     public void setMotor(double speed) {
         motor.set(speed);
+    }
+
+    public SparkLimitSwitch geLimitSwitch() {
+        return hasNoteLimitSwitch;
     }
 
     public IntakeCommands getCommands() {

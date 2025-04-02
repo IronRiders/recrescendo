@@ -48,28 +48,28 @@ public class DriveSubsystem extends IronSubsystem {
 		swerveDrive.setHeadingCorrection(false);
 		SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
 
-		RobotConfig robotConfig = null;
-		try {
-			robotConfig = RobotConfig.fromGUISettings();
-		} catch (Exception e) {
-			throw new RuntimeException("Could not load path planner config", e);
-		}
+		//RobotConfig robotConfig = null;
+		//try {
+		//	robotConfig = RobotConfig.fromGUISettings();
+		//} catch (Exception e) {
+		//	throw new RuntimeException("Could not load path planner config", e);
+		//}
 
-		AutoBuilder.configure(
-				swerveDrive::getPose,
-				swerveDrive::resetOdometry,
-				swerveDrive::getRobotVelocity,
-				(speeds, feedforwards) -> swerveDrive.setChassisSpeeds(speeds),
-				Drive.HOLONOMIC_CONFIG,
-				robotConfig,
-				() -> {
-					var alliance = DriverStation.getAlliance();
-					if (alliance.isPresent()) {
-						return alliance.get() == DriverStation.Alliance.Red;
-					}
-					return false;
-				},
-				this);
+		//AutoBuilder.configure(
+		//		swerveDrive::getPose,
+		//		swerveDrive::resetOdometry,
+		//		swerveDrive::getRobotVelocity,s
+		//		(speeds, feedforwards) -> swerveDrive.setChassisSpeeds(speeds),
+		//		Drive.HOLONOMIC_CONFIG,
+		//		robotConfig,
+		//		() -> {
+		//			var alliance = DriverStation.getAlliance();
+		//			if (alliance.isPresent()) {
+		//				return alliance.get() == DriverStation.Alliance.Red;
+		//			}
+		//			return false;
+		//		},
+		//		this);
 	}
 
 	/**
