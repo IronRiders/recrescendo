@@ -9,6 +9,7 @@ import org.ironriders.climber.ClimberSubsystem;
 import org.ironriders.drive.DriveCommands;
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants;
+import org.ironriders.lib.Constants.Drive;
 import  org.ironriders.lib.Utils;
 import org.ironriders.manipulation.intake.IntakeCommands;
 import org.ironriders.manipulation.intake.IntakeSubsystem;
@@ -75,9 +76,18 @@ public class RobotContainer {
 								Constants.Drive.ROTATION_CONTROL_EXPONENT,
 								Constants.Drive.ROTATION_CONTROL_DEADBAND)));
 		
-		
-		primaryController.a().onTrue(robotCommands.GroundIntakeAndLaunch());
 
+		primaryController.leftTrigger().onTrue(robotCommands.Launch().unless(() -> !intakeSubsystem.geLimitSwitch().isPressed()));
+
+        primaryController.rightTrigger()
+                .onTrue(robotCommands.GroundIntakeAndLaunch())
+                .onFalse(robotCommands.CancelGroundAction().unless(() -> intakeSubsystem.geLimitSwitch().isPressed()));
+
+        primaryController.x().onTrue(robotCommands.GroundEject()).onFalse(robotCommands.CancelGroundAction());
+
+        primaryController.a().onTrue(robotCommands.GroundIntake()).onFalse(robotCommands.CancelGroundAction());
+
+        primaryController.b().onTrue(launcherCommands.set(Constants.Launcher.State.STOP));
 	}
 
 	public Command getAutonomousCommand() {

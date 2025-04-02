@@ -44,4 +44,28 @@ public class RobotCommands {
 				.andThen(intakeCommands.eject())
 				.andThen(launcherCommands.set(Constants.Launcher.State.LAUNCH)));
 	}
+
+	public Command CancelGroundAction() {
+		return Commands.parallel(pivotCommands.set(Constants.Pivot.State.LAUNCHER),
+				intakeCommands.set(Constants.Intake.State.STOP));
+	}
+
+	public Command GroundEject() {
+		return Commands.runOnce(() -> pivotCommands.set(Constants.Pivot.State.LAUNCHER)
+				.andThen(launcherCommands.set(Constants.Launcher.State.BACK))
+				.andThen(intakeCommands.set(Constants.Intake.State.BACK))
+				.andThen(pivotCommands.set(Constants.Pivot.State.GROUND))
+				.andThen(intakeCommands.eject())
+				.andThen(launcherCommands.set(Constants.Launcher.State.LAUNCH)));
+	}
+
+	public Command GroundIntake() {
+		return Commands.runOnce(() -> pivotCommands.set(Constants.Pivot.State.GROUND)
+				.andThen(intakeCommands.intake()));
+	}
+
+	public Command Launch() {
+		return Commands.runOnce(() -> pivotCommands.set(Constants.Pivot.State.LAUNCHER)
+				.andThen(launcherCommands.set(Constants.Launcher.State.LAUNCH)));
+	}
 }
