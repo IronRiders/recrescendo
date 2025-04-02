@@ -53,11 +53,6 @@ public class RobotContainer {
 		climberCommands
 	);
 
-
-
-
-	private double inversionCoeff = 1;
-
 	public RobotContainer() {
 		configureBindings();
 	}
