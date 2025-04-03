@@ -1,9 +1,12 @@
 package org.ironriders.lib;
+import static edu.wpi.first.units.Units.Meters;
+
 import java.io.File;
 
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Filesystem;
 
 
@@ -46,8 +49,45 @@ public class Constants {
         public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 3; // rad/s
     }
 
+    public class Lights {
+        public static final int STRIP_LENGTH = 29;
+
+        public static final Distance STRIP_DENSITY = Meters.of(1 / 120.0);
+
+        public enum ColorState {
+            GREEN (0, 255, 0),
+            WHITE (255, 255, 255);
+
+    
+            public int r;
+            public int g;
+            public int b;
+    
+            ColorState(int r, int g, int b) {
+                this.r = r;
+                this.g = g;
+                this.b = b;
+            }
+        }
+
+        public enum State {
+            OFF(1),
+            RGB(1),
+            TRANS(0.5),
+            GAY(0.5),
+            NONBINARY(0.5);
+
+            public double scrollSpeed;
+
+            State(double scrollSpeed) {
+                this.scrollSpeed = scrollSpeed;
+            }
+
+        }
+    }
+
     public class Pivot {
-        public static final int PIVOT_MOTOR_STALL_LIMIT = 40;
+        public static final int PIVOT_MOTOR_STALL_LIMIT = 10;
 
         public enum State {
             GROUND(-1),
@@ -62,12 +102,12 @@ public class Constants {
     }
 
     public class Intake {
-        public static final int INTAKE_MOTOR_STALL_LIMIT = 40;
+        public static final int INTAKE_MOTOR_STALL_LIMIT = 10;
 
         public enum State {
-            INTAKE(1),
+            INTAKE(-0.5),
             STOP(0),
-            BACK(-1);
+            BACK(0.5);
 
             public double speed;
 
@@ -78,7 +118,7 @@ public class Constants {
     }
 
     public class Launcher {
-        public static final int LAUNCHER_MOTOR_STALL_LIMIT = 40;
+        public static final int LAUNCHER_MOTOR_STALL_LIMIT = 10;
         
         public enum State {
             LAUNCH(1),

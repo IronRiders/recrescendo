@@ -13,9 +13,9 @@ public class IntakeCommands {
     public IntakeCommands(IntakeSubsystem intake) {
         this.intake = intake;
 
-        intake.publish("Intake", this.set(State.INTAKE));
+        intake.publish("Intake", this.intake());
         intake.publish("Stop", this.set(State.STOP));
-        intake.publish("Reverse", this.set(State.BACK));
+        intake.publish("Reverse", this.eject());
     }
 
     public Command set(Constants.Intake.State state) {
@@ -48,7 +48,8 @@ public class IntakeCommands {
                 }
 
                 public boolean isFinished() {
-                    return !intake.geLimitSwitch().isPressed();
+                    if (intake.geLimitSwitch().isPressed() == true) {return false;} else {return true;}
+
                 }
 
                 public void end(boolean interrupted) {
