@@ -55,6 +55,13 @@ public class LightsSubsystem extends IronSubsystem {
                                 new Color("#400098"), new Color("#8E008E"))
                         .scrollAtAbsoluteSpeed(MetersPerSecond.of(Constants.Lights.State.GAY.scrollSpeed),
                                 Constants.Lights.STRIP_DENSITY);
+
+            case NONBINARY:
+                pattern = LEDPattern
+                        .gradient(LEDPattern.GradientType.kContinuous, new Color("#FCF434"), new Color("#FFFFFF"),
+                                new Color("#9C59D1"), new Color("#2C2C2C"))
+                        .scrollAtAbsoluteSpeed(MetersPerSecond.of(Constants.Lights.State.NONBINARY.scrollSpeed),
+                                Constants.Lights.STRIP_DENSITY);
         }
         pattern.applyTo(buffer);
         addressableLED.setData(buffer);

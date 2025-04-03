@@ -74,7 +74,8 @@ public class Constants {
             OFF(0),
             RGB(1),
             TRANS(1),
-            GAY(0.5);
+            GAY(0.5),
+            NONBINARY(0.5);
 
             public double scrollSpeed;
 
