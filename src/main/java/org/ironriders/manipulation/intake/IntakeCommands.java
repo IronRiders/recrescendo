@@ -15,11 +15,16 @@ public class IntakeCommands {
 
         intake.publish("Intake", this.intake());
         intake.publish("Stop", this.set(State.STOP));
-        intake.publish("Reverse", this.eject());
+        intake.publish("Eject", this.set(State.BACK));
     }
 
     public Command set(Constants.Intake.State state) {
         return Commands.runOnce(() -> intake.setMotor(state.speed));
+    }
+
+    public Command eject() {
+        return Commands.runOnce(() -> intake.setMotor(Constants.Intake.State.BACK.speed)).withTimeout(1)
+                .andThen(() -> intake.setMotor(Constants.Intake.State.STOP.speed));
     }
 
     public Command intake() {
@@ -30,26 +35,7 @@ public class IntakeCommands {
                 }
 
                 public boolean isFinished() {
-                    return intake.geLimitSwitch().isPressed();
-                }
-
-                public void end(boolean interrupted) {
-                    intake.setMotor(Constants.Intake.State.STOP.speed);
-                }
-            };
-        });
-    };
-
-    public Command eject() {
-        return intake.defer(() -> {
-            return new Command() {
-                public void execute() {
-                    intake.setMotor(Constants.Intake.State.BACK.speed);
-                }
-
-                public boolean isFinished() {
-                    if (intake.geLimitSwitch().isPressed() == true) {return false;} else {return true;}
-
+                    return intake.hasNote();
                 }
 
                 public void end(boolean interrupted) {
