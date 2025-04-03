@@ -25,9 +25,7 @@ public class LightsSubsystem extends IronSubsystem {
 
     public LightsSubsystem() {
         addressableLED.setLength(buffer.getLength());
-        addressableLED.start(); // maybe bad
-
-        setColorToColorState(Constants.Lights.ColorState.GREEN);
+        addressableLED.start();
     }
 
     @Override
@@ -54,6 +52,13 @@ public class LightsSubsystem extends IronSubsystem {
                                 new Color("#FF8E00"), new Color("#FFFF00"), new Color("#008E00"), new Color("#00C0C0"),
                                 new Color("#400098"), new Color("#8E008E"))
                         .scrollAtAbsoluteSpeed(MetersPerSecond.of(Constants.Lights.State.GAY.scrollSpeed),
+                                Constants.Lights.STRIP_DENSITY);
+
+            case NONBINARY:
+                pattern = LEDPattern
+                        .gradient(LEDPattern.GradientType.kContinuous, new Color("#FCF434"), new Color("#FFFFFF"),
+                                new Color("#9C59D1"), new Color("#2C2C2C"))
+                        .scrollAtAbsoluteSpeed(MetersPerSecond.of(Constants.Lights.State.NONBINARY.scrollSpeed),
                                 Constants.Lights.STRIP_DENSITY);
         }
         pattern.applyTo(buffer);
