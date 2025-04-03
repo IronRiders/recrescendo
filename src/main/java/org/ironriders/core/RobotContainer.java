@@ -10,6 +10,8 @@ import org.ironriders.drive.DriveCommands;
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants;
 import org.ironriders.lib.Utils;
+import org.ironriders.lights.LightsCommands;
+import org.ironriders.lights.LightsSubsystem;
 import org.ironriders.manipulation.intake.IntakeCommands;
 import org.ironriders.manipulation.intake.IntakeSubsystem;
 import org.ironriders.manipulation.launcher.LauncherCommands;
@@ -39,6 +41,9 @@ public class RobotContainer {
 
 	public ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 	public ClimberCommands climberCommands = climberSubsystem.getCommands();
+
+	public LightsSubsystem lightsSubsystem = new LightsSubsystem();
+	public LightsCommands lightsCommands = lightsSubsystem.getCommands();
 
 	private final CommandXboxController primaryController = new CommandXboxController(
 			Constants.Identifiers.CONTROLLER_PRIMARY_PORT);

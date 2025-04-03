@@ -50,7 +50,7 @@ public class Constants {
     }
 
     public class Lights {
-        public static final int STRIP_LENGTH = 2;
+        public static final int STRIP_LENGTH = 29;
 
         public static final Distance STRIP_DENSITY = Meters.of(1 / 120.0);
 
@@ -71,9 +71,9 @@ public class Constants {
         }
 
         public enum State {
-            OFF(0),
+            OFF(1),
             RGB(1),
-            TRANS(1),
+            TRANS(0.5),
             GAY(0.5),
             NONBINARY(0.5);
 
