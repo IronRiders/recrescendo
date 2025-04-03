@@ -87,7 +87,7 @@ public class Constants {
     }
 
     public class Pivot {
-        public static final int PIVOT_MOTOR_STALL_LIMIT = 40;
+        public static final int PIVOT_MOTOR_STALL_LIMIT = 10;
 
         public enum State {
             GROUND(-1),
@@ -102,12 +102,12 @@ public class Constants {
     }
 
     public class Intake {
-        public static final int INTAKE_MOTOR_STALL_LIMIT = 40;
+        public static final int INTAKE_MOTOR_STALL_LIMIT = 10;
 
         public enum State {
-            INTAKE(1),
+            INTAKE(-0.5),
             STOP(0),
-            BACK(-1);
+            BACK(0.5);
 
             public double speed;
 
@@ -118,7 +118,7 @@ public class Constants {
     }
 
     public class Launcher {
-        public static final int LAUNCHER_MOTOR_STALL_LIMIT = 40;
+        public static final int LAUNCHER_MOTOR_STALL_LIMIT = 10;
         
         public enum State {
             LAUNCH(1),

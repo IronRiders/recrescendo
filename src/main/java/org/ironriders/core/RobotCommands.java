@@ -68,4 +68,8 @@ public class RobotCommands {
 		return Commands.runOnce(() -> pivotCommands.set(Constants.Pivot.State.LAUNCHER)
 				.andThen(launcherCommands.set(Constants.Launcher.State.LAUNCH)));
 	}
+
+	public Command Reset() {
+		return Commands.runOnce(() -> intakeCommands.set(Constants.Intake.State.STOP));
+	}
 }

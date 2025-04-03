@@ -44,6 +44,7 @@ public class Robot extends TimedRobot {
 
       autonomousCommand.schedule();
     }
+    generalInit();
   }
 
   @Override
@@ -60,6 +61,7 @@ public class Robot extends TimedRobot {
 
       autonomousCommand.cancel();
     }
+    generalInit();
   }
 
   @Override
@@ -81,5 +83,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testExit() {
+  }
+
+  private void generalInit() {
+   robotContainer.robotCommands.Reset();
   }
 }

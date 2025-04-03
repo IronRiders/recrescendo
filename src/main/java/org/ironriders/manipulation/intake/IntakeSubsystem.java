@@ -17,7 +17,7 @@ public class IntakeSubsystem extends IronSubsystem {
 
     private final SparkMax motor = new SparkMax(Constants.Identifiers.INTAKE_MOTOR, MotorType.kBrushless); 
 
-    private final SparkLimitSwitch hasNoteLimitSwitch = motor.getReverseLimitSwitch();
+    private final SparkLimitSwitch hasNoteLimitSwitch = motor.getForwardLimitSwitch();
 
     public IntakeSubsystem() {
         SparkMaxConfig motorConfig = new SparkMaxConfig();
@@ -27,6 +27,11 @@ public class IntakeSubsystem extends IronSubsystem {
         .inverted(true);
 
         motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    }
+
+    @Override
+    public void periodic() {
+        publish("Has note", hasNoteLimitSwitch.isPressed());
     }
 
     public void setMotor(double speed) {
