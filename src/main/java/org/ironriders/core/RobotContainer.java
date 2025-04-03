@@ -21,8 +21,6 @@ import org.ironriders.manipulation.pivot.PivotSubsystem;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
@@ -47,9 +45,6 @@ public class RobotContainer {
 
 	private final CommandXboxController primaryController = new CommandXboxController(
 			Constants.Identifiers.CONTROLLER_PRIMARY_PORT);
-
-	private final CommandGenericHID secondaryController = new CommandJoystick(
-			Constants.Identifiers.CONTROLLER_SECONDARY_PORT);
 
 	public RobotCommands robotCommands = new RobotCommands(
 			driveCommands,
