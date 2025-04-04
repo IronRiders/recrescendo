@@ -4,7 +4,7 @@ import org.ironriders.lib.IronSubsystem;
 
 public class ClimberSubsystem extends IronSubsystem {
 
-    public ClimberCommands commands = new ClimberCommands(this);
+    private final ClimberCommands commands = new ClimberCommands(this);
 
     // init shit
 

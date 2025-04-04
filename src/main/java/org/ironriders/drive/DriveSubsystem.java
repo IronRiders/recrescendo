@@ -22,7 +22,7 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
  */
 public class DriveSubsystem extends IronSubsystem {
 
-	private DriveCommands commands;
+	private final DriveCommands commands;
 
 	private SwerveDrive swerveDrive;
 	private boolean invertStatus = false;

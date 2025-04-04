@@ -12,7 +12,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 public class LauncherSubsystem extends IronSubsystem {
 
-    public LauncherCommands commands = new LauncherCommands(this);
+    private final LauncherCommands commands = new LauncherCommands(this);
 
     private final SparkMax primaryMotor = new SparkMax(Constants.Identifiers.LAUNCHER_MOTOR_RIGHT, MotorType.kBrushless); // lead motor is the right one
     private final SparkMax followerMotor = new SparkMax(Constants.Identifiers.LAUNCHER_MOTOR_LEFT, MotorType.kBrushless);

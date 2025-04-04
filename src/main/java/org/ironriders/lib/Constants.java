@@ -1,4 +1,5 @@
 package org.ironriders.lib;
+
 import static edu.wpi.first.units.Units.Meters;
 
 import java.io.File;
@@ -6,11 +7,16 @@ import java.io.File;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Filesystem;
 
-
 public class Constants {
+
+    public class Robot {
+
+        public static final double COMPENSATED_VOLTAGE = 10.0;
+    }
 
     public class Identifiers {
 
@@ -49,20 +55,79 @@ public class Constants {
         public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 3; // rad/s
     }
 
+    public class Pivot {
+
+        public static final int MOTOR_CURRENT_LIMIT = 100;
+
+        public static final double CONTROL_P = 0.01;
+        public static final double CONTROL_I = 0.0;
+        public static final double CONTROL_D = 0.0;
+
+        public static final double CONTROL_TOLERANCE = 10;
+
+        public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = 
+                new TrapezoidProfile.Constraints(500, 850);
+
+        public static final double ENCODER_OFFSET = 260;
+
+        public enum State {
+            GROUND(42),
+            STOWED(173),
+            LAUNCHER(256);
+    
+            public final double position;
+    
+            private State(int position) {
+                this.position = position;
+            }
+        }
+    }
+
+    public class Intake {
+        public static final int INTAKE_MOTOR_STALL_LIMIT = 10;
+
+        public enum State {
+            INTAKE(-0.5),
+            STOP(0),
+            BACK(0.5);
+
+            public double speed;
+
+            private State(double speed) {
+                this.speed = speed;
+            }
+        }
+    }
+
+    public class Launcher {
+        public static final int LAUNCHER_MOTOR_STALL_LIMIT = 50;
+
+        public enum State {
+            LAUNCH(0.8),
+            STOP(0),
+            BACK(-0.1);
+
+            public double speed;
+
+            private State(double speed) {
+                this.speed = speed;
+            }
+        }
+    }
+
     public class Lights {
         public static final int STRIP_LENGTH = 29;
 
         public static final Distance STRIP_DENSITY = Meters.of(1 / 120.0);
 
         public enum ColorState {
-            GREEN (0, 255, 0),
-            WHITE (255, 255, 255);
+            GREEN(0, 255, 0),
+            WHITE(255, 255, 255);
 
-    
             public int r;
             public int g;
             public int b;
-    
+
             ColorState(int r, int g, int b) {
                 this.r = r;
                 this.g = g;
@@ -87,7 +152,19 @@ public class Constants {
     }
 
     public class Pivot {
-        public static final int PIVOT_MOTOR_STALL_LIMIT = 10;
+
+        public static final int MOTOR_CURRENT_LIMIT = 100;
+
+        public static final double CONTROL_P = 0.01;
+        public static final double CONTROL_I = 0.0;
+        public static final double CONTROL_D = 0.0;
+
+        public static final double CONTROL_TOLERANCE = 10;
+
+        public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = 
+                new TrapezoidProfile.Constraints(500, 850);
+
+        public static final double ENCODER_OFFSET = 260;
 
         public enum State {
             GROUND(-1),
@@ -121,7 +198,7 @@ public class Constants {
         public static final int LAUNCHER_MOTOR_STALL_LIMIT = 50;
         
         public enum State {
-            LAUNCH(0.8),
+            LAUNCH(0.3),
             STOP(0),
             BACK(-0.1);
 
