@@ -7,6 +7,7 @@ import java.io.File;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Filesystem;
 
@@ -56,10 +57,30 @@ public class Constants {
 
     public class Pivot {
 
-        public static final double MOTOR_TOLERANCE = 10;
         public static final int MOTOR_CURRENT_LIMIT = 100;
 
+        public static final double CONTROL_P = 0.01;
+        public static final double CONTROL_I = 0.0;
+        public static final double CONTROL_D = 0.0;
+
+        public static final double CONTROL_TOLERANCE = 10;
+
+        public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = 
+                new TrapezoidProfile.Constraints(500, 850);
+
         public static final double ENCODER_OFFSET = 260;
+
+        public enum State {
+            GROUND(42),
+            STOWED(173),
+            LAUNCHER(256);
+    
+            public final double position;
+    
+            private State(int position) {
+                this.position = position;
+            }
+        }
     }
 
     public class Intake {

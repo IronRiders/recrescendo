@@ -4,7 +4,9 @@ import java.util.function.DoubleSupplier;
 
 import org.ironriders.climber.ClimberCommands;
 import org.ironriders.drive.DriveCommands;
-import org.ironriders.lib.Constants;
+import org.ironriders.lib.Constants.Intake;
+import org.ironriders.lib.Constants.Launcher;
+import org.ironriders.lib.Constants.Pivot;
 import org.ironriders.manipulation.intake.IntakeCommands;
 import org.ironriders.manipulation.launcher.LauncherCommands;
 import org.ironriders.manipulation.pivot.PivotCommands;
@@ -13,10 +15,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 public class RobotCommands {
+
 	private final DriveCommands driveCommands;
-	private final LauncherCommands launcherCommands;
+
 	private final PivotCommands pivotCommands;
 	private final IntakeCommands intakeCommands;
+	private final LauncherCommands launcherCommands;
+
 	private final ClimberCommands climberCommands;
 
 	public RobotCommands(
@@ -38,38 +43,36 @@ public class RobotCommands {
 		return driveCommands.driveTeleop(inputTranslationX, inputTranslationY, inputRotation, true);
 	}
 
-	public Command GroundIntakeAndLaunch() {
-		return Commands.runOnce(() -> pivotCommands.set(Constants.Pivot.State.GROUND).andThen(intakeCommands.intake())
-				.andThen(pivotCommands.set(Constants.Pivot.State.LAUNCHER))
-				.andThen(intakeCommands.eject())
-				.andThen(launcherCommands.set(Constants.Launcher.State.LAUNCH)));
+	public Command intake() {
+		return Commands.sequence(
+				pivotCommands.set(Pivot.State.GROUND),
+				intakeCommands.intake(),
+				pivotCommands.set(Pivot.State.LAUNCHER),
+				intakeCommands.set(Intake.State.STOP));
 	}
 
-	public Command CancelGroundAction() {
-		return Commands.parallel(pivotCommands.set(Constants.Pivot.State.LAUNCHER),
-				intakeCommands.set(Constants.Intake.State.STOP));
+	public Command eject() {
+		return Commands.sequence(
+				pivotCommands.set(Pivot.State.LAUNCHER),
+				launcherCommands.set(Launcher.State.BACK),
+				intakeCommands.set(Intake.State.BACK),
+				pivotCommands.set(Pivot.State.GROUND),
+				intakeCommands.eject(),
+				launcherCommands.set(Launcher.State.LAUNCH)
+		);
 	}
 
-	public Command GroundEject() {
-		return Commands.runOnce(() -> pivotCommands.set(Constants.Pivot.State.LAUNCHER)
-				.andThen(launcherCommands.set(Constants.Launcher.State.BACK))
-				.andThen(intakeCommands.set(Constants.Intake.State.BACK))
-				.andThen(pivotCommands.set(Constants.Pivot.State.GROUND))
-				.andThen(intakeCommands.eject())
-				.andThen(launcherCommands.set(Constants.Launcher.State.LAUNCH)));
+	public Command launch() {
+		return Commands.sequence(
+				pivotCommands.set(Pivot.State.LAUNCHER),
+				launcherCommands.set(Launcher.State.LAUNCH)
+		);
 	}
 
-	public Command GroundIntake() {
-		return Commands.runOnce(() -> pivotCommands.set(Constants.Pivot.State.GROUND)
-				.andThen(intakeCommands.intake()));
-	}
-
-	public Command Launch() {
-		return Commands.runOnce(() -> pivotCommands.set(Constants.Pivot.State.LAUNCHER)
-				.andThen(launcherCommands.set(Constants.Launcher.State.LAUNCH)));
-	}
-
-	public Command Reset() {
-		return Commands.runOnce(() -> intakeCommands.set(Constants.Intake.State.STOP)).andThen(() ->  launcherCommands.set(Constants.Launcher.State.STOP));
+	public Command reset() {
+		return Commands.parallel(
+				pivotCommands.set(Pivot.State.LAUNCHER),
+				intakeCommands.set(Intake.State.STOP)
+		);
 	}
 }
