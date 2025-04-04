@@ -9,6 +9,7 @@ import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.LimitSwitchConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 public class IntakeSubsystem extends IronSubsystem {
@@ -16,6 +17,8 @@ public class IntakeSubsystem extends IronSubsystem {
     public IntakeCommands commands = new IntakeCommands(this);
 
     private final SparkMax motor = new SparkMax(Constants.Identifiers.INTAKE_MOTOR, MotorType.kBrushless); 
+
+    private final LimitSwitchConfig limitSwitchConfig = new LimitSwitchConfig();
 
     private final SparkLimitSwitch hasNoteLimitSwitch = motor.getForwardLimitSwitch();
 
@@ -26,6 +29,9 @@ public class IntakeSubsystem extends IronSubsystem {
         .smartCurrentLimit(Constants.Intake.INTAKE_MOTOR_STALL_LIMIT)
         .inverted(true);
 
+        limitSwitchConfig.forwardLimitSwitchEnabled(false);
+
+        motorConfig.apply(limitSwitchConfig);
         motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 

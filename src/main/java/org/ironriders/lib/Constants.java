@@ -118,12 +118,12 @@ public class Constants {
     }
 
     public class Launcher {
-        public static final int LAUNCHER_MOTOR_STALL_LIMIT = 10;
+        public static final int LAUNCHER_MOTOR_STALL_LIMIT = 50;
         
         public enum State {
-            LAUNCH(1),
+            LAUNCH(0.4),
             STOP(0),
-            BACK(-1);
+            BACK(-0.1);
 
             public double speed;
 

@@ -14,8 +14,12 @@ public class IntakeCommands {
         this.intake = intake;
 
         intake.publish("Intake", this.intake());
+        intake.publish("Intake fake", this.set(State.INTAKE));
+
         intake.publish("Stop", this.set(State.STOP));
-        intake.publish("Eject", this.set(State.BACK));
+        intake.publish("Eject fake", this.set(State.BACK));
+        intake.publish("Eject", this.eject());
+
     }
 
     public Command set(Constants.Intake.State state) {
