@@ -25,6 +25,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledInit() {
+    robotContainer.robotCommands.Reset();
   }
 
   @Override
@@ -86,6 +87,6 @@ public class Robot extends TimedRobot {
   }
 
   private void generalInit() {
-   robotContainer.robotCommands.Reset();
+    robotContainer.robotCommands.Reset();
   }
 }

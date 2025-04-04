@@ -70,6 +70,6 @@ public class RobotCommands {
 	}
 
 	public Command Reset() {
-		return Commands.runOnce(() -> intakeCommands.set(Constants.Intake.State.STOP));
+		return Commands.runOnce(() -> intakeCommands.set(Constants.Intake.State.STOP)).andThen(() ->  launcherCommands.set(Constants.Launcher.State.STOP));
 	}
 }
