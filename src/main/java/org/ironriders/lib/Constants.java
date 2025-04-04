@@ -55,34 +55,6 @@ public class Constants {
         public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 3; // rad/s
     }
 
-    public class Pivot {
-
-        public static final int MOTOR_CURRENT_LIMIT = 100;
-
-        public static final double CONTROL_P = 0.01;
-        public static final double CONTROL_I = 0.0;
-        public static final double CONTROL_D = 0.0;
-
-        public static final double CONTROL_TOLERANCE = 10;
-
-        public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = 
-                new TrapezoidProfile.Constraints(500, 850);
-
-        public static final double ENCODER_OFFSET = 260;
-
-        public enum State {
-            GROUND(42),
-            STOWED(173),
-            LAUNCHER(256);
-    
-            public final double position;
-    
-            private State(int position) {
-                this.position = position;
-            }
-        }
-    }
-
     public class Intake {
         public static final int INTAKE_MOTOR_STALL_LIMIT = 10;
 
@@ -167,46 +139,15 @@ public class Constants {
         public static final double ENCODER_OFFSET = 260;
 
         public enum State {
-            GROUND(-1),
-            LAUNCHER(1);
-
-            public double pos;
-
-            private State(double pos) {
-                this.pos = pos;
+            GROUND(42),
+            STOWED(173),
+            LAUNCHER(256);
+    
+            public final double position;
+    
+            private State(int position) {
+                this.position = position;
             }
-        } 
-    }
-
-    public class Intake {
-        public static final int INTAKE_MOTOR_STALL_LIMIT = 10;
-
-        public enum State {
-            INTAKE(-0.5),
-            STOP(0),
-            BACK(0.5);
-
-            public double speed;
-
-            private State(double speed) {
-                this.speed = speed;
-            }
-        } 
-    }
-
-    public class Launcher {
-        public static final int LAUNCHER_MOTOR_STALL_LIMIT = 50;
-        
-        public enum State {
-            LAUNCH(0.3),
-            STOP(0),
-            BACK(-0.1);
-
-            public double speed;
-
-            private State(double speed) {
-                this.speed = speed;
-            }
-        } 
+        }
     }
 }
