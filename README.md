@@ -1,5 +1,10 @@
 [![CI](https://github.com/IronRiders/reefscape/actions/workflows/gradle.yml/badge.svg)](https://github.com/IronRiders/reefscape/actions/workflows/gradle.yml)
 
+This is for converting our Crescendo bot into:
+  1. A working robot in 2025
+  2. A outreach bot
+
+If you are looking for our code from the CRESCENDO season please go [here](https://github.com/IronRiders/Crescendo)
 ![8x2 Banner](https://github.com/user-attachments/assets/ca7bddfc-8815-40c6-bc6c-3a8b020dff7a)
 
 >In CRESCENDO SM presented by Haas, two competing alliances are invited to score notes, amplify their speaker,
