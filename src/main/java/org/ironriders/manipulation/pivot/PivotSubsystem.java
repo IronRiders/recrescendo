@@ -29,8 +29,6 @@ public class PivotSubsystem extends IronSubsystem {
     private final SparkLimitSwitch forwardLimitSwitch = motor.getForwardLimitSwitch();
     private final SparkLimitSwitch reverseLimitSwitch = motor.getReverseLimitSwitch();
 
-    // init shit
-
     public PivotSubsystem() {
         SparkBaseConfig config = new SparkMaxConfig()
             .smartCurrentLimit(Pivot.MOTOR_CURRENT_LIMIT)
