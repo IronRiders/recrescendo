@@ -58,7 +58,6 @@ public class RobotContainer {
 	}
 
 	private void configureBindings() {
-		// DRIVE CONTROLS
 		driveSubsystem.setDefaultCommand(
 				robotCommands.driveTeleop(
 						() -> Utils.controlCurve(
@@ -77,15 +76,15 @@ public class RobotContainer {
 								Constants.Drive.ROTATION_CONTROL_EXPONENT,
 								Constants.Drive.ROTATION_CONTROL_DEADBAND)));
 
-		primaryController.leftTrigger().onTrue(robotCommands.Launch().unless(() -> !intakeSubsystem.hasNote()));
+		primaryController.leftTrigger().onTrue(robotCommands.launch().unless(() -> !intakeSubsystem.hasNote()));
 
 		primaryController.rightTrigger()
-				.onTrue(robotCommands.GroundIntakeAndLaunch())
-				.onFalse(robotCommands.CancelGroundAction().unless(() -> intakeSubsystem.hasNote()));
+				.onTrue(robotCommands.intake())
+				.onFalse(robotCommands.reset());
 
-		primaryController.x().onTrue(robotCommands.GroundEject()).onFalse(robotCommands.CancelGroundAction());
+		primaryController.x().onTrue(robotCommands.eject()).onFalse(robotCommands.reset());
 
-		primaryController.a().onTrue(robotCommands.GroundIntake()).onFalse(robotCommands.CancelGroundAction());
+		primaryController.a().onTrue(robotCommands.intake()).onFalse(robotCommands.reset());
 
 		primaryController.b().onTrue(launcherCommands.set(Constants.Launcher.State.STOP));
 	}
