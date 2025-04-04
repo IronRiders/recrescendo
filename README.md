@@ -1,4 +1,4 @@
-[![CI](https://github.com/IronRiders/recrescendo/actions/workflows/gradle.yml/badge.svg)](https://github.com/IronRiders/reefscape/actions/workflows/gradle.yml)
+[![CI](https://github.com/IronRiders/recrescendo/actions/workflows/CI.yml/badge.svg)](https://github.com/IronRiders/recrescendo/actions/workflows/CI.yml)
 
 This is for converting our Crescendo bot into:
   1. A working robot in 2025
