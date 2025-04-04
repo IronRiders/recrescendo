@@ -5,13 +5,9 @@ import java.io.IOException;
 import org.ironriders.lib.Constants.Drive;
 import org.ironriders.lib.IronSubsystem;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.RobotConfig;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;

@@ -14,8 +14,8 @@ public class LauncherSubsystem extends IronSubsystem {
 
     public LauncherCommands commands = new LauncherCommands(this);
 
-    private final SparkMax primaryMotor = new SparkMax(Constants.Identifiers.LAUNCHER_MOTOR_RIGHT, MotorType.kBrushless); // lead motor is the right one
-    private final SparkMax followerMotor = new SparkMax(Constants.Identifiers.LAUNCHER_MOTOR_LEFT, MotorType.kBrushless);
+    private final SparkMax rightMotor = new SparkMax(Constants.Identifiers.LAUNCHER_MOTOR_RIGHT, MotorType.kBrushless); // lead motor is the right one
+    private final SparkMax leftMotor = new SparkMax(Constants.Identifiers.LAUNCHER_MOTOR_LEFT, MotorType.kBrushless);
 
     public LauncherSubsystem() {
         SparkMaxConfig primaryConfig = new SparkMaxConfig();
@@ -25,14 +25,15 @@ public class LauncherSubsystem extends IronSubsystem {
                 .idleMode(IdleMode.kBrake)
                 .smartCurrentLimit(Constants.Launcher.LAUNCHER_MOTOR_STALL_LIMIT)
                 .inverted(true);
-
+            
         followerConfig
                 .idleMode(IdleMode.kBrake)
                 .smartCurrentLimit(Constants.Launcher.LAUNCHER_MOTOR_STALL_LIMIT)
-                .follow(Constants.Identifiers.LAUNCHER_MOTOR_RIGHT, true);
+                .inverted(true);
 
-        primaryMotor.configure(primaryConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        followerMotor.configure(followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        rightMotor.configure(primaryConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        leftMotor.configure(followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     }
 
