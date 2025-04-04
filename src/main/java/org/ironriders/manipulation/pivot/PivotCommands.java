@@ -12,8 +12,4 @@ public class PivotCommands {
     public PivotCommands(PivotSubsystem pivot) {
         this.pivot = pivot;
     }
-
-    public Command set(Constants.Pivot.State state) {
-        return Commands.runOnce(() -> System.out.println("hi :3 (please implement pivot)"));
-    }
 }

@@ -11,11 +11,11 @@ public class LightsCommands {
     public LightsCommands(LightsSubsystem lights) {
         this.lights = lights;
 
-        lights.publish("Set lights to off", setLights(Constants.Lights.State.OFF));
-        lights.publish("Set lights to gay", setLights(Constants.Lights.State.GAY));
-        lights.publish("Set lights to rainbow", setLights(Constants.Lights.State.RGB));
-        lights.publish("Set lights to trans", setLights(Constants.Lights.State.TRANS));
-        lights.publish("Set lights to non binary", setLights(Constants.Lights.State.NONBINARY));
+        lights.publish("Set to OFF", setLights(Constants.Lights.State.OFF));
+        lights.publish("Set to GAY", setLights(Constants.Lights.State.GAY));
+        lights.publish("Set to RAINBOW", setLights(Constants.Lights.State.RGB));
+        lights.publish("Set to TRANS", setLights(Constants.Lights.State.TRANS));
+        lights.publish("Set to ENBY", setLights(Constants.Lights.State.NONBINARY));
 
     }
 

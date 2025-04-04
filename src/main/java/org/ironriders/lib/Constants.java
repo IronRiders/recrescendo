@@ -1,4 +1,5 @@
 package org.ironriders.lib;
+
 import static edu.wpi.first.units.Units.Meters;
 
 import java.io.File;
@@ -8,7 +9,6 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Filesystem;
-
 
 public class Constants {
 
@@ -55,18 +55,7 @@ public class Constants {
     }
 
     public class Pivot {
-        public static final int PIVOT_MOTOR_STALL_LIMIT = 10;
 
-        public enum State {
-            GROUND(-1),
-            LAUNCHER(1);
-
-            public double pos;
-
-            private State(double pos) {
-                this.pos = pos;
-            }
-        } 
         public static final double MOTOR_TOLERANCE = 10;
         public static final int MOTOR_CURRENT_LIMIT = 100;
 
@@ -86,12 +75,12 @@ public class Constants {
             private State(double speed) {
                 this.speed = speed;
             }
-        } 
+        }
     }
 
     public class Launcher {
         public static final int LAUNCHER_MOTOR_STALL_LIMIT = 50;
-        
+
         public enum State {
             LAUNCH(0.3),
             STOP(0),
@@ -102,6 +91,42 @@ public class Constants {
             private State(double speed) {
                 this.speed = speed;
             }
-        } 
+        }
+    }
+
+    public class Lights {
+        public static final int STRIP_LENGTH = 29;
+
+        public static final Distance STRIP_DENSITY = Meters.of(1 / 120.0);
+
+        public enum ColorState {
+            GREEN(0, 255, 0),
+            WHITE(255, 255, 255);
+
+            public int r;
+            public int g;
+            public int b;
+
+            ColorState(int r, int g, int b) {
+                this.r = r;
+                this.g = g;
+                this.b = b;
+            }
+        }
+
+        public enum State {
+            OFF(1),
+            RGB(1),
+            TRANS(0.5),
+            GAY(0.5),
+            NONBINARY(0.5);
+
+            public double scrollSpeed;
+
+            State(double scrollSpeed) {
+                this.scrollSpeed = scrollSpeed;
+            }
+
+        }
     }
 }
