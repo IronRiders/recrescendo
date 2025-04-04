@@ -28,7 +28,6 @@ public class LauncherSubsystem extends IronSubsystem {
             
         followerConfig
                 .idleMode(IdleMode.kBrake)
-                .follow(primaryMotor)
                 .smartCurrentLimit(Constants.Launcher.LAUNCHER_MOTOR_STALL_LIMIT)
                 .inverted(true);
     
@@ -41,6 +40,7 @@ public class LauncherSubsystem extends IronSubsystem {
 
     public void setMotor(double speed) {
         primaryMotor.set(-speed);
+        followerMotor.set(speed);
     }
 
     public LauncherCommands getCommands() {
