@@ -14,7 +14,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 public class IntakeSubsystem extends IronSubsystem {
 
-    public IntakeCommands commands = new IntakeCommands(this);
+    private final IntakeCommands commands = new IntakeCommands(this);
 
     private final SparkMax motor = new SparkMax(Constants.Identifiers.INTAKE_MOTOR, MotorType.kBrushless); 
 

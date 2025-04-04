@@ -12,6 +12,11 @@ import edu.wpi.first.wpilibj.Filesystem;
 
 public class Constants {
 
+    public class Robot {
+
+        public static final double COMPENSATED_VOLTAGE = 10.0;
+    }
+
     public class Identifiers {
 
         public static final int CONTROLLER_PRIMARY_PORT = 0;
@@ -49,43 +54,6 @@ public class Constants {
         public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 3; // rad/s
     }
 
-    public class Lights {
-        public static final int STRIP_LENGTH = 29;
-
-        public static final Distance STRIP_DENSITY = Meters.of(1 / 120.0);
-
-        public enum ColorState {
-            GREEN (0, 255, 0),
-            WHITE (255, 255, 255);
-
-    
-            public int r;
-            public int g;
-            public int b;
-    
-            ColorState(int r, int g, int b) {
-                this.r = r;
-                this.g = g;
-                this.b = b;
-            }
-        }
-
-        public enum State {
-            OFF(1),
-            RGB(1),
-            TRANS(0.5),
-            GAY(0.5),
-            NONBINARY(0.5);
-
-            public double scrollSpeed;
-
-            State(double scrollSpeed) {
-                this.scrollSpeed = scrollSpeed;
-            }
-
-        }
-    }
-
     public class Pivot {
         public static final int PIVOT_MOTOR_STALL_LIMIT = 10;
 
@@ -99,6 +67,10 @@ public class Constants {
                 this.pos = pos;
             }
         } 
+        public static final double MOTOR_TOLERANCE = 10;
+        public static final int MOTOR_CURRENT_LIMIT = 100;
+
+        public static final double ENCODER_OFFSET = 260;
     }
 
     public class Intake {
