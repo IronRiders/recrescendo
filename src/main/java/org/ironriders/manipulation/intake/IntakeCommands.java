@@ -28,7 +28,7 @@ public class IntakeCommands {
 
     public Command eject() {
         return Commands.runOnce(() -> intake.setMotor(Constants.Intake.State.BACK.speed))
-                .andThen(Commands.waitSeconds(2))
+                .andThen(Commands.waitSeconds(Constants.Intake.EJECT_WAIT_TIME))
                 .andThen(() -> intake.setMotor(Constants.Intake.State.STOP.speed));
     }
 

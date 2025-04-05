@@ -57,6 +57,7 @@ public class Constants {
 
     public class Intake {
         public static final int INTAKE_MOTOR_STALL_LIMIT = 10;
+        public static final double EJECT_WAIT_TIME = 1;
 
         public enum State {
             INTAKE(-0.5),
@@ -73,6 +74,7 @@ public class Constants {
 
     public class Launcher {
         public static final int LAUNCHER_MOTOR_STALL_LIMIT = 50;
+        public static final double LAUNCH_WAIT_TIME = 1;
 
         public enum State {
             LAUNCH(0.8),

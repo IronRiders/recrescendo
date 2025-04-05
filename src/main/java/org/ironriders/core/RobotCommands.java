@@ -7,6 +7,7 @@ import org.ironriders.drive.DriveCommands;
 import org.ironriders.lib.Constants.Intake;
 import org.ironriders.lib.Constants.Launcher;
 import org.ironriders.lib.Constants.Pivot;
+import org.ironriders.lib.Constants.Launcher.State;
 import org.ironriders.manipulation.intake.IntakeCommands;
 import org.ironriders.manipulation.launcher.LauncherCommands;
 import org.ironriders.manipulation.pivot.PivotCommands;
@@ -22,7 +23,7 @@ public class RobotCommands {
 	private final IntakeCommands intakeCommands;
 	private final LauncherCommands launcherCommands;
 
-	private final ClimberCommands climberCommands;
+	private final ClimberCommands climberCommands; // probably wont exist
 
 	public RobotCommands(
 			DriveCommands driveCommands,
@@ -47,32 +48,30 @@ public class RobotCommands {
 		return Commands.sequence(
 				pivotCommands.set(Pivot.State.GROUND),
 				intakeCommands.intake(),
-				pivotCommands.set(Pivot.State.LAUNCHER),
-				intakeCommands.set(Intake.State.STOP));
-	}
-
-	public Command eject() {
-		return Commands.sequence(
-				pivotCommands.set(Pivot.State.LAUNCHER),
-				launcherCommands.set(Launcher.State.BACK),
-				intakeCommands.set(Intake.State.BACK),
-				pivotCommands.set(Pivot.State.GROUND),
-				intakeCommands.eject(),
-				launcherCommands.set(Launcher.State.LAUNCH)
-		);
+				launcherCommands.set(Launcher.State.LAUNCH),
+				pivotCommands.set(Pivot.State.LAUNCHER));
 	}
 
 	public Command launch() {
 		return Commands.sequence(
-				pivotCommands.set(Pivot.State.LAUNCHER),
-				launcherCommands.set(Launcher.State.LAUNCH)
-		);
+				launcherCommands.set(Launcher.State.LAUNCH), //should allread be true but anyway
+				pivotCommands.set(Pivot.State.LAUNCHER), // same with this
+				intakeCommands.eject(),
+				launcherCommands.launch()); // launches with timeout
+				
+	}
+
+	public Command eject() {
+		return Commands.sequence(
+				launcherCommands.set(Launcher.State.STOP),
+				pivotCommands.set(Pivot.State.GROUND),
+				intakeCommands.eject());
 	}
 
 	public Command reset() {
 		return Commands.parallel(
 				pivotCommands.set(Pivot.State.LAUNCHER),
-				intakeCommands.set(Intake.State.STOP)
-		);
+				intakeCommands.set(Intake.State.STOP),
+				launcherCommands.set(Launcher.State.STOP));
 	}
 }

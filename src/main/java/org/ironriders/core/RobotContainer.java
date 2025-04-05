@@ -43,6 +43,8 @@ public class RobotContainer {
 	public LightsSubsystem lightsSubsystem = new LightsSubsystem();
 	public LightsCommands lightsCommands = lightsSubsystem.getCommands();
 
+	public Command activeCommand;
+
 	private final CommandXboxController primaryController = new CommandXboxController(
 			Constants.Identifiers.CONTROLLER_PRIMARY_PORT);
 
@@ -76,17 +78,20 @@ public class RobotContainer {
 								Constants.Drive.ROTATION_CONTROL_EXPONENT,
 								Constants.Drive.ROTATION_CONTROL_DEADBAND)));
 
-		primaryController.leftTrigger().onTrue(robotCommands.launch().unless(() -> !intakeSubsystem.hasNote()));
+		primaryController.rightTrigger().onFalse(activeCommand = robotCommands.intake())
+				.onFalse(robotCommands.launch()); // intake waits for a note and then moves to position, launch ejects
+													// from the manipulator and spins up the launcher for 1 (might have
+													// changed) second(s)
 
-		primaryController.rightTrigger()
-				.onTrue(robotCommands.intake())
-				.onFalse(robotCommands.reset());
+		primaryController.x().onTrue(Commands.runOnce(() -> activeCommand.cancel())); // cancel the launch
 
-		primaryController.x().onTrue(robotCommands.eject()).onFalse(robotCommands.reset());
+		primaryController.b().onTrue(launcherCommands.set(Constants.Launcher.State.STOP)); // force stop launcher
 
-		primaryController.a().onTrue(robotCommands.intake()).onFalse(robotCommands.reset());
+		primaryController.y().onTrue(robotCommands.eject().unless(() -> !intakeSubsystem.hasNote())); // eject unless we
+																										// don't have a
+																										// note
 
-		primaryController.b().onTrue(launcherCommands.set(Constants.Launcher.State.STOP));
+		primaryController.a().onTrue(robotCommands.reset()); // reset everything
 	}
 
 	public Command getAutonomousCommand() {

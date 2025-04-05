@@ -21,4 +21,9 @@ public class LauncherCommands {
     public Command set(Constants.Launcher.State state) {
         return Commands.runOnce(() -> launcher.setMotor(state.speed));
     }
+
+    public Command launch() {
+        return Commands.runOnce(() -> launcher.setMotor(Constants.Launcher.State.LAUNCH.speed)).andThen(
+                Commands.waitSeconds(Constants.Launcher.LAUNCH_WAIT_TIME).andThen(() -> launcher.setMotor(Constants.Launcher.State.LAUNCH.speed)));
+    }
 }
