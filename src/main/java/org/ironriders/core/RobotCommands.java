@@ -54,7 +54,7 @@ public class RobotCommands {
 
 	public Command launch() {
 		return Commands.sequence(
-				launcherCommands.set(Launcher.State.LAUNCH), //should allread be true but anyway
+				launcherCommands.set(Launcher.State.LAUNCH), //should already be true but anyway
 				pivotCommands.set(Pivot.State.LAUNCHER), // same with this
 				intakeCommands.eject(),
 				launcherCommands.launch()); // launches with timeout
