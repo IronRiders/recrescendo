@@ -58,6 +58,8 @@ public class Constants {
     public class Intake {
         public static final int INTAKE_MOTOR_STALL_LIMIT = 10;
         public static final double EJECT_WAIT_TIME = 1;
+        public static final double CENTER_TIMEOUT = 1;
+
 
         public enum State {
             INTAKE(-0.5),

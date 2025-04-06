@@ -48,7 +48,7 @@ public class RobotCommands {
 		return Commands.sequence(
 				pivotCommands.set(Pivot.State.GROUND),
 				intakeCommands.intake(),
-				launcherCommands.set(Launcher.State.LAUNCH),
+				Commands.parallel(launcherCommands.set(Launcher.State.LAUNCH), intakeCommands.center()),
 				pivotCommands.set(Pivot.State.LAUNCHER));
 	}
 

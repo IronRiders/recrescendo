@@ -14,10 +14,10 @@ public class IntakeCommands {
         this.intake = intake;
 
         intake.publish("Intake", this.intake());
-        intake.publish("Intake fake", this.set(State.INTAKE));
+        intake.publish("Intake force", this.set(State.INTAKE));
 
         intake.publish("Stop", this.set(State.STOP));
-        intake.publish("Eject fake", this.set(State.BACK));
+        intake.publish("Eject force", this.set(State.BACK));
         intake.publish("Eject", this.eject());
 
     }
@@ -30,6 +30,12 @@ public class IntakeCommands {
         return Commands.runOnce(() -> intake.setMotor(Constants.Intake.State.BACK.speed))
                 .andThen(Commands.waitSeconds(Constants.Intake.EJECT_WAIT_TIME))
                 .andThen(() -> intake.setMotor(Constants.Intake.State.STOP.speed));
+    }
+
+    public Command center() {
+        return Commands.runOnce(() -> intake.setMotor(Constants.Intake.State.INTAKE.speed))
+        .andThen(Commands.waitSeconds(Constants.Intake.CENTER_TIMEOUT))
+        .andThen(() -> intake.setMotor(Constants.Intake.State.STOP.speed));
     }
 
     public Command intake() {
