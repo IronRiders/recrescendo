@@ -17,7 +17,7 @@ public class PivotCommands {
         pivot.publish("Set to STOW", set(Pivot.State.STOWED));
     }
 
-    /**
+    /*
      * Command to set the pivot goal, then wait until that goal has been reached.
      */
     public Command set(Pivot.State state) {
