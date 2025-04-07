@@ -52,6 +52,8 @@ public class PivotSubsystem extends IronSubsystem {
         publish("Goal Angle Velocity", pidControl.getGoal().velocity);
 
         publish("Current Angle", encoder.get() * 360 - Pivot.ENCODER_OFFSET);
+        publish("Current Angle direct", encoder.get());
+
     }
 
     public void setGoal(double goal) {
