@@ -11,6 +11,10 @@ public class PivotCommands {
 
     public PivotCommands(PivotSubsystem pivot) {
         this.pivot = pivot;
+
+        pivot.publish("Set to GROUND", set(Pivot.State.GROUND));
+        pivot.publish("Set to LAUNCHER", set(Pivot.State.LAUNCHER));
+        pivot.publish("Set to STOW", set(Pivot.State.STOWED));
     }
 
     /**
