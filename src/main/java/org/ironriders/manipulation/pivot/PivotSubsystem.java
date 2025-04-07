@@ -42,7 +42,7 @@ public class PivotSubsystem extends IronSubsystem {
 
     @Override
     public void periodic() {
-        motor.set(pidControl.calculate(encoder.getPosition() * 360 - Pivot.ENCODER_OFFSET));
+        // motor.set(pidControl.calculate(encoder.getPosition() * 360 - Pivot.ENCODER_OFFSET));
 
         publish("Limit Switch Forward Pressed", forwardLimitSwitch.isPressed());
         publish("Limit Switch Reverse Pressed", reverseLimitSwitch.isPressed());
