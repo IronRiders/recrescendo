@@ -60,7 +60,6 @@ public class Constants {
         public static final double EJECT_WAIT_TIME = 1;
         public static final double CENTER_TIMEOUT = 1;
 
-
         public enum State {
             INTAKE(-0.5),
             STOP(0),
@@ -136,8 +135,7 @@ public class Constants {
 
         public static final double CONTROL_TOLERANCE = 10;
 
-        public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = 
-                new TrapezoidProfile.Constraints(10, 10);
+        public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = new TrapezoidProfile.Constraints(10, 10);
 
         public static final double ENCODER_OFFSET = 260;
 
@@ -145,9 +143,9 @@ public class Constants {
             GROUND(42),
             STOWED(173),
             LAUNCHER(256);
-    
+
             public final double position;
-    
+
             private State(int position) {
                 this.position = position;
             }
