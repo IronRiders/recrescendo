@@ -128,7 +128,6 @@ public class Constants {
     }
 
     public class Pivot {
-
         public static final int MOTOR_CURRENT_LIMIT = 100;
 
         public static final double CONTROL_P = 0.01;
