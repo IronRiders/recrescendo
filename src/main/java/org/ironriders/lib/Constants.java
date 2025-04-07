@@ -34,7 +34,7 @@ public class Constants {
         public static final int CLIMBER_MOTOR_RIGHT = 14;
         public static final int CLIMBER_MOTOR_LEFT = 15;
 
-        public static final int LIGHTING_STRIP_PORT = 0;
+        public static final int LIGHTING_STRIP_PORT = 1;
     }
 
     public class Drive {
