@@ -128,7 +128,7 @@ public class Constants {
     }
 
     public class Pivot {
-        public static final int MOTOR_CURRENT_LIMIT = 100;
+        public static final int MOTOR_CURRENT_LIMIT = 30;
 
         public static final double CONTROL_P = 0.01;
         public static final double CONTROL_I = 0.0;
@@ -137,7 +137,7 @@ public class Constants {
         public static final double CONTROL_TOLERANCE = 10;
 
         public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = 
-                new TrapezoidProfile.Constraints(500, 850);
+                new TrapezoidProfile.Constraints(10, 10);
 
         public static final double ENCODER_OFFSET = 260;
 
