@@ -135,7 +135,8 @@ public class Constants {
 
         public static final double CONTROL_TOLERANCE = 10;
 
-        public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = new TrapezoidProfile.Constraints(10, 10);
+        public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = 
+            new TrapezoidProfile.Constraints(0.1, 0.01);
 
         public static final double ENCODER_OFFSET = 260;
 

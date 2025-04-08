@@ -39,11 +39,12 @@ public class PivotSubsystem extends IronSubsystem {
         motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         pidControl.setTolerance(Pivot.CONTROL_TOLERANCE);
+        pidControl.enableContinuousInput(0, 360);
     }
 
     @Override
     public void periodic() {
-        // motor.set(pidControl.calculate(encoder.getPosition() * 360 - Pivot.ENCODER_OFFSET));
+        motor.set(pidControl.calculate(encoder.get()) / 100);
 
         publish("Limit Switch Forward Pressed", forwardLimitSwitch.isPressed());
         publish("Limit Switch Reverse Pressed", reverseLimitSwitch.isPressed());
@@ -51,8 +52,9 @@ public class PivotSubsystem extends IronSubsystem {
         publish("Goal Angle Position", pidControl.getGoal().position);
         publish("Goal Angle Velocity", pidControl.getGoal().velocity);
 
-        publish("Current Angle", encoder.get() * 360 - Pivot.ENCODER_OFFSET);
-        publish("Current Angle direct", encoder.get());
+        publish("PID Output", pidControl.calculate(encoder.get()));
+
+        publish("Current Angle", encoder.get());
 
     }
 
