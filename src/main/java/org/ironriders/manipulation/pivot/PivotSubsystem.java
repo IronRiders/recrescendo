@@ -3,7 +3,9 @@ package org.ironriders.manipulation.pivot;
 import org.ironriders.lib.Constants.Identifiers;
 import org.ironriders.lib.Constants.Pivot;
 import org.ironriders.lib.Constants.Robot;
+import org.ironriders.lib.Constants;
 import org.ironriders.lib.IronSubsystem;
+import org.ironriders.lib.Utils;
 
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -40,22 +42,27 @@ public class PivotSubsystem extends IronSubsystem {
 
         pidControl.setTolerance(Pivot.CONTROL_TOLERANCE);
         pidControl.enableContinuousInput(0, 360);
+
+        setGoal(getRotation());
     }
 
     @Override
     public void periodic() {
-        motor.set(pidControl.calculate(encoder.get()) / 100);
+        motor.set(pidControl.calculate(getRotation()));
 
         publish("Limit Switch Forward Pressed", forwardLimitSwitch.isPressed());
         publish("Limit Switch Reverse Pressed", reverseLimitSwitch.isPressed());
 
-        publish("Goal Angle Position", pidControl.getGoal().position);
         publish("Goal Angle Velocity", pidControl.getGoal().velocity);
 
         publish("PID Output", pidControl.calculate(encoder.get()));
 
         publish("Current Angle", encoder.get());
 
+    }
+
+    private double getRotation() {
+        return Utils.absoluteRotation(encoder.get() * 360 - Constants.Pivot.ENCODER_OFFSET);
     }
 
     public void setGoal(double goal) {
