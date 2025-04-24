@@ -1,13 +1,12 @@
 package org.ironriders.manipulation.pivot;
 
+import org.ironriders.lib.Constants;
 import org.ironriders.lib.Constants.Identifiers;
 import org.ironriders.lib.Constants.Pivot;
 import org.ironriders.lib.Constants.Robot;
-import org.ironriders.lib.Constants;
 import org.ironriders.lib.IronSubsystem;
 import org.ironriders.lib.Utils;
 
-import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLimitSwitch;
@@ -41,23 +40,27 @@ public class PivotSubsystem extends IronSubsystem {
         motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         pidControl.setTolerance(Pivot.CONTROL_TOLERANCE);
-        pidControl.enableContinuousInput(0, 360);
+        //pidControl.enableContinuousInput(0, 360);
 
         setGoal(getRotation());
     }
 
     @Override
     public void periodic() {
-        motor.set(pidControl.calculate(getRotation()));
+        motor.set(pidControl.calculate(getRotation()/50));
 
         publish("Limit Switch Forward Pressed", forwardLimitSwitch.isPressed());
         publish("Limit Switch Reverse Pressed", reverseLimitSwitch.isPressed());
 
         publish("Goal Angle Velocity", pidControl.getGoal().velocity);
+        publish("Goal Angle", pidControl.getGoal().position);
 
-        publish("PID Output", pidControl.calculate(encoder.get()));
+
+        publish("PID Output", pidControl.calculate(getRotation()/50));
 
         publish("Current Angle", encoder.get());
+        publish("Current Angle In Deg", getRotation());
+
 
     }
 

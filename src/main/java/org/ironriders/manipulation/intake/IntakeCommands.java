@@ -20,6 +20,8 @@ public class IntakeCommands {
         intake.publish("Eject force", this.set(State.BACK));
         intake.publish("Eject", this.eject());
 
+
+
     }
 
     public Command set(Constants.Intake.State state) {
