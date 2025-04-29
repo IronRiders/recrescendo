@@ -47,16 +47,16 @@ public class PivotSubsystem extends IronSubsystem {
 
     @Override
     public void periodic() {
-        motor.set(pidControl.calculate(getRotation()/50));
+        motor.set(pidControl.calculate(getRotation()*Pivot.GEAR_RATIO*-1));
 
-        publish("Limit Switch Forward Pressed", forwardLimitSwitch.isPressed());
-        publish("Limit Switch Reverse Pressed", reverseLimitSwitch.isPressed());
+      //  publish("Limit Switch Forward Pressed", forwardLimitSwitch.isPressed());
+      //  publish("Limit Switch Reverse Pressed", reverseLimitSwitch.isPressed());
 
         publish("Goal Angle Velocity", pidControl.getGoal().velocity);
         publish("Goal Angle", pidControl.getGoal().position);
 
 
-        publish("PID Output", pidControl.calculate(getRotation()/50));
+        publish("PID Output", pidControl.calculate(getRotation()*Pivot.GEAR_RATIO*-1));
 
         publish("Current Angle", encoder.get());
         publish("Current Angle In Deg", getRotation());
