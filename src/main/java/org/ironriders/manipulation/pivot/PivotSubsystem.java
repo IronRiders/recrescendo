@@ -24,8 +24,8 @@ public class PivotSubsystem extends IronSubsystem {
     private final PivotCommands commands = new PivotCommands(this);
 
     private final SparkMax motor = new SparkMax(Identifiers.PIVOT_MOTOR, MotorType.kBrushless);
-    private final ProfiledPIDController pidControl = 
-            new ProfiledPIDController(Pivot.CONTROL_P, Pivot.CONTROL_I, Pivot.CONTROL_D, Pivot.CONTROL_CONSTRAINTS);
+    private final ProfiledPIDController pidControl = new ProfiledPIDController(Pivot.CONTROL_P, Pivot.CONTROL_I,
+            Pivot.CONTROL_D, Pivot.CONTROL_CONSTRAINTS);
 
     private final DutyCycleEncoder encoder = new DutyCycleEncoder(Identifiers.PIVOT_ENCODER);
     private final SparkLimitSwitch forwardLimitSwitch = motor.getForwardLimitSwitch();
@@ -33,34 +33,33 @@ public class PivotSubsystem extends IronSubsystem {
 
     public PivotSubsystem() {
         SparkBaseConfig config = new SparkMaxConfig()
-            .smartCurrentLimit(Pivot.MOTOR_CURRENT_LIMIT)
-            .voltageCompensation(Robot.COMPENSATED_VOLTAGE)
-            .idleMode(IdleMode.kBrake);
-        
+                .smartCurrentLimit(Pivot.MOTOR_CURRENT_LIMIT)
+                .voltageCompensation(Robot.COMPENSATED_VOLTAGE)
+                .idleMode(IdleMode.kBrake);
+
         motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         pidControl.setTolerance(Pivot.CONTROL_TOLERANCE);
-        //pidControl.enableContinuousInput(0, 360);
+        // pidControl.enableContinuousInput(0, 360);
 
         setGoal(getRotation());
     }
 
     @Override
     public void periodic() {
-        motor.set(pidControl.calculate(getRotation()/50));
+        motor.set(pidControl.calculate(getRotation() * Pivot.GEAR_RATIO));
 
-        publish("Limit Switch Forward Pressed", forwardLimitSwitch.isPressed());
-        publish("Limit Switch Reverse Pressed", reverseLimitSwitch.isPressed());
+        // publish("Limit Switch Forward Pressed", forwardLimitSwitch.isPressed());
+        // freeing up space to see other stuff
+        // publish("Limit Switch Reverse Pressed", reverseLimitSwitch.isPressed());
 
         publish("Goal Angle Velocity", pidControl.getGoal().velocity);
         publish("Goal Angle", pidControl.getGoal().position);
 
-
-        publish("PID Output", pidControl.calculate(getRotation()/50));
+        publish("PID Output", pidControl.calculate(getRotation() * Pivot.GEAR_RATIO));
 
         publish("Current Angle", encoder.get());
         publish("Current Angle In Deg", getRotation());
-
 
     }
 
