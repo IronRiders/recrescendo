@@ -41,6 +41,7 @@ public class PivotSubsystem extends IronSubsystem {
 
         pidControl.setTolerance(Pivot.CONTROL_TOLERANCE);
         // pidControl.enableContinuousInput(0, 360);
+        pidControl.reset(getRotation());
 
         setGoal(getRotation());
     }

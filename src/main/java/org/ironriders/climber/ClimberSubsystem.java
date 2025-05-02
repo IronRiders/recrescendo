@@ -6,8 +6,6 @@ public class ClimberSubsystem extends IronSubsystem {
 
     private final ClimberCommands commands = new ClimberCommands(this);
 
-    // init shit
-
     public ClimberSubsystem() {
 
     }
