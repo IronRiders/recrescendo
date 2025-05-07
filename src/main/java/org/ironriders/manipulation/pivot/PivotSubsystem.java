@@ -25,9 +25,12 @@ public class PivotSubsystem extends IronSubsystem {
     private final PivotCommands commands = new PivotCommands(this);
 
     private final SparkMax motor = new SparkMax(Identifiers.PIVOT_MOTOR, MotorType.kBrushless);
-    private final PIDController pidControl = new PIDController(Constants.Pivot.CONTROL_P, Constants.Pivot.CONTROL_I, Constants.Pivot.CONTROL_D);
+
+    private final PIDController pidControl = new PIDController(Constants.Pivot.CONTROL_P, Constants.Pivot.CONTROL_I,
+            Constants.Pivot.CONTROL_D);
 
     private final DutyCycleEncoder encoder = new DutyCycleEncoder(Identifiers.PIVOT_ENCODER);
+
     private final SparkLimitSwitch forwardLimitSwitch = motor.getForwardLimitSwitch();
     private final SparkLimitSwitch reverseLimitSwitch = motor.getReverseLimitSwitch();
 
@@ -59,7 +62,7 @@ public class PivotSubsystem extends IronSubsystem {
     public void periodic() {
         periodicSetpoint = profile.calculate(Pivot.CONTROL_T, periodicSetpoint, goalSetpoint);
 
-        double pidOutput = pidControl.calculate(getRotation() * Pivot.GEAR_RATIO, periodicSetpoint.position);
+        double pidOutput = pidControl.calculate(getRotation(), periodicSetpoint.position);
 
         motor.set(pidOutput);
 
@@ -67,7 +70,7 @@ public class PivotSubsystem extends IronSubsystem {
         // freeing up space to see other stuff
         // publish("Limit Switch Reverse Pressed", reverseLimitSwitch.isPressed());
 
-        publish("Goal Angle Velocity",this.goalSetpoint.velocity);
+        publish("Goal Angle Velocity", this.goalSetpoint.velocity);
         publish("Goal Angle", this.goalSetpoint.position);
 
         publish("PID Output", pidOutput);
@@ -79,14 +82,14 @@ public class PivotSubsystem extends IronSubsystem {
     }
 
     private double getRotation() {
-        return Utils.absoluteRotation((encoder.get() * Constants.Pivot.GEAR_RATIO) * 360 - Constants.Pivot.ENCODER_OFFSET);
+        return Utils
+                .absoluteRotation((encoder.get() * Constants.Pivot.GEAR_RATIO) * 360 - Constants.Pivot.ENCODER_OFFSET);
     }
 
     public void setGoal(double goal) {
         this.goalSetpoint = new TrapezoidProfile.State(goal, 0d);
     }
 
-    
     public boolean atGoal() {
         return pidControl.atSetpoint();
     }
