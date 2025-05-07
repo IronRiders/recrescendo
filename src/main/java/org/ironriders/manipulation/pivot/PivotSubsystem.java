@@ -17,6 +17,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 public class PivotSubsystem extends IronSubsystem {
@@ -30,6 +31,13 @@ public class PivotSubsystem extends IronSubsystem {
     private final SparkLimitSwitch forwardLimitSwitch = motor.getForwardLimitSwitch();
     private final SparkLimitSwitch reverseLimitSwitch = motor.getReverseLimitSwitch();
 
+    // goalSetpoint is the final goal. periodicSetpoint is a sort-of inbetween
+    // setpoint generated every periodic.
+    private TrapezoidProfile.State goalSetpoint = new TrapezoidProfile.State();
+    private TrapezoidProfile.State periodicSetpoint = new TrapezoidProfile.State();
+
+    private final TrapezoidProfile profile;
+
     public PivotSubsystem() {
         SparkBaseConfig config = new SparkMaxConfig()
                 .smartCurrentLimit(Pivot.MOTOR_CURRENT_LIMIT)
@@ -38,25 +46,31 @@ public class PivotSubsystem extends IronSubsystem {
 
         motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
+        profile = new TrapezoidProfile(Pivot.CONTROL_CONSTRAINTS);
+
         pidControl.setTolerance(Pivot.CONTROL_TOLERANCE);
         // pidControl.enableContinuousInput(0, 360);
-        pidControl.reset();
+        reset();
 
         setGoal(getRotation());
     }
 
     @Override
     public void periodic() {
-        motor.set(pidControl.calculate(getRotation() * Pivot.GEAR_RATIO));
+        periodicSetpoint = profile.calculate(Pivot.CONTROL_T, periodicSetpoint, goalSetpoint);
+
+        double pidOutput = pidControl.calculate(getRotation() * Pivot.GEAR_RATIO, periodicSetpoint.position);
+
+        motor.set(pidOutput);
 
         // publish("Limit Switch Forward Pressed", forwardLimitSwitch.isPressed());
         // freeing up space to see other stuff
         // publish("Limit Switch Reverse Pressed", reverseLimitSwitch.isPressed());
 
-        publish("Goal Angle Velocity", pidControl.getGoal().velocity);
-        publish("Goal Angle", pidControl.getGoal().position);
+        publish("Goal Angle Velocity",this.goalSetpoint.velocity);
+        publish("Goal Angle", this.goalSetpoint.position);
 
-        publish("PID Output", pidControl.calculate(getRotation() * Pivot.GEAR_RATIO));
+        publish("PID Output", pidOutput);
 
         publish("Current Angle", encoder.get());
 
@@ -69,15 +83,21 @@ public class PivotSubsystem extends IronSubsystem {
     }
 
     public void setGoal(double goal) {
-        pidControl.setGoal(goal);
+        this.goalSetpoint = new TrapezoidProfile.State(goal, 0d);
     }
 
     
     public boolean atGoal() {
-        return pidControl.atGoal();
+        return pidControl.atSetpoint();
     }
 
     public PivotCommands getCommands() {
         return commands;
     }
+
+    public void reset() {
+        motor.set(0);
+        pidControl.reset();
+    }
+
 }
