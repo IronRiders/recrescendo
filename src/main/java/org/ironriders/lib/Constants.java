@@ -78,7 +78,7 @@ public class Constants {
         public static final double LAUNCH_WAIT_TIME = 1;
 
         public enum State {
-            LAUNCH(0.3),
+            LAUNCH(0.25),
             STOP(0),
             BACK(-0.1);
 
