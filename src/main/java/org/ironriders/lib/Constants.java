@@ -34,7 +34,7 @@ public class Constants {
         public static final int CLIMBER_MOTOR_RIGHT = 14;
         public static final int CLIMBER_MOTOR_LEFT = 15;
 
-        public static final int LIGHTING_STRIP_PORT = 1;
+        public static final int LIGHTING_STRIP_PORT = 5;
     }
 
     public class Drive {
@@ -139,7 +139,7 @@ public class Constants {
         public static final double GEAR_RATIO = 1.0; //1/(27*2);
         
         public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = 
-            new TrapezoidProfile.Constraints(30, 30);
+            new TrapezoidProfile.Constraints(20, 10);
 
         public static final double ENCODER_OFFSET = 260;
 

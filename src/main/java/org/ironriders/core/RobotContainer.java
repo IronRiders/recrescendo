@@ -87,9 +87,7 @@ public class RobotContainer {
 
 		primaryController.b().onTrue(launcherCommands.set(Constants.Launcher.State.STOP)); // force stop launcher
 
-		primaryController.y().onTrue(robotCommands.eject().unless(() -> !intakeSubsystem.hasNote())); // eject unless we
-																										// don't have a
-																										// note
+		primaryController.y().onTrue(robotCommands.eject().unless(() -> !intakeSubsystem.hasNote())); // eject unless we don't have a note
 
 		primaryController.a().onTrue(robotCommands.reset()); // reset everything
 	}

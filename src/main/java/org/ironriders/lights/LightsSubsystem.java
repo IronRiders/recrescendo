@@ -63,6 +63,12 @@ public class LightsSubsystem extends IronSubsystem {
         }
         pattern.applyTo(buffer);
         addressableLED.setData(buffer);
+
+        for (int i = 0; i < buffer.getLength(); i++) {
+            buffer.setRGB(i, 255, 0, 255);
+        }
+
+        addressableLED.setData(buffer);
     }
 
     public void setLightState(Constants.Lights.State state) {
