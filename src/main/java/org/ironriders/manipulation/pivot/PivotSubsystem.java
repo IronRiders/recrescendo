@@ -16,7 +16,7 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 public class PivotSubsystem extends IronSubsystem {
@@ -24,8 +24,7 @@ public class PivotSubsystem extends IronSubsystem {
     private final PivotCommands commands = new PivotCommands(this);
 
     private final SparkMax motor = new SparkMax(Identifiers.PIVOT_MOTOR, MotorType.kBrushless);
-    private final ProfiledPIDController pidControl = new ProfiledPIDController(Pivot.CONTROL_P, Pivot.CONTROL_I,
-            Pivot.CONTROL_D, Pivot.CONTROL_CONSTRAINTS);
+    private final PIDController pidControl = new PIDController(Constants.Pivot.CONTROL_P, Constants.Pivot.CONTROL_I, Constants.Pivot.CONTROL_D);
 
     private final DutyCycleEncoder encoder = new DutyCycleEncoder(Identifiers.PIVOT_ENCODER);
     private final SparkLimitSwitch forwardLimitSwitch = motor.getForwardLimitSwitch();
@@ -41,7 +40,7 @@ public class PivotSubsystem extends IronSubsystem {
 
         pidControl.setTolerance(Pivot.CONTROL_TOLERANCE);
         // pidControl.enableContinuousInput(0, 360);
-        pidControl.reset(getRotation());
+        pidControl.reset();
 
         setGoal(getRotation());
     }
@@ -60,18 +59,20 @@ public class PivotSubsystem extends IronSubsystem {
         publish("PID Output", pidControl.calculate(getRotation() * Pivot.GEAR_RATIO));
 
         publish("Current Angle", encoder.get());
+
         publish("Current Angle In Deg", getRotation());
 
     }
 
     private double getRotation() {
-        return Utils.absoluteRotation(encoder.get() * 360 - Constants.Pivot.ENCODER_OFFSET);
+        return Utils.absoluteRotation((encoder.get() * Constants.Pivot.GEAR_RATIO) * 360 - Constants.Pivot.ENCODER_OFFSET);
     }
 
     public void setGoal(double goal) {
         pidControl.setGoal(goal);
     }
 
+    
     public boolean atGoal() {
         return pidControl.atGoal();
     }

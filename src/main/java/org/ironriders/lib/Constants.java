@@ -134,10 +134,10 @@ public class Constants {
         public static final double CONTROL_D = 0.0;
 
         public static final double CONTROL_TOLERANCE = 100;
-        // public static final double GEAR_RATIO=1/(27*2);
-        public static final double GEAR_RATIO = 1;
-        public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = new TrapezoidProfile.Constraints(0.1,
-                0.01);
+        public static final double GEAR_RATIO = 1.0; 
+        //1/(27*2);
+        public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = 
+            new TrapezoidProfile.Constraints(0.1, 0.01);
 
         public static final double ENCODER_OFFSET = 260;
 
