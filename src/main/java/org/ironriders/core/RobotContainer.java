@@ -78,7 +78,7 @@ public class RobotContainer {
 								Constants.Drive.ROTATION_CONTROL_EXPONENT,
 								Constants.Drive.ROTATION_CONTROL_DEADBAND)));
 
-		primaryController.rightTrigger().onFalse(activeCommand = robotCommands.intake())
+		primaryController.rightTrigger().onTrue(activeCommand = robotCommands.intake())
 				.onFalse(robotCommands.launch().unless(() -> !intakeSubsystem.hasNote())); // intake waits for a note and then moves to position, launch ejects
 													// from the manipulator and spins up the launcher for 1 (might have
 													// changed) second(s)

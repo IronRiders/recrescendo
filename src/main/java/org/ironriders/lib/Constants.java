@@ -56,7 +56,7 @@ public class Constants {
     }
 
     public class Intake {
-        public static final int INTAKE_MOTOR_STALL_LIMIT = 10;
+        public static final int INTAKE_MOTOR_STALL_LIMIT = 20;
         public static final double EJECT_WAIT_TIME = 1;
         public static final double CENTER_TIMEOUT = 1;
 
@@ -78,7 +78,7 @@ public class Constants {
         public static final double LAUNCH_WAIT_TIME = 1;
 
         public enum State {
-            LAUNCH(0.8),
+            LAUNCH(0.3),
             STOP(0),
             BACK(-0.1);
 
@@ -127,7 +127,7 @@ public class Constants {
     }
 
     public class Pivot {
-        public static final int MOTOR_CURRENT_LIMIT = 1;
+        public static final int MOTOR_CURRENT_LIMIT = 20;
 
         public static final double CONTROL_P = 0.01;
         public static final double CONTROL_I = 0.0;
@@ -139,7 +139,7 @@ public class Constants {
         public static final double GEAR_RATIO = 1.0; //1/(27*2);
         
         public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = 
-            new TrapezoidProfile.Constraints(10, 10);
+            new TrapezoidProfile.Constraints(30, 30);
 
         public static final double ENCODER_OFFSET = 260;
 
