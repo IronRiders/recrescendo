@@ -91,7 +91,7 @@ public class Constants {
     }
 
     public class Lights {
-        public static final int STRIP_LENGTH = 29;
+        public static final int STRIP_LENGTH = 28;
 
         public static final Distance STRIP_DENSITY = Meters.of(1 / 120.0);
 
@@ -129,9 +129,10 @@ public class Constants {
     public class Pivot {
         public static final int MOTOR_CURRENT_LIMIT = 20;
 
-        public static final double CONTROL_P = 0.01;
+        public static final double CONTROL_P = 0.005;
         public static final double CONTROL_I = 0.0;
         public static final double CONTROL_D = 0.0;
+
         public static final double CONTROL_T = 0.2;
 
         public static final double CONTROL_TOLERANCE = 5;
