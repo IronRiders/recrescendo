@@ -52,7 +52,7 @@ public class PivotSubsystem extends IronSubsystem {
         profile = new TrapezoidProfile(Pivot.CONTROL_CONSTRAINTS);
 
         pidControl.setTolerance(Pivot.CONTROL_TOLERANCE);
-        // pidControl.enableContinuousInput(0, 360);
+
         reset();
 
         setGoal(getRotation());
