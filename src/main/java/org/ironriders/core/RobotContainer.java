@@ -9,6 +9,8 @@ import org.ironriders.climber.ClimberSubsystem;
 import org.ironriders.drive.DriveCommands;
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants;
+import org.ironriders.lib.Constants.Intake;
+import org.ironriders.lib.Constants.Pivot;
 import org.ironriders.lib.Utils;
 import org.ironriders.lights.LightsCommands;
 import org.ironriders.lights.LightsSubsystem;
@@ -79,9 +81,12 @@ public class RobotContainer {
 								Constants.Drive.ROTATION_CONTROL_DEADBAND)));
 
 		primaryController.rightTrigger().onTrue(activeCommand = robotCommands.intake())
-				.onFalse(robotCommands.launch().unless(() -> !intakeSubsystem.hasNote())); // intake waits for a note and then moves to position, launch ejects
-													// from the manipulator and spins up the launcher for 1 (might have
-													// changed) second(s)
+				.onFalse(
+					Commands.runOnce(() -> activeCommand.cancel())
+					.alongWith(pivotCommands.set(Pivot.State.LAUNCHER))
+					.alongWith(intakeCommands.set(Intake.State.STOP)));
+
+		primaryController.leftTrigger().onTrue(activeCommand = robotCommands.launch());
 
 		primaryController.x().onTrue(Commands.runOnce(() -> activeCommand.cancel())); // cancel the launch
 

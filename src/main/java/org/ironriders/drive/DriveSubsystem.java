@@ -32,7 +32,7 @@ public class DriveSubsystem extends IronSubsystem {
 
 	public DriveSubsystem() throws RuntimeException {
 		try {
-			swerveDrive = new SwerveParser(Drive.SWERVE_JSON_DIRECTORY) // YAGSL reads from the deply/swerve
+			swerveDrive = new SwerveParser(Drive.SWERVE_JSON_DIRECTORY) // YAGSL reads from the deploy/swerve
 																	// directory.
 					.createSwerveDrive(Drive.SWERVE_MAX_TRANSLATION_TELEOP);
 		} catch (IOException e) { // instancing SwerveDrive can throw an error, so we need to catch that.
