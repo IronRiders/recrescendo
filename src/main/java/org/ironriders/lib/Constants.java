@@ -48,7 +48,7 @@ public class Constants {
         public static final double ROTATION_CONTROL_EXPONENT = 3.0;
         public static final double ROTATION_CONTROL_DEADBAND = 0.8;
 
-        public static final double SWERVE_MAX_TRANSLATION_TELEOP = 4; // m/s
+        public static final double SWERVE_MAX_TRANSLATION_TELEOP = 0.3; // m/s
         public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 1 / 4; // rad/s
     }
 
