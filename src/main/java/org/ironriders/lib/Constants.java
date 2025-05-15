@@ -77,7 +77,7 @@ public class Constants {
         public static final double LAUNCH_TIMEOUT = 1;
 
         public enum State {
-            LAUNCH(0.25),
+            LAUNCH(0.5),
             STOP(0),
             BACK(-0.1);
 
