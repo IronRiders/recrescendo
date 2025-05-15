@@ -66,17 +66,17 @@ public class RobotContainer {
 								-primaryController.getLeftY() * driveSubsystem.ControlSpeedMultipler
 										* driveSubsystem.getinversionStatus(),
 								Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
-								Constants.Drive.TRANSLATION_CONTROL_DEADBAND) * 0,
+								Constants.Drive.TRANSLATION_CONTROL_DEADBAND),
 						() -> Utils.controlCurve(
 								-primaryController.getLeftX() * driveSubsystem.ControlSpeedMultipler
 										* driveSubsystem.getinversionStatus(),
 								Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
-								Constants.Drive.TRANSLATION_CONTROL_DEADBAND)  * 0,
+								Constants.Drive.TRANSLATION_CONTROL_DEADBAND),
 						() -> Utils.controlCurve(
 								primaryController.getRightX() * driveSubsystem.ControlSpeedMultipler
 										* driveSubsystem.getinversionStatus(),
 								Constants.Drive.ROTATION_CONTROL_EXPONENT,
-								Constants.Drive.ROTATION_CONTROL_DEADBAND) * 0));
+								Constants.Drive.ROTATION_CONTROL_DEADBAND)));
 
 		primaryController.rightTrigger().onTrue(activeCommand = robotCommands.intake())
 				.onFalse(robotCommands.launch().unless(() -> !intakeSubsystem.hasNote())); // intake waits for a note and then moves to position, launch ejects
