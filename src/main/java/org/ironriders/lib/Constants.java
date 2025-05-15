@@ -51,11 +51,12 @@ public class Constants {
         public static final double ROTATION_CONTROL_EXPONENT = 3.0;
         public static final double ROTATION_CONTROL_DEADBAND = 0.8;
 
-        public static final double SWERVE_MAX_TRANSLATION_TELEOP = 4; // m/s
-        public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 3; // rad/s
+        public static final double SWERVE_MAX_TRANSLATION_TELEOP = 0.3; // m/s
+        public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 1/4; // rad/s
     }
 
     public class Intake {
+
         public static final int INTAKE_MOTOR_STALL_LIMIT = 20;
         public static final double EJECT_WAIT_TIME = 1;
         public static final double CENTER_TIMEOUT = 1;
@@ -74,6 +75,7 @@ public class Constants {
     }
 
     public class Launcher {
+
         public static final int LAUNCHER_MOTOR_STALL_LIMIT = 50;
         public static final double LAUNCH_WAIT_TIME = 1;
 
@@ -91,6 +93,7 @@ public class Constants {
     }
 
     public class Lights {
+
         public static final int STRIP_LENGTH = 28;
 
         public static final Distance STRIP_DENSITY = Meters.of(1 / 120.0);
@@ -127,6 +130,7 @@ public class Constants {
     }
 
     public class Pivot {
+
         public static final int MOTOR_CURRENT_LIMIT = 20;
 
         public static final double CONTROL_P = 0.005;

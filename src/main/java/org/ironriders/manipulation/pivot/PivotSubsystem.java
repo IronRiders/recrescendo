@@ -66,10 +66,6 @@ public class PivotSubsystem extends IronSubsystem {
 
         motor.set(pidOutput);
 
-        // publish("Limit Switch Forward Pressed", forwardLimitSwitch.isPressed());
-        // freeing up space to see other stuff
-        // publish("Limit Switch Reverse Pressed", reverseLimitSwitch.isPressed());
-
         publish("Goal Angle Velocity", this.goalSetpoint.velocity);
         publish("Goal Angle", this.goalSetpoint.position);
 
