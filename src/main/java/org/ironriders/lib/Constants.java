@@ -56,7 +56,7 @@ public class Constants {
 
         public static final int INTAKE_MOTOR_STALL_LIMIT = 20;
         public static final double EJECT_WAIT_TIME = 1;
-        public static final double CENTER_TIMEOUT = 1;
+        public static final double CENTER_TIMEOUT = 0;
 
         public enum State {
             INTAKE(-1),
@@ -131,7 +131,8 @@ public class Constants {
         public static final int MOTOR_CURRENT_LIMIT = 20;
 
         public static final double CONTROL_P = 0.005;
-        public static final double CONTROL_I = 0.0;
+        public static final double 
+        CONTROL_I = 0.0;
         public static final double CONTROL_D = 0.0;
 
         public static final double CONTROL_T = 0.2;

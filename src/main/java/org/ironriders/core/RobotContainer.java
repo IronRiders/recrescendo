@@ -73,7 +73,7 @@ public class RobotContainer {
 								Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
 								Constants.Drive.TRANSLATION_CONTROL_DEADBAND),
 						() -> Utils.controlCurve(
-								primaryController.getRightX() * driveSubsystem.ControlSpeedMultipler
+								-primaryController.getRightX() * driveSubsystem.ControlSpeedMultipler
 										* driveSubsystem.getinversionStatus(),
 								Constants.Drive.ROTATION_CONTROL_EXPONENT,
 								Constants.Drive.ROTATION_CONTROL_DEADBAND)));
@@ -90,6 +90,8 @@ public class RobotContainer {
 		primaryController.y().onTrue(robotCommands.eject().unless(() -> !intakeSubsystem.hasNote())); // eject unless we don't have a note
 
 		primaryController.a().onTrue(robotCommands.reset()); // reset everything
+
+		primaryController.leftTrigger().onTrue(robotCommands.launch());
 	}
 
 	public Command getAutonomousCommand() {
