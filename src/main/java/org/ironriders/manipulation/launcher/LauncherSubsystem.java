@@ -75,8 +75,8 @@ public class LauncherSubsystem extends IronSubsystem {
                 && Utils.inRange(targetVelocity - Constants.Launcher.CONTROL_SPEED_TOLERANCE,
                         targetVelocity + Constants.Launcher.CONTROL_SPEED_TOLERANCE,
                         followerMotor.getEncoder().getVelocity())) {
-            //return true;
-            return false;
+            return true;
+            //return false;
         }
         return false;
     }
@@ -85,12 +85,20 @@ public class LauncherSubsystem extends IronSubsystem {
     public void periodic() {
         publish("Right Velocity", primaryMotor.getEncoder().getVelocity());
         publish("Left Velocity", followerMotor.getEncoder().getVelocity());
+        
+        publish("Follower PID Out", followerController.calculate(followerMotor.getEncoder().getVelocity()));
+        publish("Primary PID Out", primaryController.calculate(primaryMotor.getEncoder().getVelocity()));
+
         publish("Target Velocity", targetVelocity);
 
         if (targetVelocity == 0) {
             setMotors(0);
         } else {
+            followerController.reset();
+            followerController.setSetpoint(targetVelocity);
             followerMotor.set(followerController.calculate(followerMotor.getEncoder().getVelocity()));
+            primaryController.reset();
+            primaryController.setSetpoint(targetVelocity);
             primaryMotor.set(primaryController.calculate(primaryMotor.getEncoder().getVelocity()));
         }
     }
