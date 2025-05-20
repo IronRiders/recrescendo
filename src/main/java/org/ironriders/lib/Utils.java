@@ -47,4 +47,16 @@ public class Utils {
         return in;
     }
 
+    public static boolean inRange(double min, double max, double in) {
+        if (in > max) {
+            return false;
+        }
+        else if (in < min) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
 }

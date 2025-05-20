@@ -15,15 +15,30 @@ public class LauncherCommands {
 
         launcher.publish("Launch", this.set(State.LAUNCH));
         launcher.publish("Stop", this.set(State.STOP));
-        launcher.publish("Reverse", this.set(State.BACK));
+
+        launcher.publish("Up Speed", this.upTargetVelocity());
+        launcher.publish("Down Speed", this.downTargetVelocity());
     }
 
     public Command set(Constants.Launcher.State state) {
-        return Commands.runOnce(() -> launcher.setMotor(state.speed));
+        return Commands.runOnce(() -> launcher.setTargetVelocity(state.speed));
+    }
+
+    public Command upTargetVelocity() {
+        return Commands.runOnce(() -> launcher.upVelo());
+    }
+
+    public Command downTargetVelocity() {
+        return Commands.runOnce(() -> launcher.downVelo());
     }
 
     public Command launch() {
-        return Commands.runOnce(() -> launcher.setMotor(Constants.Launcher.State.LAUNCH.speed)).andThen(
-                Commands.waitSeconds(Constants.Launcher.LAUNCH_TIMEOUT).andThen(() -> launcher.setMotor(Constants.Launcher.State.STOP.speed)));
+        return Commands.runOnce(() -> launcher.setTargetVelocity(Constants.Launcher.State.LAUNCH.speed)).andThen(Commands.waitUntil(() -> launcher.atSpeed())).andThen(
+                Commands.waitSeconds(Constants.Launcher.LAUNCH_TIMEOUT).andThen(() -> launcher.setTargetVelocity(Constants.Launcher.State.STOP.speed)));
+    }
+
+    public Command launchGivenSpeed(double target) {
+        return Commands.runOnce(() -> launcher.setTargetVelocity(target)).andThen(Commands.waitUntil(() -> launcher.atSpeed())).andThen(
+                Commands.waitSeconds(Constants.Launcher.LAUNCH_TIMEOUT).andThen(() -> launcher.setTargetVelocity(Constants.Launcher.State.STOP.speed)));
     }
 }
