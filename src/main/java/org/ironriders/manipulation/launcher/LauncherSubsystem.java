@@ -76,7 +76,6 @@ public class LauncherSubsystem extends IronSubsystem {
                         targetVelocity + Constants.Launcher.CONTROL_SPEED_TOLERANCE,
                         followerMotor.getEncoder().getVelocity())) {
             return true;
-            //return false;
         }
         return false;
     }

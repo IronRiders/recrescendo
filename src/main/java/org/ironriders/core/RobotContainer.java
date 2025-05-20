@@ -45,6 +45,10 @@ public class RobotContainer {
 
 	public Command activeCommand;
 
+	public double speedMultiplier = 1;
+	public double angleMultiplier = 1;
+
+
 	private final CommandXboxController primaryController = new CommandXboxController(
 			Constants.Identifiers.CONTROLLER_PRIMARY_PORT);
 
@@ -66,17 +70,17 @@ public class RobotContainer {
 								-primaryController.getLeftY() * driveSubsystem.ControlSpeedMultipler
 										* driveSubsystem.getinversionStatus(),
 								Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
-								Constants.Drive.TRANSLATION_CONTROL_DEADBAND),
+								Constants.Drive.TRANSLATION_CONTROL_DEADBAND) * speedMultiplier,
 						() -> Utils.controlCurve(
 								-primaryController.getLeftX() * driveSubsystem.ControlSpeedMultipler
 										* driveSubsystem.getinversionStatus(),
 								Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
-								Constants.Drive.TRANSLATION_CONTROL_DEADBAND),
+								Constants.Drive.TRANSLATION_CONTROL_DEADBAND) * speedMultiplier,
 						() -> Utils.controlCurve(
 								-primaryController.getRightX() * driveSubsystem.ControlSpeedMultipler
 										* driveSubsystem.getinversionStatus(),
 								Constants.Drive.ROTATION_CONTROL_EXPONENT,
-								Constants.Drive.ROTATION_CONTROL_DEADBAND)));
+								Constants.Drive.ROTATION_CONTROL_DEADBAND) * angleMultiplier));
 
 		primaryController.rightTrigger().onTrue(activeCommand = robotCommands.intake())
 				.onFalse(robotCommands.launch().unless(() -> !intakeSubsystem.hasNote())); // intake waits for a note and then moves to position, launch ejects
@@ -89,12 +93,16 @@ public class RobotContainer {
 
 		primaryController.y().onTrue(robotCommands.eject().unless(() -> !intakeSubsystem.hasNote())); // eject unless we don't have a note
 
-		primaryController.a().onTrue(robotCommands.reset()); // reset everything
+		primaryController.a().onTrue(Commands.parallel(robotCommands.reset(), Commands.runOnce(() -> speedMultiplier = 1))); // reset everything
 
 		primaryController.leftTrigger().onTrue(robotCommands.launch());
 
 		primaryController.povUp().onTrue(launcherCommands.upTargetVelocity());
 		primaryController.povDown().onTrue(launcherCommands.downTargetVelocity());
+
+		primaryController.povRight().onTrue(Commands.runOnce(() -> speedMultiplier += 0.5));
+		primaryController.povLeft().onTrue(Commands.runOnce(() -> speedMultiplier -= 0.5));
+
 	}
 
 	public Command getAutonomousCommand() {
