@@ -73,17 +73,17 @@ public class Constants {
 
     public class Launcher {
 
-        public static final int LAUNCHER_MOTOR_STALL_LIMIT = 50;
+        public static final int LAUNCHER_MOTOR_STALL_LIMIT = 30;
         public static final double LAUNCH_TIMEOUT = 0.4;
 
         public static final double CONTROL_P = 0.00017;
         public static final double CONTROL_I = 0.0006;
         public static final double CONTROL_D = 0.0;
 
-        public static final double CONTROL_SPEED_TOLERANCE = 5; // in RPM
+        public static final double CONTROL_SPEED_TOLERANCE = 4000; // in RPM
         
         public enum State { // in RPM
-            LAUNCH(3500),
+            LAUNCH(5500),
             STOP(0);
 
             public double speed;

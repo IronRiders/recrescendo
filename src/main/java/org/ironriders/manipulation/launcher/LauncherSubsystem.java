@@ -58,11 +58,11 @@ public class LauncherSubsystem extends IronSubsystem {
     }
 
     public void upVelo() {
-        targetVelocity += 10;
+        targetVelocity += 100;
     }
 
     public void downVelo() {
-        targetVelocity -= 10;
+        targetVelocity -= 100;
     }
 
     public double getTargetVelocity() {

@@ -92,6 +92,9 @@ public class RobotContainer {
 		primaryController.a().onTrue(robotCommands.reset()); // reset everything
 
 		primaryController.leftTrigger().onTrue(robotCommands.launch());
+
+		primaryController.povUp().onTrue(launcherCommands.upTargetVelocity());
+		primaryController.povDown().onTrue(launcherCommands.downTargetVelocity());
 	}
 
 	public Command getAutonomousCommand() {

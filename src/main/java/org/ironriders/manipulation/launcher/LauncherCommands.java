@@ -13,7 +13,7 @@ public class LauncherCommands {
     public LauncherCommands(LauncherSubsystem launcher) {
         this.launcher = launcher;
 
-        launcher.publish("Launch", this.set(State.LAUNCH));
+        launcher.publish("Launch", this.launch());
         launcher.publish("Stop", this.set(State.STOP));
 
         launcher.publish("Up Speed", this.upTargetVelocity());
