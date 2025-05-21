@@ -80,10 +80,10 @@ public class Constants {
         public static final double CONTROL_I = 0.0006;
         public static final double CONTROL_D = 0.0;
 
-        public static final double CONTROL_SPEED_TOLERANCE = 4000; // in RPM
+        public static final double CONTROL_SPEED_TOLERANCE = 1200; // in RPM
         
         public enum State { // in RPM
-            LAUNCH(5500),
+            LAUNCH(3500),
             STOP(0);
 
             public double speed;
