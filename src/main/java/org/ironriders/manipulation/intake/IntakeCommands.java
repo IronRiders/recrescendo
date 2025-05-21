@@ -14,6 +14,8 @@ public class IntakeCommands {
         this.intake = intake;
 
         intake.publish("Intake", this.intake());
+        intake.publish("Try Center", this.center());
+
         intake.publish("Intake force", this.set(State.INTAKE));
 
         intake.publish("Stop", this.set(State.STOP));
@@ -35,7 +37,7 @@ public class IntakeCommands {
     }
 
     public Command center() {
-        return Commands.runOnce(() -> intake.setMotor(Constants.Intake.State.INTAKE.speed))
+        return Commands.runOnce(() -> intake.setMotor(Constants.Intake.State.CENTER.speed))
         .andThen(Commands.waitSeconds(Constants.Intake.CENTER_TIMEOUT))
         .andThen(() -> intake.setMotor(Constants.Intake.State.STOP.speed));
     }

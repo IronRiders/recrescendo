@@ -56,12 +56,13 @@ public class Constants {
 
         public static final int INTAKE_MOTOR_STALL_LIMIT = 20;
         public static final double EJECT_WAIT_TIME = 1;
-        public static final double CENTER_TIMEOUT = 0;
+        public static final double CENTER_TIMEOUT = 1;
 
         public enum State {
-            INTAKE(-1),
+            INTAKE(-0.5),
             STOP(0),
-            BACK(1);
+            BACK(1),
+            CENTER(-0.3);
 
             public double speed;
 
@@ -80,7 +81,7 @@ public class Constants {
         public static final double CONTROL_I = 0.0006;
         public static final double CONTROL_D = 0.0;
 
-        public static final double CONTROL_SPEED_TOLERANCE = 1200; // in RPM
+        public static final double CONTROL_SPEED_TOLERANCE = 2000; // in RPM
         
         public enum State { // in RPM
             LAUNCH(3500),

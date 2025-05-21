@@ -84,7 +84,7 @@ public class RobotContainer {
 
 		primaryController.rightTrigger().onTrue(activeCommand = robotCommands.intake())
 				.onFalse(robotCommands.launch().unless(() -> !intakeSubsystem.hasNote())); // intake waits for a note and then moves to position, launch ejects
-													// from the manipulator and spins up the launcher for 1 (might have
+													// from the manipulator and spins up the launcher for 0.4 (might have
 													// changed) second(s)
 
 		primaryController.x().onTrue(Commands.runOnce(() -> activeCommand.cancel())); // cancel the launch
@@ -93,7 +93,7 @@ public class RobotContainer {
 
 		primaryController.y().onTrue(robotCommands.eject().unless(() -> !intakeSubsystem.hasNote())); // eject unless we don't have a note
 
-		primaryController.a().onTrue(Commands.parallel(robotCommands.reset(), Commands.runOnce(() -> speedMultiplier = 1))); // reset everything
+		primaryController.a().onTrue(Commands.parallel(robotCommands.reset(), Commands.runOnce(() -> speedMultiplier = 1), Commands.runOnce(() -> activeCommand.cancel()))); // reset everything
 
 		primaryController.leftTrigger().onTrue(robotCommands.launch());
 

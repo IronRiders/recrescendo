@@ -24,6 +24,10 @@ public class LauncherCommands {
         return Commands.runOnce(() -> launcher.setTargetVelocity(state.speed));
     }
 
+    public Command stop() {
+        return Commands.runOnce(() -> launcher.setTargetVelocity(0));
+    }
+
     public Command upTargetVelocity() {
         return Commands.runOnce(() -> launcher.upVelo());
     }

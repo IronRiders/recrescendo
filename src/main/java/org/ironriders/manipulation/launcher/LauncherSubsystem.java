@@ -34,12 +34,12 @@ public class LauncherSubsystem extends IronSubsystem {
         SparkMaxConfig followerConfig = new SparkMaxConfig();
 
         primaryConfig
-                .idleMode(IdleMode.kBrake)
+                .idleMode(IdleMode.kCoast)
                 .smartCurrentLimit(Constants.Launcher.LAUNCHER_MOTOR_STALL_LIMIT)
                 .inverted(false);
 
         followerConfig
-                .idleMode(IdleMode.kBrake)
+                .idleMode(IdleMode.kCoast)
                 .smartCurrentLimit(Constants.Launcher.LAUNCHER_MOTOR_STALL_LIMIT)
                 .inverted(true);
 
