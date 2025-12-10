@@ -19,6 +19,10 @@ import org.ironriders.manipulation.launcher.LauncherSubsystem;
 import org.ironriders.manipulation.pivot.PivotCommands;
 import org.ironriders.manipulation.pivot.PivotSubsystem;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -47,6 +51,7 @@ public class RobotContainer {
 
 	public double speedMultiplier = 1;
 	public double angleMultiplier = 1;
+	private final SendableChooser<Command> autoChooser;
 
 
 	private final CommandXboxController primaryController = new CommandXboxController(
@@ -60,6 +65,9 @@ public class RobotContainer {
 			climberCommands);
 
 	public RobotContainer() {
+		autoChooser = AutoBuilder.buildAutoChooser();
+    	SmartDashboard.putData("Auto Select", autoChooser);
+
 		configureBindings();
 	}
 
@@ -67,18 +75,15 @@ public class RobotContainer {
 		driveSubsystem.setDefaultCommand(
 				robotCommands.driveTeleop(
 						() -> Utils.controlCurve(
-								-primaryController.getLeftY() * driveSubsystem.ControlSpeedMultipler
-										* driveSubsystem.getinversionStatus(),
+								-primaryController.getLeftY() * driveSubsystem.controlSpeedMultipler,
 								Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
 								Constants.Drive.TRANSLATION_CONTROL_DEADBAND) * speedMultiplier,
 						() -> Utils.controlCurve(
-								-primaryController.getLeftX() * driveSubsystem.ControlSpeedMultipler
-										* driveSubsystem.getinversionStatus(),
+								-primaryController.getLeftX() * driveSubsystem.controlSpeedMultipler,
 								Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
 								Constants.Drive.TRANSLATION_CONTROL_DEADBAND) * speedMultiplier,
 						() -> Utils.controlCurve(
-								-primaryController.getRightX() * driveSubsystem.ControlSpeedMultipler
-										* driveSubsystem.getinversionStatus(),
+								-primaryController.getRightX() * driveSubsystem.controlSpeedMultipler,
 								Constants.Drive.ROTATION_CONTROL_EXPONENT,
 								Constants.Drive.ROTATION_CONTROL_DEADBAND) * angleMultiplier));
 
@@ -105,7 +110,12 @@ public class RobotContainer {
 
 	}
 
-	public Command getAutonomousCommand() {
-		return Commands.print("No autonomous command configured");
-	}
+	  /**
+   * Get command configured in auto chooser.
+   *
+   * @return the command to run in autonomous
+   */
+  public Command getAutonomousCommand() {
+    return autoChooser.getSelected();
+  }
 }

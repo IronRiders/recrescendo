@@ -3,11 +3,17 @@ package org.ironriders.drive;
 import java.io.IOException;
 
 import org.ironriders.lib.Constants.Drive;
+
+import com.ctre.phoenix6.hardware.Pigeon2;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.RobotConfig;
+
 import org.ironriders.lib.IronSubsystem;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;
@@ -25,10 +31,11 @@ public class DriveSubsystem extends IronSubsystem {
 	private final DriveCommands commands;
 
 	private SwerveDrive swerveDrive;
-	private boolean invertStatus = false;
+	private boolean rotationInvert = false;
+	private boolean driveInvert = false;
 
 	public Command pathfindCommand;
-	public double ControlSpeedMultipler = 1;
+	public double controlSpeedMultipler = 1;
 
 	public DriveSubsystem() throws RuntimeException {
 		try {
@@ -44,28 +51,28 @@ public class DriveSubsystem extends IronSubsystem {
 		swerveDrive.setHeadingCorrection(false);
 		SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
 
-		//RobotConfig robotConfig = null;
-		//try {
-		//	robotConfig = RobotConfig.fromGUISettings();
-		//} catch (Exception e) {
-		//	throw new RuntimeException("Could not load path planner config", e);
-		//}
+		RobotConfig robotConfig = null;
+		try {
+			robotConfig = RobotConfig.fromGUISettings();
+		} catch (Exception e) {
+			throw new RuntimeException("Could not load path planner config", e);
+		}
 
-		//AutoBuilder.configure(
-		//		swerveDrive::getPose,
-		//		swerveDrive::resetOdometry,
-		//		swerveDrive::getRobotVelocity,s
-		//		(speeds, feedforwards) -> swerveDrive.setChassisSpeeds(speeds),
-		//		Drive.HOLONOMIC_CONFIG,
-		//		robotConfig,
-		//		() -> {
-		//			var alliance = DriverStation.getAlliance();
-		//			if (alliance.isPresent()) {
-		//				return alliance.get() == DriverStation.Alliance.Red;
-		//			}
-		//			return false;
-		//		},
-		//		this);
+		AutoBuilder.configure(
+				swerveDrive::getPose,
+				swerveDrive::resetOdometry,
+				swerveDrive::getRobotVelocity,
+				(speeds, feedforwards) -> swerveDrive.setChassisSpeeds(speeds),
+				Drive.HOLONOMIC_CONFIG,
+				robotConfig,
+				() -> {
+					var alliance = DriverStation.getAlliance();
+					if (alliance.isPresent()) {
+						return alliance.get() == DriverStation.Alliance.Red;
+					}
+					return false;
+				},
+				this);
 	}
 
 	/**
@@ -79,8 +86,9 @@ public class DriveSubsystem extends IronSubsystem {
 	 *                      its own rotation.
 	 */
 	public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
-		swerveDrive.drive(translation, rotation, fieldRelative, false);
-	}
+		swerveDrive.drive(
+			translation.times(driveInvert ? -1 : 1), rotation * (rotationInvert ? -1 : 1), fieldRelative, false);
+	  }
 
 	/** Fetch the DriveCommands instance */
 	public DriveCommands getCommands() {
@@ -96,35 +104,28 @@ public class DriveSubsystem extends IronSubsystem {
 		return this.swerveDrive.getPose();
 	}
 
-	/** Resets the Odemetry to the current position */
-	public void resetOdometry(Pose2d pose2d) {
-		swerveDrive.resetOdometry(new Pose2d(pose2d.getTranslation(), new Rotation2d(0)));
-	}
+ public void resetRotation() {
+    Pigeon2 pigeon2 = new Pigeon2(9);
+    swerveDrive.resetOdometry(
+        new Pose2d(
+            swerveDrive.getPose().getTranslation(),
+            new Rotation2d(pigeon2.getYaw(true).waitForUpdate(1).getValueAsDouble() * (Math.PI / 180f))));
+    pigeon2.close();
+  }
 
-	public void switchInvertControl(){
-		if (invertStatus){
-			invertStatus = false;
-		}
-		else{
-			invertStatus = true;
-		}
-	}
-	
-	public int getinversionStatus(){
-		if(invertStatus){
-			return -1;
-		}
-		else{
-			return 1;
-		}
-	}
+  public void resetOdometry(Pose2d pose2d) {
+    swerveDrive.resetOdometry(new Pose2d(pose2d.getTranslation(), new Rotation2d(0)));
+  }
 
-	public void setSpeed(boolean slow) {
-		if (slow) {
-			ControlSpeedMultipler = .5;
-		} else {
-			ControlSpeedMultipler = 1;
+  public void switchRotation() {
+    rotationInvert = !rotationInvert;
+  }  
 
-		}
-	}
+  public void switchDrive() {
+    driveInvert = !driveInvert;
+  }
+
+  public void setSpeed(double speed) {
+    controlSpeedMultipler = speed;
+  }
 }

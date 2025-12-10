@@ -21,16 +21,14 @@ public class DriveCommands {
 	}
 
 	public Command drive(Supplier<Translation2d> translation, DoubleSupplier rotation, BooleanSupplier fieldRelative) {
-		return driveSubsystem.runOnce(() -> {
+		return Commands.run(() -> {
 			driveSubsystem.drive(translation.get(), rotation.getAsDouble(), fieldRelative.getAsBoolean());
-		});
+		}, driveSubsystem);
 	}
 
 	public Command driveTeleop(DoubleSupplier inputTranslationX, DoubleSupplier inputTranslationY,
 			DoubleSupplier inputRotation, boolean fieldRelative) {
 
-		if (DriverStation.isAutonomous())
-			return Commands.none();
 
 		double invert = DriverStation.getAlliance().isEmpty()
 				|| DriverStation.getAlliance().get() == DriverStation.Alliance.Blue

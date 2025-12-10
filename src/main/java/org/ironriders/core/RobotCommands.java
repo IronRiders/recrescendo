@@ -39,9 +39,11 @@ public class RobotCommands {
 		this.climberCommands = climberCommands;
 	}
 
-	public Command driveTeleop(DoubleSupplier inputTranslationX, DoubleSupplier inputTranslationY,
-			DoubleSupplier inputRotation) {
-		return driveCommands.driveTeleop(inputTranslationX, inputTranslationY, inputRotation, true);
+	public Command driveTeleop(
+		DoubleSupplier inputTranslationX,
+		DoubleSupplier inputTranslationY,
+		DoubleSupplier inputRotation) {
+	  return driveCommands.driveTeleop(inputTranslationX, inputTranslationY, inputRotation, true);
 	}
 
 	public Command intake() {
