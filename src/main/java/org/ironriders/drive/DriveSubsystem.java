@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import java.io.IOException;
 import org.ironriders.lib.Constants.Drive;
+import org.ironriders.lib.Constants;
 import org.ironriders.lib.IronSubsystem;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
@@ -34,7 +35,11 @@ public class DriveSubsystem extends IronSubsystem {
 
   public Command pathfindCommand;
   public double controlSpeedMultipler = 1;
+  
   private boolean enableVision = false;
+  private PhotonCamera camera = new PhotonCamera("main");
+  private PIDController visPidController = new PIDController(Constants.Drive.VISION_P, Constants.Drive.VISION_I, Constants.Drive.VISION_D);
+  private double distance = 0;
 
   public DriveSubsystem() throws RuntimeException {
     try {
@@ -110,17 +115,15 @@ public class DriveSubsystem extends IronSubsystem {
     return this.swerveDrive.getPose();
   }
 
-  PhotonCamera camera = new PhotonCamera("main");
-  PIDController visPidController = new PIDController(0.1, 0.05, 0.0);
-  double distance = 0;
-
   @Override
   public void periodic() {
     visionPeriodic(enableVision);
   }
-
+  /**
+   * Vision Main loop
+   * @param controlsDrive Am I allowed to move?
+   */
   private void visionPeriodic(boolean controlsDrive) {
-    // Temp-ish vision test
     boolean targetVisible = false;
     double targetYaw = 0.0;
     visPidController.setSetpoint(0);
@@ -149,26 +152,31 @@ public class DriveSubsystem extends IronSubsystem {
       double requestedmovement = visPidController.calculate(targetYaw);
       publish("Requested movement", requestedmovement);
       if (controlsDrive) {
-        if (Math.abs(requestedmovement) > 2) {
+        if (Math.abs(requestedmovement) > 2) {//If we are trying to move to0 fast, divide the speed by two, I'm scared
           requestedmovement = requestedmovement / 2;
         }
         swerveDrive.drive(new Translation2d(0, 0), requestedmovement * -1, false, true);
       }
     } else {
       if (controlsDrive) {
-        swerveDrive.drive(new Translation2d(0, 0), 1, false, true);
+		//Saftey measure, if vision control is requested but we lose the tag, stop moving. Otherwise we will just keep moving the preiviously commanded direction forever
+        swerveDrive.drive(new Translation2d(0, 0), 0, false, true);
       }
     }
   }
-
+  /**
+   * Initalize vision system.
+   */
   private void visionInit() {
     publish("Camera sees target", 0);
     publish("Requested movement", 0);
     publish("Distance to target", 0);
   }
-
-  public void setVisionControl(boolean state){
-	this.enableVision=state;
+  /**
+   * Set wether vision is allowed to drive.
+   */
+  public void setVisionControl(boolean state) {
+    this.enableVision = state;
   }
 
   public void resetRotation() {

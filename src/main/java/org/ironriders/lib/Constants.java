@@ -52,6 +52,10 @@ public class Constants {
 
     public static final double SWERVE_MAX_TRANSLATION_TELEOP = 0.6; // m/s
     public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 1 / 3; // rad/s
+
+    public static final double VISION_P = 0.1;
+    public static final double VISION_I = 0.05;
+    public static final double VISION_D = 0;
   }
 
   public class Intake {
