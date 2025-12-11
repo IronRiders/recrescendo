@@ -173,7 +173,7 @@ public class DriveSubsystem extends IronSubsystem {
 
       if (controlsDrive) {
         // Saftey measure, if vision control is requested but we lose the tag, stop moving.
-        // Otherwise we will just keep moving the preiviously commanded direction forever
+        // Otherwise we will just keep moving in the previously commanded direction forever
         swerveDrive.drive(new Translation2d(0, 0), 0, false, true);
       }
     }
