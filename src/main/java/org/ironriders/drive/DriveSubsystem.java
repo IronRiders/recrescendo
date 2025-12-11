@@ -151,7 +151,6 @@ public class DriveSubsystem extends IronSubsystem {
     }
 
     publish("Camera sees target", targetVisible);
-    publish("Distance to target", distance);
 	publish("Vision can drive", controlsDrive);
 
     if (targetVisible) {
@@ -159,6 +158,7 @@ public class DriveSubsystem extends IronSubsystem {
       publish("Yaw offset", targetYaw);
       double requestedmovement = visPidController.calculate(targetYaw);
       publish("Requested movement", requestedmovement);
+	  publish("Distance to target", distance);
 
       if (controlsDrive) {
 
@@ -182,10 +182,10 @@ public class DriveSubsystem extends IronSubsystem {
   }
 
   /** Initalize vision system. Disables anyone elses control*/
-  private void visionInit() {
-    publish("Camera sees target", 0);
-    publish("Requested movement", 0);
-    publish("Distance to target", 0);
+  private void visionInit() {;
+    publish("Requested movement", "Unknown");
+    publish("Distance to target", "Unknown");
+	publish("Yaw offset", "Unknown");
   }
 
   /** Set if vision is allowed to drive. */
