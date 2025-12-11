@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import java.io.IOException;
 import org.ironriders.lib.Constants.Drive;
-import org.ironriders.lib.Constants;
 import org.ironriders.lib.IronSubsystem;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
@@ -35,10 +34,11 @@ public class DriveSubsystem extends IronSubsystem {
 
   public Command pathfindCommand;
   public double controlSpeedMultipler = 1;
-  
+
   private boolean enableVision = false;
   private PhotonCamera camera = new PhotonCamera("main");
-  private PIDController visPidController = new PIDController(Constants.Drive.VISION_P, Constants.Drive.VISION_I, Constants.Drive.VISION_D);
+  private PIDController visPidController =
+      new PIDController(Drive.VISION_P, Drive.VISION_I, Drive.VISION_D);
   private double distance = 0;
 
   public DriveSubsystem() throws RuntimeException {
@@ -119,8 +119,10 @@ public class DriveSubsystem extends IronSubsystem {
   public void periodic() {
     visionPeriodic(enableVision);
   }
+
   /**
    * Vision Main loop
+   *
    * @param controlsDrive Am I allowed to move?
    */
   private void visionPeriodic(boolean controlsDrive) {
@@ -147,34 +149,42 @@ public class DriveSubsystem extends IronSubsystem {
     }
     publish("Camera sees target", targetVisible);
     publish("Distance to target", distance);
+
     if (targetVisible) {
+      // We found our favorite toy! (tag #7)
       publish("Yaw offset", targetYaw);
       double requestedmovement = visPidController.calculate(targetYaw);
       publish("Requested movement", requestedmovement);
       if (controlsDrive) {
-        if (Math.abs(requestedmovement) > 2) {//If we are trying to move to0 fast, divide the speed by two, I'm scared
-          requestedmovement = requestedmovement / 2;
-        }
+
+		
+          if (requestedmovement > Drive.VISION_ROTATION_MAX_SPEED) {
+            requestedmovement = Drive.VISION_ROTATION_MAX_SPEED;
+          }
+		  if (requestedmovement < -Drive.VISION_ROTATION_MAX_SPEED) {
+            requestedmovement = -Drive.VISION_ROTATION_MAX_SPEED;
+          }
+        
         swerveDrive.drive(new Translation2d(0, 0), requestedmovement * -1, false, true);
       }
     } else {
+
       if (controlsDrive) {
-		//Saftey measure, if vision control is requested but we lose the tag, stop moving. Otherwise we will just keep moving the preiviously commanded direction forever
+        // Saftey measure, if vision control is requested but we lose the tag, stop moving.
+        // Otherwise we will just keep moving the preiviously commanded direction forever
         swerveDrive.drive(new Translation2d(0, 0), 0, false, true);
       }
     }
   }
-  /**
-   * Initalize vision system.
-   */
+
+  /** Initalize vision system. */
   private void visionInit() {
     publish("Camera sees target", 0);
     publish("Requested movement", 0);
     publish("Distance to target", 0);
   }
-  /**
-   * Set wether vision is allowed to drive.
-   */
+
+  /** Set wether vision is allowed to drive. */
   public void setVisionControl(boolean state) {
     this.enableVision = state;
   }

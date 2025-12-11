@@ -56,6 +56,7 @@ public class Constants {
     public static final double VISION_P = 0.1;
     public static final double VISION_I = 0.05;
     public static final double VISION_D = 0;
+    public static final double VISION_ROTATION_MAX_SPEED=2;// rad/s (2 is about a third of a rotation i think)
   }
 
   public class Intake {
