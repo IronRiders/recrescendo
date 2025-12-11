@@ -36,7 +36,7 @@ public class DriveSubsystem extends IronSubsystem {
   public double controlSpeedMultipler = 1;
 
   private boolean enableVision = false;
-  private PhotonCamera camera = new PhotonCamera("main");
+  private PhotonCamera camera = new PhotonCamera(Drive.VISION_CAMERA);
   private PIDController visPidController =
       new PIDController(Drive.VISION_P, Drive.VISION_I, Drive.VISION_D);
   private double distance = 0;
@@ -110,7 +110,7 @@ public class DriveSubsystem extends IronSubsystem {
   public SwerveDrive getSwerveDrive() {
     return swerveDrive;
   }
-
+  /** Where is the robot? */
   public Pose2d getPose() {
     return this.swerveDrive.getPose();
   }
@@ -142,6 +142,7 @@ public class DriveSubsystem extends IronSubsystem {
           if (target.getFiducialId() == 7) {
             // Found Tag 7, record its information
             targetYaw = target.getYaw();
+			//We assume the camera and tag are both at a meter of height, but this is a very bad idea as the differance is important. Real nums tbd
             distance = PhotonUtils.calculateDistanceToTargetMeters(1, 1, 0, target.getPitch());
             targetVisible = true;
           }
