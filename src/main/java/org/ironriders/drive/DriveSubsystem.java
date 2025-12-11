@@ -34,7 +34,7 @@ public class DriveSubsystem extends IronSubsystem {
 
   public Command pathfindCommand;
   public double controlSpeedMultipler = 1;
-  private boolean enableVision = true;
+  private boolean enableVision = false;
 
   public DriveSubsystem() throws RuntimeException {
     try {
@@ -165,6 +165,10 @@ public class DriveSubsystem extends IronSubsystem {
     publish("Camera sees target", 0);
     publish("Requested movement", 0);
     publish("Distance to target", 0);
+  }
+
+  public void setVisionControl(boolean state){
+	this.enableVision=state;
   }
 
   public void resetRotation() {

@@ -28,6 +28,15 @@ public class DriveCommands {
         driveSubsystem);
   }
 
+  public Command setVisionConrol(boolean state) {
+    return Commands.run(
+            () -> {
+              driveSubsystem.setVisionControl(state);
+            },
+            driveSubsystem);
+  }
+  
+
   public Command driveTeleop(
       DoubleSupplier inputTranslationX,
       DoubleSupplier inputTranslationY,

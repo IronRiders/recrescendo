@@ -118,11 +118,7 @@ public class RobotContainer {
 
     primaryController
         .a()
-        .onTrue(
-            Commands.parallel(
-                robotCommands.reset(),
-                Commands.runOnce(() -> speedMultiplier = 1),
-                Commands.runOnce(() -> activeCommand.cancel()))); // reset everything
+        .whileTrue(driveCommands.setVisionConrol(true)).onFalse(driveCommands.setVisionConrol(false)); // Give conrol of the drive system to vision
 
     primaryController.leftTrigger().onTrue(robotCommands.launch());
 
