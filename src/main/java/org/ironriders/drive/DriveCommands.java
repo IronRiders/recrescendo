@@ -27,7 +27,7 @@ public class DriveCommands {
         },
         driveSubsystem);
   }
-
+  /**Is the drive subsystem controled by vision? Disables anyone elses control */
   public Command setVisionConrol(boolean state) {
     return Commands.run(
             () -> {

@@ -128,8 +128,9 @@ public class DriveSubsystem extends IronSubsystem {
   private void visionPeriodic(boolean controlsDrive) {
     boolean targetVisible = false;
     double targetYaw = 0.0;
-    visPidController.setSetpoint(0);
     var results = camera.getAllUnreadResults();
+
+	visPidController.setSetpoint(0);
 
     if (!results.isEmpty()) {
       // Camera processed a new frame since last
@@ -147,6 +148,7 @@ public class DriveSubsystem extends IronSubsystem {
         }
       }
     }
+
     publish("Camera sees target", targetVisible);
     publish("Distance to target", distance);
 
@@ -155,9 +157,9 @@ public class DriveSubsystem extends IronSubsystem {
       publish("Yaw offset", targetYaw);
       double requestedmovement = visPidController.calculate(targetYaw);
       publish("Requested movement", requestedmovement);
+
       if (controlsDrive) {
 
-		
           if (requestedmovement > Drive.VISION_ROTATION_MAX_SPEED) {
             requestedmovement = Drive.VISION_ROTATION_MAX_SPEED;
           }
@@ -177,14 +179,14 @@ public class DriveSubsystem extends IronSubsystem {
     }
   }
 
-  /** Initalize vision system. */
+  /** Initalize vision system. Disables anyone elses control*/
   private void visionInit() {
     publish("Camera sees target", 0);
     publish("Requested movement", 0);
     publish("Distance to target", 0);
   }
 
-  /** Set wether vision is allowed to drive. */
+  /** Set if vision is allowed to drive. */
   public void setVisionControl(boolean state) {
     this.enableVision = state;
   }
