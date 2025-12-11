@@ -133,14 +133,12 @@ public class DriveSubsystem extends IronSubsystem {
 	visPidController.setSetpoint(0);
 
     if (!results.isEmpty()) {
-      // Camera processed a new frame since last
-      // Get the last one in the list.
+      // Camera processed a new frame since last time we checked
+      // Get the latest frame
       var result = results.get(results.size() - 1);
       if (result.hasTargets()) {
-        // At least one AprilTag was seen by the camera
         for (var target : result.getTargets()) {
           if (target.getFiducialId() == 7) {
-            // Found Tag 7, record its information
             targetYaw = target.getYaw();
 			//We assume the camera and tag are both at a meter of height, but this is a very bad idea as the differance is important. Real nums tbd
             distance = PhotonUtils.calculateDistanceToTargetMeters(1, 1, 0, target.getPitch());
