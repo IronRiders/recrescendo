@@ -152,6 +152,7 @@ public class DriveSubsystem extends IronSubsystem {
 
     publish("Camera sees target", targetVisible);
     publish("Distance to target", distance);
+	publish("Vision can drive", controlsDrive);
 
     if (targetVisible) {
       // We found our favorite toy! (tag #7)
