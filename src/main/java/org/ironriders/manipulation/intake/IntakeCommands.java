@@ -1,64 +1,60 @@
 package org.ironriders.manipulation.intake;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import org.ironriders.lib.Constants;
 import org.ironriders.lib.Constants.Intake.State;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-
 public class IntakeCommands {
 
-    private IntakeSubsystem intake;
+  private IntakeSubsystem intake;
 
-    public IntakeCommands(IntakeSubsystem intake) {
-        this.intake = intake;
+  public IntakeCommands(IntakeSubsystem intake) {
+    this.intake = intake;
 
-        intake.publish("Intake", this.intake());
-        intake.publish("Try Center", this.center());
+    intake.publish("Intake", this.intake());
+    intake.publish("Try Center", this.center());
 
-        intake.publish("Intake force", this.set(State.INTAKE));
+    intake.publish("Intake force", this.set(State.INTAKE));
 
-        intake.publish("Stop", this.set(State.STOP));
-        intake.publish("Eject force", this.set(State.BACK));
-        intake.publish("Eject", this.eject());
+    intake.publish("Stop", this.set(State.STOP));
+    intake.publish("Eject force", this.set(State.BACK));
+    intake.publish("Eject", this.eject());
+  }
 
+  public Command set(Constants.Intake.State state) {
+    return Commands.runOnce(() -> intake.setMotor(state.speed));
+  }
 
+  public Command eject() {
+    return Commands.runOnce(() -> intake.setMotor(Constants.Intake.State.BACK.speed))
+        .andThen(Commands.waitSeconds(Constants.Intake.EJECT_WAIT_TIME))
+        .andThen(() -> intake.setMotor(Constants.Intake.State.STOP.speed));
+  }
 
-    }
-
-    public Command set(Constants.Intake.State state) {
-        return Commands.runOnce(() -> intake.setMotor(state.speed));
-    }
-
-    public Command eject() {
-        return Commands.runOnce(() -> intake.setMotor(Constants.Intake.State.BACK.speed))
-                .andThen(Commands.waitSeconds(Constants.Intake.EJECT_WAIT_TIME))
-                .andThen(() -> intake.setMotor(Constants.Intake.State.STOP.speed));
-    }
-
-    public Command center() {
-        return Commands.runOnce(() -> intake.setMotor(Constants.Intake.State.CENTER.speed))
+  public Command center() {
+    return Commands.runOnce(() -> intake.setMotor(Constants.Intake.State.CENTER.speed))
         .andThen(Commands.waitSeconds(Constants.Intake.CENTER_TIMEOUT))
         .andThen(() -> intake.setMotor(Constants.Intake.State.STOP.speed));
-    }
+  }
 
-    public Command intake() {
-        return intake.defer(() -> {
-            return new Command() {
-                public void execute() {
-                    intake.setMotor(Constants.Intake.State.INTAKE.speed);
-                }
+  public Command intake() {
+    return intake.defer(
+        () -> {
+          return new Command() {
+            public void execute() {
+              intake.setMotor(Constants.Intake.State.INTAKE.speed);
+            }
 
-                public boolean isFinished() {
-                    return intake.hasNote();
-                }
+            public boolean isFinished() {
+              return intake.hasNote();
+            }
 
-                public void end(boolean interrupted) {
-                    intake.setMotor(Constants.Intake.State.STOP.speed);
-                }
-            };
+            public void end(boolean interrupted) {
+              intake.setMotor(Constants.Intake.State.STOP.speed);
+            }
+          };
         });
-    };
-
-
+  }
+  ;
 }

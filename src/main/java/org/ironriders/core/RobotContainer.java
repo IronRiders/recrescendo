@@ -4,6 +4,12 @@
 
 package org.ironriders.core;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import org.ironriders.climber.ClimberCommands;
 import org.ironriders.climber.ClimberSubsystem;
 import org.ironriders.drive.DriveCommands;
@@ -19,98 +25,115 @@ import org.ironriders.manipulation.launcher.LauncherSubsystem;
 import org.ironriders.manipulation.pivot.PivotCommands;
 import org.ironriders.manipulation.pivot.PivotSubsystem;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
 public class RobotContainer {
 
-	public DriveSubsystem driveSubsystem = new DriveSubsystem();
-	public DriveCommands driveCommands = driveSubsystem.getCommands();
+  public DriveSubsystem driveSubsystem = new DriveSubsystem();
+  public DriveCommands driveCommands = driveSubsystem.getCommands();
 
-	public PivotSubsystem pivotSubsystem = new PivotSubsystem();
-	public PivotCommands pivotCommands = pivotSubsystem.getCommands();
+  public PivotSubsystem pivotSubsystem = new PivotSubsystem();
+  public PivotCommands pivotCommands = pivotSubsystem.getCommands();
 
-	public IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
-	public IntakeCommands intakeCommands = intakeSubsystem.getCommands();
+  public IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+  public IntakeCommands intakeCommands = intakeSubsystem.getCommands();
 
-	public LauncherSubsystem launcherSubsystem = new LauncherSubsystem();
-	public LauncherCommands launcherCommands = launcherSubsystem.getCommands();
+  public LauncherSubsystem launcherSubsystem = new LauncherSubsystem();
+  public LauncherCommands launcherCommands = launcherSubsystem.getCommands();
 
-	public ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-	public ClimberCommands climberCommands = climberSubsystem.getCommands();
+  public ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  public ClimberCommands climberCommands = climberSubsystem.getCommands();
 
-	public LightsSubsystem lightsSubsystem = new LightsSubsystem();
-	public LightsCommands lightsCommands = lightsSubsystem.getCommands();
+  public LightsSubsystem lightsSubsystem = new LightsSubsystem();
+  public LightsCommands lightsCommands = lightsSubsystem.getCommands();
 
-	public Command activeCommand;
+  public Command activeCommand;
 
-	public double speedMultiplier = 1;
-	public double angleMultiplier = 1;
-	private final SendableChooser<Command> autoChooser;
+  public double speedMultiplier = 1;
+  public double angleMultiplier = 1;
+  private final SendableChooser<Command> autoChooser;
 
+  private final CommandXboxController primaryController =
+      new CommandXboxController(Constants.Identifiers.CONTROLLER_PRIMARY_PORT);
 
-	private final CommandXboxController primaryController = new CommandXboxController(
-			Constants.Identifiers.CONTROLLER_PRIMARY_PORT);
+  public RobotCommands robotCommands =
+      new RobotCommands(
+          driveCommands, launcherCommands, pivotCommands, intakeCommands, climberCommands);
 
-	public RobotCommands robotCommands = new RobotCommands(
-			driveCommands,
-			launcherCommands,
-			pivotCommands,
-			intakeCommands,
-			climberCommands);
+  public RobotContainer() {
+    autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Select", autoChooser);
 
-	public RobotContainer() {
-		autoChooser = AutoBuilder.buildAutoChooser();
-    	SmartDashboard.putData("Auto Select", autoChooser);
+    configureBindings();
+  }
 
-		configureBindings();
-	}
+  private void configureBindings() {
+    driveSubsystem.setDefaultCommand(
+        robotCommands.driveTeleop(
+            () ->
+                Utils.controlCurve(
+                        -primaryController.getLeftY() * driveSubsystem.controlSpeedMultipler,
+                        Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
+                        Constants.Drive.TRANSLATION_CONTROL_DEADBAND)
+                    * speedMultiplier,
+            () ->
+                Utils.controlCurve(
+                        -primaryController.getLeftX() * driveSubsystem.controlSpeedMultipler,
+                        Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
+                        Constants.Drive.TRANSLATION_CONTROL_DEADBAND)
+                    * speedMultiplier,
+            () ->
+                Utils.controlCurve(
+                        -primaryController.getRightX() * driveSubsystem.controlSpeedMultipler,
+                        Constants.Drive.ROTATION_CONTROL_EXPONENT,
+                        Constants.Drive.ROTATION_CONTROL_DEADBAND)
+                    * angleMultiplier));
 
-	private void configureBindings() {
-		driveSubsystem.setDefaultCommand(
-				robotCommands.driveTeleop(
-						() -> Utils.controlCurve(
-								-primaryController.getLeftY() * driveSubsystem.controlSpeedMultipler,
-								Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
-								Constants.Drive.TRANSLATION_CONTROL_DEADBAND) * speedMultiplier,
-						() -> Utils.controlCurve(
-								-primaryController.getLeftX() * driveSubsystem.controlSpeedMultipler,
-								Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
-								Constants.Drive.TRANSLATION_CONTROL_DEADBAND) * speedMultiplier,
-						() -> Utils.controlCurve(
-								-primaryController.getRightX() * driveSubsystem.controlSpeedMultipler,
-								Constants.Drive.ROTATION_CONTROL_EXPONENT,
-								Constants.Drive.ROTATION_CONTROL_DEADBAND) * angleMultiplier));
+    primaryController
+        .rightTrigger()
+        .onTrue(activeCommand = robotCommands.intake())
+        .onFalse(
+            robotCommands
+                .launch()
+                .unless(
+                    () ->
+                        !intakeSubsystem
+                            .hasNote())); // intake waits for a note and then moves to position,
+                                          // launch ejects
+    // from the manipulator and spins up the launcher for 0.4 (might have
+    // changed) second(s)
 
-		primaryController.rightTrigger().onTrue(activeCommand = robotCommands.intake())
-				.onFalse(robotCommands.launch().unless(() -> !intakeSubsystem.hasNote())); // intake waits for a note and then moves to position, launch ejects
-													// from the manipulator and spins up the launcher for 0.4 (might have
-													// changed) second(s)
+    primaryController
+        .x()
+        .onTrue(Commands.runOnce(() -> activeCommand.cancel())); // cancel the launch
 
-		primaryController.x().onTrue(Commands.runOnce(() -> activeCommand.cancel())); // cancel the launch
+    primaryController
+        .b()
+        .onTrue(launcherCommands.set(Constants.Launcher.State.STOP)); // force stop launcher
 
-		primaryController.b().onTrue(launcherCommands.set(Constants.Launcher.State.STOP)); // force stop launcher
+    primaryController
+        .y()
+        .onTrue(
+            robotCommands
+                .eject()
+                .unless(() -> !intakeSubsystem.hasNote())); // eject unless we don't have a note
 
-		primaryController.y().onTrue(robotCommands.eject().unless(() -> !intakeSubsystem.hasNote())); // eject unless we don't have a note
+    primaryController
+        .a()
+        .onTrue(
+            Commands.parallel(
+                robotCommands.reset(),
+                Commands.runOnce(() -> speedMultiplier = 1),
+                Commands.runOnce(() -> activeCommand.cancel()))); // reset everything
 
-		primaryController.a().onTrue(Commands.parallel(robotCommands.reset(), Commands.runOnce(() -> speedMultiplier = 1), Commands.runOnce(() -> activeCommand.cancel()))); // reset everything
+    primaryController.leftTrigger().onTrue(robotCommands.launch());
 
-		primaryController.leftTrigger().onTrue(robotCommands.launch());
+    primaryController.povUp().onTrue(launcherCommands.upTargetVelocity());
+    primaryController.povDown().onTrue(launcherCommands.downTargetVelocity());
 
-		primaryController.povUp().onTrue(launcherCommands.upTargetVelocity());
-		primaryController.povDown().onTrue(launcherCommands.downTargetVelocity());
+    primaryController.povRight().onTrue(Commands.runOnce(() -> speedMultiplier += 0.5));
+    primaryController.povLeft().onTrue(Commands.runOnce(() -> speedMultiplier -= 0.5));
+  }
 
-		primaryController.povRight().onTrue(Commands.runOnce(() -> speedMultiplier += 0.5));
-		primaryController.povLeft().onTrue(Commands.runOnce(() -> speedMultiplier -= 0.5));
-
-	}
-
-	  /**
+  /**
    * Get command configured in auto chooser.
    *
    * @return the command to run in autonomous
