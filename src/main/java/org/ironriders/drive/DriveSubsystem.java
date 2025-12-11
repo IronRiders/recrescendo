@@ -3,6 +3,7 @@ package org.ironriders.drive;
 import java.io.IOException;
 
 import org.ironriders.lib.Constants.Drive;
+import org.photonvision.PhotonCamera;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -10,6 +11,7 @@ import com.pathplanner.lib.config.RobotConfig;
 
 import org.ironriders.lib.IronSubsystem;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -36,11 +38,12 @@ public class DriveSubsystem extends IronSubsystem {
 
 	public Command pathfindCommand;
 	public double controlSpeedMultipler = 1;
+	private boolean enableVision=true;
 
 	public DriveSubsystem() throws RuntimeException {
 		try {
 			swerveDrive = new SwerveParser(Drive.SWERVE_JSON_DIRECTORY) // YAGSL reads from the deploy/swerve
-																	// directory.
+					// directory.
 					.createSwerveDrive(Drive.SWERVE_MAX_TRANSLATION_TELEOP);
 		} catch (IOException e) { // instancing SwerveDrive can throw an error, so we need to catch that.
 			throw new RuntimeException("Error configuring swerve drive", e);
@@ -73,6 +76,9 @@ public class DriveSubsystem extends IronSubsystem {
 					return false;
 				},
 				this);
+		// temp
+		publish("Camera sees target", 0);
+		publish("Requested movement",0);
 	}
 
 	/**
@@ -86,9 +92,12 @@ public class DriveSubsystem extends IronSubsystem {
 	 *                      its own rotation.
 	 */
 	public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
+		//I'm sure this will be problem at some point sorry
+		if (!enableVision){
 		swerveDrive.drive(
-			translation.times(driveInvert ? -1 : 1), rotation * (rotationInvert ? -1 : 1), fieldRelative, false);
-	  }
+				translation.times(driveInvert ? -1 : 1), rotation * (rotationInvert ? -1 : 1), fieldRelative, false);
+		}
+	}
 
 	/** Fetch the DriveCommands instance */
 	public DriveCommands getCommands() {
@@ -104,28 +113,70 @@ public class DriveSubsystem extends IronSubsystem {
 		return this.swerveDrive.getPose();
 	}
 
- public void resetRotation() {
-    Pigeon2 pigeon2 = new Pigeon2(9);
-    swerveDrive.resetOdometry(
-        new Pose2d(
-            swerveDrive.getPose().getTranslation(),
-            new Rotation2d(pigeon2.getYaw(true).waitForUpdate(1).getValueAsDouble() * (Math.PI / 180f))));
-    pigeon2.close();
-  }
+	PhotonCamera camera = new PhotonCamera("main");
+	PIDController visPidController=new PIDController(0.1, 0.05, 0.0);
+	@Override
+	public void periodic() {
+		// Temp-ish vision test
+		boolean targetVisible = false;
+		double targetYaw = 0.0;
+		visPidController.setSetpoint(0);
+		var results = camera.getAllUnreadResults();
 
-  public void resetOdometry(Pose2d pose2d) {
-    swerveDrive.resetOdometry(new Pose2d(pose2d.getTranslation(), new Rotation2d(0)));
-  }
+		if (!results.isEmpty()) {
+			// Camera processed a new frame since last
+			// Get the last one in the list.
+			var result = results.get(results.size() - 1);
+			if (result.hasTargets()) {
+				// At least one AprilTag was seen by the camera
+				for (var target : result.getTargets()) {
+					if (target.getFiducialId() == 7) {
+						// Found Tag 7, record its information
+						targetYaw = target.getYaw();
+						targetVisible = true;
+					}
+				}
+			}
+		}
+		publish("Camera sees target", targetVisible);
+		if (targetVisible) {
+			publish("Yaw offset", targetYaw);
+			double requestedmovement=visPidController.calculate(targetYaw);
+			publish("Requested movement", requestedmovement);
+			if(enableVision){
+			if (Math.abs(requestedmovement)>2){
+				requestedmovement=requestedmovement/2;
+			}
+			swerveDrive.drive(new Translation2d(0,0), requestedmovement*-1,false,true);
+			}
+		}
+		else{
+			swerveDrive.drive(new Translation2d(0,0), 1,false,true);
+		}
+	}
 
-  public void switchRotation() {
-    rotationInvert = !rotationInvert;
-  }  
+	public void resetRotation() {
+		Pigeon2 pigeon2 = new Pigeon2(9);
+		swerveDrive.resetOdometry(
+				new Pose2d(
+						swerveDrive.getPose().getTranslation(),
+						new Rotation2d(pigeon2.getYaw(true).waitForUpdate(1).getValueAsDouble() * (Math.PI / 180f))));
+		pigeon2.close();
+	}
 
-  public void switchDrive() {
-    driveInvert = !driveInvert;
-  }
+	public void resetOdometry(Pose2d pose2d) {
+		swerveDrive.resetOdometry(new Pose2d(pose2d.getTranslation(), new Rotation2d(0)));
+	}
 
-  public void setSpeed(double speed) {
-    controlSpeedMultipler = speed;
-  }
+	public void switchRotation() {
+		rotationInvert = !rotationInvert;
+	}
+
+	public void switchDrive() {
+		driveInvert = !driveInvert;
+	}
+
+	public void setSpeed(double speed) {
+		controlSpeedMultipler = speed;
+	}
 }

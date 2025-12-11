@@ -29,7 +29,6 @@ public class DriveCommands {
 	public Command driveTeleop(DoubleSupplier inputTranslationX, DoubleSupplier inputTranslationY,
 			DoubleSupplier inputRotation, boolean fieldRelative) {
 
-
 		double invert = DriverStation.getAlliance().isEmpty()
 				|| DriverStation.getAlliance().get() == DriverStation.Alliance.Blue
 						? 1
