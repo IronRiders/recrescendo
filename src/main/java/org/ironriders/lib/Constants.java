@@ -48,8 +48,8 @@ public class Constants {
         public static final double ROTATION_CONTROL_EXPONENT = 3.0;
         public static final double ROTATION_CONTROL_DEADBAND = 0.8;
 
-        public static final double SWERVE_MAX_TRANSLATION_TELEOP = 0.6; // m/s
-        public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 1 / 3; // rad/s
+        public static final double SWERVE_MAX_TRANSLATION_TELEOP = 5; // m/s
+        public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 1 ; // rad/s
     }
 
     public class Intake {
