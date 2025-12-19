@@ -118,7 +118,11 @@ public class RobotContainer {
 
     primaryController
         .a()
-        .whileTrue(driveCommands.setVisionConrol(true)).onFalse(driveCommands.setVisionConrol(false)); // Give conrol of the drive system to vision
+        .onTrue(driveCommands.setVisionConrol(true)); // Give conrol of the drive system to vision
+
+    primaryController
+        .a()
+        .onFalse(driveCommands.setVisionConrol(false));
 
     primaryController.leftTrigger().onTrue(robotCommands.launch());
 

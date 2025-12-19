@@ -12,48 +12,46 @@ import org.ironriders.lib.Constants.Drive;
 
 @Logged
 public class DriveCommands {
-  private final DriveSubsystem driveSubsystem;
+	private final DriveSubsystem driveSubsystem;
 
-  public DriveCommands(DriveSubsystem driveSubsystem) {
-    this.driveSubsystem = driveSubsystem;
-  }
+	public DriveCommands(DriveSubsystem driveSubsystem) {
+		this.driveSubsystem = driveSubsystem;
+	}
 
-  public Command drive(
-      Supplier<Translation2d> translation, DoubleSupplier rotation, BooleanSupplier fieldRelative) {
-    return Commands.run(
-        () -> {
-          driveSubsystem.drive(
-              translation.get(), rotation.getAsDouble(), fieldRelative.getAsBoolean());
-        },
-        driveSubsystem);
-  }
-  /**Is the drive subsystem controled by vision? Disables anyone elses control */
-  public Command setVisionConrol(boolean state) {
-    return Commands.run(
-            () -> {
-              driveSubsystem.setVisionControl(state);
-            },
-            driveSubsystem);
-  }
-  
+	public Command drive(
+			Supplier<Translation2d> translation, DoubleSupplier rotation, BooleanSupplier fieldRelative) {
+		return Commands.run(
+				() -> {
+					driveSubsystem.drive(
+							translation.get(), rotation.getAsDouble(), fieldRelative.getAsBoolean());
+				},
+				driveSubsystem);
+	}
 
-  public Command driveTeleop(
-      DoubleSupplier inputTranslationX,
-      DoubleSupplier inputTranslationY,
-      DoubleSupplier inputRotation,
-      boolean fieldRelative) {
+	/** Is the drive subsystem controled by vision? Disables anyone elses control */
+	public Command setVisionConrol(boolean state) {
+		return Commands.run(
+				() -> {
+					driveSubsystem.setVisionControl(state);
+				},
+				driveSubsystem);
+	}
 
-    double invert =
-        DriverStation.getAlliance().isEmpty()
-                || DriverStation.getAlliance().get() == DriverStation.Alliance.Blue
-            ? 1
-            : -1;
+	public Command driveTeleop(
+			DoubleSupplier inputTranslationX,
+			DoubleSupplier inputTranslationY,
+			DoubleSupplier inputRotation,
+			boolean fieldRelative) {
 
-    return drive(
-        () ->
-            new Translation2d(inputTranslationX.getAsDouble(), inputTranslationY.getAsDouble())
-                .times(Drive.SWERVE_MAX_TRANSLATION_TELEOP * invert),
-        () -> inputRotation.getAsDouble() * Drive.SWERVE_MAX_ANGULAR_TELEOP * invert,
-        () -> fieldRelative);
-  }
+		double invert = DriverStation.getAlliance().isEmpty()
+				|| DriverStation.getAlliance().get() == DriverStation.Alliance.Blue
+						? 1
+						: -1;
+
+		return drive(
+				() -> new Translation2d(inputTranslationX.getAsDouble(), inputTranslationY.getAsDouble())
+						.times(Drive.SWERVE_MAX_TRANSLATION_TELEOP * invert),
+				() -> inputRotation.getAsDouble() * Drive.SWERVE_MAX_ANGULAR_TELEOP * invert,
+				() -> fieldRelative);
+	}
 }
