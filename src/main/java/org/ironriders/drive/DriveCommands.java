@@ -18,6 +18,11 @@ public class DriveCommands {
 
 	public DriveCommands(DriveSubsystem driveSubsystem) {
 		this.driveSubsystem = driveSubsystem;
+
+		driveSubsystem.publish("Reset Gyro", this.resetRotation());
+		driveSubsystem.publish("Invert Rot", this.invertRot());
+		driveSubsystem.publish("Invert Trans", this.invertTrans());
+
 	}
 
 	public Command drive(Supplier<Translation2d> translation, DoubleSupplier rotation, BooleanSupplier fieldRelative) {
@@ -40,5 +45,17 @@ public class DriveCommands {
 						.times(Drive.SWERVE_MAX_TRANSLATION_TELEOP * invert),
 				() -> inputRotation.getAsDouble() * Drive.SWERVE_MAX_ANGULAR_TELEOP * invert,
 				() -> fieldRelative);
+	}
+
+	public Command resetRotation() {
+		return Commands.runOnce(() -> driveSubsystem.resetRotation());
+	}
+
+	public Command invertRot() {
+		return Commands.runOnce(() -> driveSubsystem.switchRotation());
+	}
+
+	public Command invertTrans() {
+		return Commands.runOnce(() -> driveSubsystem.switchDrive());
 	}
 }
