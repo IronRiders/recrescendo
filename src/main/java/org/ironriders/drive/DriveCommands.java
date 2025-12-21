@@ -23,6 +23,8 @@ public class DriveCommands {
 		driveSubsystem.publish("Invert Rot", this.invertRot());
 		driveSubsystem.publish("Invert Trans", this.invertTrans());
 
+		driveSubsystem.publish("Speed X", driveSubsystem.getSwerveDrive().getFieldVelocity().vxMetersPerSecond);
+		driveSubsystem.publish("Speed Y", driveSubsystem.getSwerveDrive().getFieldVelocity().vyMetersPerSecond);
 	}
 
 	public Command drive(Supplier<Translation2d> translation, DoubleSupplier rotation, BooleanSupplier fieldRelative) {
