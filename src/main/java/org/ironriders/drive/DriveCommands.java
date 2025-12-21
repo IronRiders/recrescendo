@@ -24,8 +24,6 @@ public class DriveCommands {
 		driveSubsystem.publish("Reset Gyro", this.resetRotation());
 		driveSubsystem.publish("Invert Rot", this.invertRot());
 		driveSubsystem.publish("Invert Trans", this.invertTrans());
-
-		driveSubsystem.publish("Speed X", driveSubsystem.getSwerveDrive().getRobotVelocity().vxMetersPerSecond);
 	}
 
 	public Command drive(Supplier<Translation2d> translation, DoubleSupplier rotation, BooleanSupplier fieldRelative) {
@@ -37,13 +35,7 @@ public class DriveCommands {
 	public Command driveTeleop(DoubleSupplier inputTranslationX, DoubleSupplier inputTranslationY,
 			DoubleSupplier inputRotation, boolean fieldRelative) {
 
-		ChassisSpeeds speeds = driveSubsystem.getSwerveDrive().swerveController.getTargetSpeeds(
-				inputTranslationX.getAsDouble(), inputTranslationY.getAsDouble(), inputRotation.getAsDouble(),
-				driveSubsystem.getSwerveDrive().getOdometryHeading().getRadians(),
-				Constants.Drive.SWERVE_MAX_TRANSLATION_TELEOP);
-		
-		driveSubsystem.publish("Speed X", speeds.vxMetersPerSecond);
-		driveSubsystem.publish("Speed Y", speeds.vyMetersPerSecond);
+		updateSpeeds(1, 1, 0);
 
 		double invert = DriverStation.getAlliance().isEmpty()
 				|| DriverStation.getAlliance().get() == DriverStation.Alliance.Blue
@@ -55,6 +47,16 @@ public class DriveCommands {
 						.times(Drive.SWERVE_MAX_TRANSLATION_TELEOP * invert),
 				() -> inputRotation.getAsDouble() * Drive.SWERVE_MAX_ANGULAR_TELEOP * invert,
 				() -> fieldRelative);
+	}
+
+	public void updateSpeeds(double inX, double inY, double inRot) {
+		ChassisSpeeds speeds = driveSubsystem.getSwerveDrive().swerveController.getTargetSpeeds(
+				inX, inY, inRot,
+				driveSubsystem.getSwerveDrive().getOdometryHeading().getRadians(),
+				Constants.Drive.SWERVE_MAX_TRANSLATION_TELEOP);
+
+		driveSubsystem.publish("Speed X", speeds.vxMetersPerSecond);
+		driveSubsystem.publish("Speed Y", speeds.vyMetersPerSecond);
 	}
 
 	public Command resetRotation() {
