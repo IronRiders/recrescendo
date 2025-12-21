@@ -4,10 +4,12 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import org.ironriders.lib.Constants;
 import org.ironriders.lib.Constants.Drive;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -24,7 +26,6 @@ public class DriveCommands {
 		driveSubsystem.publish("Invert Trans", this.invertTrans());
 
 		driveSubsystem.publish("Speed X", driveSubsystem.getSwerveDrive().getRobotVelocity().vxMetersPerSecond);
-		driveSubsystem.publish("Speed Y", driveSubsystem.getSwerveDrive().getRobotVelocity().vyMetersPerSecond);
 	}
 
 	public Command drive(Supplier<Translation2d> translation, DoubleSupplier rotation, BooleanSupplier fieldRelative) {
@@ -36,6 +37,13 @@ public class DriveCommands {
 	public Command driveTeleop(DoubleSupplier inputTranslationX, DoubleSupplier inputTranslationY,
 			DoubleSupplier inputRotation, boolean fieldRelative) {
 
+		ChassisSpeeds speeds = driveSubsystem.getSwerveDrive().swerveController.getTargetSpeeds(
+				inputTranslationX.getAsDouble(), inputTranslationY.getAsDouble(), inputRotation.getAsDouble(),
+				driveSubsystem.getSwerveDrive().getOdometryHeading().getRadians(),
+				Constants.Drive.SWERVE_MAX_TRANSLATION_TELEOP);
+		
+		driveSubsystem.publish("Speed X", speeds.vxMetersPerSecond);
+		driveSubsystem.publish("Speed Y", speeds.vyMetersPerSecond);
 
 		double invert = DriverStation.getAlliance().isEmpty()
 				|| DriverStation.getAlliance().get() == DriverStation.Alliance.Blue
