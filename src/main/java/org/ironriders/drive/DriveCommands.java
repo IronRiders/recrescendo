@@ -35,7 +35,7 @@ public class DriveCommands {
 	public Command driveTeleop(DoubleSupplier inputTranslationX, DoubleSupplier inputTranslationY,
 			DoubleSupplier inputRotation, boolean fieldRelative) {
 
-		updateSpeeds(1, 1, 0);
+		updateSpeeds(inputTranslationX.getAsDouble(), inputTranslationY.getAsDouble(), inputRotation.getAsDouble());
 
 		double invert = DriverStation.getAlliance().isEmpty()
 				|| DriverStation.getAlliance().get() == DriverStation.Alliance.Blue
