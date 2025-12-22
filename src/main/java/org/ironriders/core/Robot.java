@@ -91,6 +91,6 @@ public class Robot extends TimedRobot {
     }
 
     private void generalInit() {
-        Commands.runOnce(() -> robotContainer.robotCommands.reset());
+        robotContainer.robotCommands.reset();
     }
 }
