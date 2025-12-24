@@ -43,12 +43,12 @@ public class Constants {
                 new PIDConstants(10.0, 0.2, 0.0) // Rotation PID
         );
 
-        public static final double TRANSLATION_CONTROL_EXPONENT = 1.0; // 3
-        public static final double TRANSLATION_CONTROL_DEADBAND = 0.8;
-        public static final double ROTATION_CONTROL_EXPONENT = 1.0; // 3
-        public static final double ROTATION_CONTROL_DEADBAND = 0.8;
+        public static final double TRANSLATION_CONTROL_EXPONENT = 3.0;
+        public static final double TRANSLATION_CONTROL_DEADBAND = 0.1;
+        public static final double ROTATION_CONTROL_EXPONENT = 3.0;
+        public static final double ROTATION_CONTROL_DEADBAND = 0.1;
 
-        public static final double SWERVE_MAX_TRANSLATION_TELEOP = 5; // m/s
+        public static final double SWERVE_MAX_TRANSLATION_TELEOP = 3; // m/s
         public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 1 ; // rad/s
     }
 

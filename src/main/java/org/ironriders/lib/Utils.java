@@ -15,7 +15,11 @@ public class Utils {
      * @return The end result of the curve.
      */
     public static double controlCurve(double input, double exponent, double deadband) {
-        return Math.pow(input, exponent);
+        if (Math.abs(input) > deadband) {
+            return input; //testing
+        // return Math.pow(input, exponent);
+        }
+        return 0;
     }
 
     /**
