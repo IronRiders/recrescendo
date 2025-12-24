@@ -10,7 +10,8 @@ public class Utils {
      * Only works with input values from 0 to 1 because 1^x = 1.
      * 
      * @param input    The value to put into the curve (0.0 - 1.0 ONLY)
-     * @param deadband The exponent value.
+     * @param deadband Does nothing.
+     * @param exponent Exponent.
      * @return The end result of the curve.
      */
     public static double controlCurve(double input, double exponent, double deadband) {
