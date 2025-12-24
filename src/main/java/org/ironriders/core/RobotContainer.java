@@ -49,8 +49,6 @@ public class RobotContainer {
 
 	public Command activeCommand;
 
-	public double speedMultiplier = 1;
-	public double angleMultiplier = 1;
 	private final SendableChooser<Command> autoChooser;
 
 
@@ -75,17 +73,17 @@ public class RobotContainer {
 		driveSubsystem.setDefaultCommand(
 				robotCommands.driveTeleop(
 						() -> Utils.controlCurve(
-								-primaryController.getLeftY() * driveSubsystem.controlSpeedMultipler,
+								-primaryController.getLeftY() * driveSubsystem.controlSpeedMultiplier,
 								Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
-								Constants.Drive.TRANSLATION_CONTROL_DEADBAND) * speedMultiplier,
+								Constants.Drive.TRANSLATION_CONTROL_DEADBAND),
 						() -> Utils.controlCurve(
-								-primaryController.getLeftX() * driveSubsystem.controlSpeedMultipler,
+								-primaryController.getLeftX() * driveSubsystem.controlSpeedMultiplier,
 								Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
-								Constants.Drive.TRANSLATION_CONTROL_DEADBAND) * speedMultiplier,
+								Constants.Drive.TRANSLATION_CONTROL_DEADBAND),
 						() -> Utils.controlCurve(
-								-primaryController.getRightX() * driveSubsystem.controlSpeedMultipler,
+								-primaryController.getRightX() * driveSubsystem.controlSpeedMultiplier,
 								Constants.Drive.ROTATION_CONTROL_EXPONENT,
-								Constants.Drive.ROTATION_CONTROL_DEADBAND) * angleMultiplier));
+								Constants.Drive.ROTATION_CONTROL_DEADBAND)));
 
 		primaryController.rightTrigger().onTrue(activeCommand = robotCommands.intake())
 				.onFalse(robotCommands.launch()); // intake waits for a note and then moves to position, launch ejects
@@ -98,15 +96,15 @@ public class RobotContainer {
 
 		primaryController.y().onTrue(robotCommands.eject().unless(() -> !intakeSubsystem.hasNote())); // eject unless we don't have a note
 
-		primaryController.a().onTrue(Commands.parallel(robotCommands.reset(), Commands.runOnce(() -> speedMultiplier = 1), Commands.runOnce(() -> activeCommand.cancel()))); // reset everything
+		primaryController.a().onTrue(Commands.parallel(robotCommands.reset(), Commands.runOnce(() -> driveSubsystem.setSpeed(1)), Commands.runOnce(() -> activeCommand.cancel()))); // reset everything
 
 		primaryController.leftTrigger().onTrue(robotCommands.launch());
 
 		primaryController.povUp().onTrue(launcherCommands.upTargetVelocity());
 		primaryController.povDown().onTrue(launcherCommands.downTargetVelocity());
 
-		primaryController.povRight().onTrue(Commands.runOnce(() -> speedMultiplier += 0.5));
-		primaryController.povLeft().onTrue(Commands.runOnce(() -> speedMultiplier -= 0.5));
+		primaryController.povRight().onTrue(Commands.runOnce(() -> driveSubsystem.addSpeed(0.5)));
+		primaryController.povLeft().onTrue(Commands.runOnce(() -> driveSubsystem.addSpeed(-0.5)));
 
 	}
 

@@ -35,7 +35,7 @@ public class DriveSubsystem extends IronSubsystem {
 	private boolean driveInvert = false;
 
 	public Command pathfindCommand;
-	public double controlSpeedMultipler = 1;
+	public double controlSpeedMultiplier = 1;
 
 	public DriveSubsystem() throws RuntimeException {
 		try {
@@ -127,6 +127,10 @@ public class DriveSubsystem extends IronSubsystem {
   }
 
   public void setSpeed(double speed) {
-    controlSpeedMultipler = speed;
+    controlSpeedMultiplier = speed;
+  }
+
+  public void addSpeed(double add) {
+    controlSpeedMultiplier += add;
   }
 }
