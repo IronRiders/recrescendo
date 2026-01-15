@@ -5,7 +5,5 @@ public class VisionCommands {
 
     public VisionCommands(VisionSubsystem vision) {
         this.vision = vision;
-    }
-
-    
+    }   
 }

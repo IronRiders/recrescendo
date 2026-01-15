@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Meters;
 
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -60,7 +61,16 @@ public class Constants {
     public static final double ROTATION_CONTROL_DEADBAND = 0.8;
 
     public static final double SWERVE_MAX_TRANSLATION_TELEOP = 0.6; // m/s
-    public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 1 / 3; // rad/s
+    public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI / 3; // rad/s
+
+    public static final double SWERVE_MAX_TRANSLATION_PATHFIND = 0.3; // m/s
+    public static final double SWERVE_MAX_ANGULAR_PATHFIND = Math.PI / 3; // rad/s
+
+    public static final double SWERVE_MAX_TRANSLATION_ACCEL_PATHFIND = SWERVE_MAX_TRANSLATION_PATHFIND / 2;
+    public static final double SWERVE_MAX_ANGULAR_ACCEL_PATHFIND = SWERVE_MAX_ANGULAR_PATHFIND / 2;
+
+    public static final PathConstraints PATHFIND_CONSTRAINTS = new PathConstraints(SWERVE_MAX_TRANSLATION_PATHFIND,
+        SWERVE_MAX_TRANSLATION_ACCEL_PATHFIND, SWERVE_MAX_ANGULAR_PATHFIND, SWERVE_MAX_ANGULAR_ACCEL_PATHFIND);
 
     public static final double DRIVE_OVERRIDE_THRESHOLD = 0.3; // Input threshold to override vision and drive anyway.
   }

@@ -4,16 +4,20 @@ import java.io.IOException;
 
 import org.ironriders.lib.Constants.Drive;
 import org.ironriders.lib.Constants.Drive.Controller;
+import org.ironriders.lib.Constants;
 import org.ironriders.lib.IronSubsystem;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
@@ -102,6 +106,31 @@ public class DriveSubsystem extends IronSubsystem {
 
   public static int requestDriveStop(Controller requester) {
     return requestDriveMovement(requester, new Translation2d(0, 0), 0, false);
+  }
+
+  public static Command pathfindToPose(Pose2d target, PathConstraints constraints) {
+    Command pathfindCommand = AutoBuilder.pathfindToPose(target, constraints);
+    return pathfindCommand.withName("Pathfind to " + target.getX() + ", " + target.getY());
+  }
+
+  public static Command pathfindToPose(Pose2d target) {
+    Command pathfindCommand = AutoBuilder.pathfindToPose(target, Drive.PATHFIND_CONSTRAINTS);
+    return pathfindCommand.withName("Pathfind to " + target.getX() + ", " + target.getY());
+  }
+
+  public static Command pathfindThenFollowPath(PathPlannerPath path, PathConstraints constraints) {
+    Command pathfindCommand = AutoBuilder.pathfindThenFollowPath(
+        path,
+        constraints);
+
+    return pathfindCommand.withName("Pathfind to " + path.name);
+  }
+
+  public static Command pathfindThenFollowPath(PathPlannerPath path) {
+    Command pathfindCommand = AutoBuilder.pathfindThenFollowPath(
+        path, Drive.PATHFIND_CONSTRAINTS);
+
+    return pathfindCommand.withName("Pathfind to " + path.name);
   }
 
   public static void setController(Controller target) {
