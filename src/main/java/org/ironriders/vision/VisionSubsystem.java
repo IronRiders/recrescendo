@@ -39,7 +39,8 @@ public class VisionSubsystem extends IronSubsystem {
     private List<PhotonTrackedTarget> targets;
     private List<PhotonPipelineResult> results;
     private PhotonPipelineResult result;
-    private AprilTagFieldLayout fieldLayout;
+    
+    public static AprilTagFieldLayout fieldLayout;
 
     public VisionSubsystem() {
         try {

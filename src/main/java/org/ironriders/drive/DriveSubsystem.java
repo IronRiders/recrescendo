@@ -1,9 +1,12 @@
 package org.ironriders.drive;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import org.ironriders.lib.Constants.Drive;
+import org.ironriders.lib.Constants.Vision;
 import org.ironriders.lib.Constants.Drive.Controller;
+import org.ironriders.vision.VisionSubsystem;
 import org.ironriders.lib.IronSubsystem;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -130,6 +133,15 @@ public class DriveSubsystem extends IronSubsystem {
         path, Drive.PATHFIND_CONSTRAINTS);
 
     return pathfindCommand.withName("Pathfind to " + path.name);
+  }
+
+  public static Optional<Command> pathfindToTag(int id) {
+    var tag = VisionSubsystem.fieldLayout.getTagPose(id).orElse(null);
+    if (tag == null) {
+      return Optional.empty();
+    }
+
+    return Optional.of(pathfindToPose(new Pose2d(tag.getX(), tag.getZ(), new Rotation2d(0))));
   }
 
   public static void setController(Controller target) {
