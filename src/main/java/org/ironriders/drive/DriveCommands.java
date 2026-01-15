@@ -1,16 +1,14 @@
 package org.ironriders.drive;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
-import org.ironriders.lib.Constants.Drive;
-
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+import org.ironriders.lib.Constants.Drive;
 
 @Logged
 public class DriveCommands {
@@ -20,17 +18,30 @@ public class DriveCommands {
 		this.driveSubsystem = driveSubsystem;
 	}
 
-	public Command drive(Supplier<Translation2d> translation, DoubleSupplier rotation, BooleanSupplier fieldRelative) {
-		return driveSubsystem.runOnce(() -> {
-			driveSubsystem.drive(translation.get(), rotation.getAsDouble(), fieldRelative.getAsBoolean());
-		});
+	public Command drive(
+			Supplier<Translation2d> translation, DoubleSupplier rotation, BooleanSupplier fieldRelative) {
+		return Commands.run(
+				() -> {
+					driveSubsystem.drive(
+							translation.get(), rotation.getAsDouble(), fieldRelative.getAsBoolean());
+				},
+				driveSubsystem);
 	}
 
-	public Command driveTeleop(DoubleSupplier inputTranslationX, DoubleSupplier inputTranslationY,
-			DoubleSupplier inputRotation, boolean fieldRelative) {
+	/** Is the drive subsystem controled by vision? Disables anyone elses control */
+	public Command setVisionConrol(boolean state) {
+		return Commands.run(
+				() -> {
+					driveSubsystem.setVisionControl(state);
+				},
+				driveSubsystem);
+	}
 
-		if (DriverStation.isAutonomous())
-			return Commands.none();
+	public Command driveTeleop(
+			DoubleSupplier inputTranslationX,
+			DoubleSupplier inputTranslationY,
+			DoubleSupplier inputRotation,
+			boolean fieldRelative) {
 
 		double invert = DriverStation.getAlliance().isEmpty()
 				|| DriverStation.getAlliance().get() == DriverStation.Alliance.Blue

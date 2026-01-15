@@ -4,13 +4,11 @@ import org.ironriders.lib.IronSubsystem;
 
 public class ClimberSubsystem extends IronSubsystem {
 
-    private final ClimberCommands commands = new ClimberCommands(this);
+  private final ClimberCommands commands = new ClimberCommands(this);
 
-    public ClimberSubsystem() {
+  public ClimberSubsystem() {}
 
-    }
-
-    public ClimberCommands getCommands() {
-        return commands;
-    }
+  public ClimberCommands getCommands() {
+    return commands;
+  }
 }
