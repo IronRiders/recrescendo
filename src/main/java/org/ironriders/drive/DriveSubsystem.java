@@ -141,6 +141,7 @@ public class DriveSubsystem extends IronSubsystem {
       return Optional.empty();
     }
 
+    // TODO: Make sure that the z component isn't hight.
     return Optional.of(pathfindToPose(new Pose2d(tag.getX(), tag.getZ(), new Rotation2d(0))));
   }
 
