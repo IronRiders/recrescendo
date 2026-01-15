@@ -10,7 +10,6 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.ironriders.lib.Constants.Drive;
 
-@Logged
 public class DriveCommands {
 	private final DriveSubsystem driveSubsystem;
 
@@ -22,17 +21,8 @@ public class DriveCommands {
 			Supplier<Translation2d> translation, DoubleSupplier rotation, BooleanSupplier fieldRelative) {
 		return Commands.run(
 				() -> {
-					driveSubsystem.drive(
+					DriveSubsystem.drive(
 							translation.get(), rotation.getAsDouble(), fieldRelative.getAsBoolean());
-				},
-				driveSubsystem);
-	}
-
-	/** Is the drive subsystem controled by vision? Disables anyone elses control */
-	public Command setVisionConrol(boolean state) {
-		return Commands.run(
-				() -> {
-					driveSubsystem.setVisionControl(state);
 				},
 				driveSubsystem);
 	}

@@ -50,7 +50,7 @@ public class RobotCommands {
         Commands.parallel(
             launcherCommands.set(Launcher.State.LAUNCH),
             intakeCommands.center(),
-            pivotCommands.set(Pivot.State.LAUNCHER)));
+            pivotCommands.set(Pivot.State.LAUNCHER)).withName("Intake Parallel")).withName("Intake");
   }
 
   public Command launch() {
@@ -58,20 +58,20 @@ public class RobotCommands {
         launcherCommands.set(Launcher.State.LAUNCH), // should already be true but anyway
         pivotCommands.set(Pivot.State.LAUNCHER), // same with this
         intakeCommands.eject(),
-        launcherCommands.launch()); // launches with timeout
+        launcherCommands.launch()).withName("Launch"); // launches with timeout
   }
 
   public Command eject() {
     return Commands.sequence(
         launcherCommands.set(Launcher.State.STOP),
         pivotCommands.set(Pivot.State.GROUND),
-        intakeCommands.eject());
+        intakeCommands.eject()).withName("Eject");
   }
 
   public Command reset() {
     return Commands.parallel(
         pivotCommands.set(Pivot.State.LAUNCHER),
         intakeCommands.set(Intake.State.STOP),
-        launcherCommands.stop());
+        launcherCommands.stop()).withName("Reset");
   }
 }

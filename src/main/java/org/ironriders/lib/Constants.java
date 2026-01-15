@@ -4,6 +4,10 @@ import static edu.wpi.first.units.Units.Meters;
 
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -36,14 +40,12 @@ public class Constants {
 
   public class Drive {
 
-    public static final File SWERVE_JSON_DIRECTORY =
-        new File(Filesystem.getDeployDirectory(), "swerve");
+    public static final File SWERVE_JSON_DIRECTORY = new File(Filesystem.getDeployDirectory(), "swerve");
 
-    public static final PPHolonomicDriveController HOLONOMIC_CONFIG =
-        new PPHolonomicDriveController(
-            new PIDConstants(10.0, 0.05, 0.0), // Translation PID
-            new PIDConstants(10.0, 0.2, 0.0) // Rotation PID
-            );
+    public static final PPHolonomicDriveController HOLONOMIC_CONFIG = new PPHolonomicDriveController(
+        new PIDConstants(10.0, 0.05, 0.0), // Translation PID
+        new PIDConstants(10.0, 0.2, 0.0) // Rotation PID
+    );
 
     public static final double TRANSLATION_CONTROL_EXPONENT = 3.0;
     public static final double TRANSLATION_CONTROL_DEADBAND = 0.8;
@@ -52,13 +54,28 @@ public class Constants {
 
     public static final double SWERVE_MAX_TRANSLATION_TELEOP = 0.6; // m/s
     public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 1 / 3; // rad/s
+  }
 
+  public class Vision {
     public static final double VISION_P = 0.1;
     public static final double VISION_I = 0.05;
     public static final double VISION_D = 0;
-    public static final double VISION_ROTATION_MAX_SPEED =
-        2; // rad/s (2 is about a third of a rotation i think)
+    public static final double VISION_ROTATION_MAX_SPEED = 2; // rad/s
     public static final String VISION_CAMERA = "main";
+
+    public static final Transform3d CAMERA_OFFSET = new Transform3d( // idk just guessed 
+            new Translation3d(
+                0.25,   // forward (meters)
+                0.0,    // left (meters)
+                0.5     // up (meters)
+            ),
+            new Rotation3d(
+                0.0,    // roll
+                0.0,   // pitch
+                0.0     // yaw
+            )
+        );
+
   }
 
   public class Intake {
@@ -154,8 +171,7 @@ public class Constants {
 
     public static final double GEAR_RATIO = 1.0; // 1/(27*2);
 
-    public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS =
-        new TrapezoidProfile.Constraints(20, 10);
+    public static final TrapezoidProfile.Constraints CONTROL_CONSTRAINTS = new TrapezoidProfile.Constraints(20, 10);
 
     public static final double ENCODER_OFFSET = 260;
 

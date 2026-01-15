@@ -1,55 +1,52 @@
 package org.ironriders.drive;
 
+import java.io.IOException;
+
+import org.ironriders.lib.Constants.Drive;
+import org.ironriders.lib.IronSubsystem;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
-import edu.wpi.first.math.controller.PIDController;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
-import java.io.IOException;
-import org.ironriders.lib.Constants.Drive;
-import org.ironriders.lib.IronSubsystem;
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonUtils;
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
-import edu.wpi.first.wpilibj2.command.Commands;
+
+enum Controller {
+  DRIVER(),
+  VISION();
+
+  Controller() {
+  }
+}
 
 /**
- * The DriveSubsystem encompasses everything that the Swerve Drive needs to function. It keeps track
- * of the robot's position and angle, and uses the controller input to figure out how the individual
+ * The DriveSubsystem encompasses everything that the Swerve Drive needs to
+ * function. It keeps track
+ * of the robot's position and angle, and uses the controller input to figure
+ * out how the individual
  * modules need to turn and be angled. Contains the vision system
  */
 public class DriveSubsystem extends IronSubsystem {
-
+  public static Controller controller;
   private final DriveCommands commands;
 
-  private SwerveDrive swerveDrive;
-  private boolean rotationInvert = false;
-  private boolean driveInvert = false;
-
-  public Command pathfindCommand;
-  public double controlSpeedMultipler = 1;
-
-  private boolean enableVision = false;
-  private PhotonCamera camera = new PhotonCamera(Drive.VISION_CAMERA);
-  private PIDController visPidController =
-      new PIDController(Drive.VISION_P, Drive.VISION_I, Drive.VISION_D);
-  private double distance = 0;
+  private static SwerveDrive swerveDrive;
+  private static boolean rotationInvert = false;
+  private static boolean driveInvert = false;
 
   public DriveSubsystem() throws RuntimeException {
     try {
-      swerveDrive =
-          new SwerveParser(Drive.SWERVE_JSON_DIRECTORY) // YAGSL reads from the deploy/swerve
-              // directory.
-              .createSwerveDrive(Drive.SWERVE_MAX_TRANSLATION_TELEOP);
-    } catch (
-        IOException e) { // instancing SwerveDrive can throw an error, so we need to catch that.
+      swerveDrive = new SwerveParser(Drive.SWERVE_JSON_DIRECTORY) // YAGSL reads from the deploy/swerve
+          // directory.
+          .createSwerveDrive(Drive.SWERVE_MAX_TRANSLATION_TELEOP);
+    } catch (IOException e) { // instancing SwerveDrive can throw an error, so we need to catch that.
       throw new RuntimeException("Error configuring swerve drive", e);
     }
 
@@ -80,26 +77,47 @@ public class DriveSubsystem extends IronSubsystem {
           return false;
         },
         this);
-    visionInit();
   }
 
   /**
-   * Vrrrrooooooooom brrrrrrrrr BRRRRRR wheeee BRRR brrrr VRRRRROOOOOOM ZOOOOOOM ZOOOOM WAHOOOOOOOOO
+   * Vrrrrooooooooom brrrrrrrrr BRRRRRR wheeee BRRR brrrr VRRRRROOOOOOM ZOOOOOOM
+   * ZOOOOM WAHOOOOOOOOO
    * WAHAHAHHA (Drives given a desired translation and rotation.)
    *
-   * @param translation Desired translation in meters per second.
-   * @param rotation Desired rotation in radians per second.
-   * @param fieldRelative If not field relative, the robot will move relative to its own rotation.
+   * @param translation   Desired translation in meters per second.
+   * @param rotation      Desired rotation in radians per second.
+   * @param fieldRelative If not field relative, the robot will move relative to
+   *                      its own rotation.
    */
-  public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
-    // I'm sure this will be problem at some point sorry
-    if (!enableVision) {
-      swerveDrive.drive(
-          translation.times(driveInvert ? -1 : 1),
-          rotation * (rotationInvert ? -1 : 1),
-          fieldRelative,
-          false);
+  public static void drive(Translation2d translation, double rotation, boolean fieldRelative) {
+    swerveDrive.drive(
+        translation.times(driveInvert ? -1 : 1),
+        rotation * (rotationInvert ? -1 : 1),
+        fieldRelative,
+        false);
+  }
+
+  public static int requestDriveMovement(Controller requester, Translation2d translation, double rotation,
+      boolean fieldRelative) {
+    if (controller == requester) {
+      drive(translation, rotation, fieldRelative);
+      return 0; // Succeeded.
+    } else {
+      return 1; // Failed.
     }
+  }
+
+  public static int requestDriveStop(Controller requester) {
+    if (controller == requester) {
+      drive(new Translation2d(0, 0), 0, false);
+      return 0; // Succeeded.
+    } else {
+      return 1; // Failed.
+    }
+  }
+
+  public static void setController(Controller target) {
+    controller = target;
   }
 
   /** Fetch the DriveCommands instance */
@@ -108,97 +126,13 @@ public class DriveSubsystem extends IronSubsystem {
   }
 
   /** Fetch the SwerveDrive instance */
-  public SwerveDrive getSwerveDrive() {
+  public static SwerveDrive getSwerveDrive() {
     return swerveDrive;
   }
 
   /** Where is the robot? */
   public Pose2d getPose() {
-    return this.swerveDrive.getPose();
-  }
-
-  @Override
-  public void periodic() {
-    visionPeriodic(enableVision);
-  }
-
-  /**
-   * Vision Main loop
-   *
-   * @param controlsDrive Am I allowed to move?
-   */
-  private void visionPeriodic(boolean controlsDrive) {
-    boolean targetVisible = false;
-    double targetYaw = 0.0;
-    var results = camera.getAllUnreadResults();
-
-    visPidController.setSetpoint(0);
-
-    if (!results.isEmpty()) {
-      // Camera processed a new frame since last time we checked
-      // Get the latest frame
-      var result = results.get(results.size() - 1);
-      if (result.hasTargets()) {
-        for (var target : result.getTargets()) {
-          if (target.getFiducialId() == 7) {
-            targetYaw = target.getYaw();
-            // We assume the camera and tag are both at a meter of height, but this is a
-            // very bad idea as the differance is important. Real nums tbd
-            distance = PhotonUtils.calculateDistanceToTargetMeters(1, 1, 0, target.getPitch());
-            targetVisible = true;
-          }
-          
-        }
-      }
-    }
-
-    publish("Camera sees target", targetVisible);
-    publish("Vision can drive", controlsDrive);
-
-    if (targetVisible) {
-      // We found our favorite toy! (tag #7)
-      publish("Yaw offset", targetYaw);
-      double requestedmovement = visPidController.calculate(targetYaw);
-      publish("Requested movement", requestedmovement);
-      publish("Distance to target", distance);
-
-      if (controlsDrive) {
-
-        if (requestedmovement > Drive.VISION_ROTATION_MAX_SPEED) {
-          requestedmovement = Drive.VISION_ROTATION_MAX_SPEED;
-        }
-        if (requestedmovement < -Drive.VISION_ROTATION_MAX_SPEED) {
-          requestedmovement = -Drive.VISION_ROTATION_MAX_SPEED;
-        }
-
-        swerveDrive.drive(new Translation2d(0, 0), requestedmovement * -1, false, true);
-      }
-    } else {
-
-      if (controlsDrive) {
-        // Saftey measure, if vision control is requested but we lose the tag, stop
-        // moving.
-        // Otherwise we will just keep moving in the previously commanded direction
-        // forever
-        swerveDrive.drive(new Translation2d(0, 0), 0, false, true);
-      }
-    }
-  }
-
-  /** Initalize vision system. Disables anyone elses control */
-  private void visionInit() {
-    publish("Requested movement", "Unknown");
-    publish("Distance to target", "Unknown");
-    publish("Yaw offset", "Unknown");
-  }
-
-  /** Set if vision is allowed to drive. */
-  public void setVisionControl(boolean state) {
-    this.enableVision = state;
-
-	if (!state) {
-		Commands.runOnce(() -> this.getDefaultCommand());
-	}
+    return DriveSubsystem.swerveDrive.getPose();
   }
 
   public void resetRotation() {
@@ -221,9 +155,5 @@ public class DriveSubsystem extends IronSubsystem {
 
   public void switchDrive() {
     driveInvert = !driveInvert;
-  }
-
-  public void setSpeed(double speed) {
-    controlSpeedMultipler = speed;
   }
 }

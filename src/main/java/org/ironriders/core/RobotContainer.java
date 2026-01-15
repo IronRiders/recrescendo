@@ -70,22 +70,22 @@ public class RobotContainer {
         robotCommands.driveTeleop(
             () ->
                 Utils.controlCurve(
-                        -primaryController.getLeftY() * driveSubsystem.controlSpeedMultipler,
+                        -primaryController.getLeftY(),
                         Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
                         Constants.Drive.TRANSLATION_CONTROL_DEADBAND)
                     * speedMultiplier,
             () ->
                 Utils.controlCurve(
-                        -primaryController.getLeftX() * driveSubsystem.controlSpeedMultipler,
+                        -primaryController.getLeftX(),
                         Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
                         Constants.Drive.TRANSLATION_CONTROL_DEADBAND)
                     * speedMultiplier,
             () ->
                 Utils.controlCurve(
-                        -primaryController.getRightX() * driveSubsystem.controlSpeedMultipler,
+                        -primaryController.getRightX(),
                         Constants.Drive.ROTATION_CONTROL_EXPONENT,
                         Constants.Drive.ROTATION_CONTROL_DEADBAND)
-                    * angleMultiplier));
+                    * angleMultiplier).withName("Drive Teleop"));
 
     primaryController
         .rightTrigger()
@@ -118,7 +118,7 @@ public class RobotContainer {
 
     primaryController
         .a()
-        .onTrue(driveCommands.setVisionConrol(true)); // Give conrol of the drive system to vision
+        .onTrue(driveCommands.setVisionConrol(true)); // Give control of the drive system to vision
 
     primaryController
         .a()
