@@ -1,11 +1,12 @@
-package org.ironriders.drive;
+package org.ironriders.vision;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
-import org.ironriders.lib.Constants.Drive;
+import org.ironriders.drive.DriveSubsystem;
+import org.ironriders.lib.Constants.Drive.Controller;
 import org.ironriders.lib.Constants.Vision;
 import org.ironriders.lib.IronSubsystem;
 import org.ironriders.lib.Utils;
@@ -17,23 +18,20 @@ import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.math.numbers.N3;
 
 public class VisionSubsystem extends IronSubsystem {
     private PhotonCamera camera = new PhotonCamera(Vision.VISION_CAMERA);
     private PIDController visPidController = new PIDController(Vision.VISION_P, Vision.VISION_I, Vision.VISION_D);
     private final PhotonPoseEstimator poseEstimator;
 
-    private double distance = 0;
-    private boolean targetVisible = false;
     private List<PhotonTrackedTarget> targets;
     private List<PhotonPipelineResult> results;
     private PhotonPipelineResult result;
@@ -41,18 +39,12 @@ public class VisionSubsystem extends IronSubsystem {
 
     public VisionSubsystem() {
         try {
-            fieldLayout = AprilTagFieldLayout.loadFromResource("deploy/2026-rebuilt-welded.json"); /*
-                                                                                                    * TODO: When WPI
-                                                                                                    * gets
-                                                                                                    * around to adding
-                                                                                                    * the rebuilt tags
-                                                                                                    * change this
-                                                                                                    * to use the proper
-                                                                                                    * one.
-                                                                                                    */
-        } catch (Exception e) {
-            DriverStation.reportError("Failed to load AprilTag layout", e.getStackTrace());
-            throw new RuntimeException(e);
+            // TODO: When WPI gets around to adding the rebuilt tags change this to use the
+            // proper one.
+            fieldLayout = AprilTagFieldLayout.loadFromResource("deploy/2026-rebuilt-welded.json");
+        } catch (IOException e) {
+            reportError("Could not load apriltag layout!");
+            e.printStackTrace();
         }
 
         poseEstimator = new PhotonPoseEstimator(
@@ -64,6 +56,36 @@ public class VisionSubsystem extends IronSubsystem {
                 PoseStrategy.LOWEST_AMBIGUITY);
     }
 
+    public Vector<N3> estimateStdDevVector(EstimatedRobotPose pose, List<PhotonTrackedTarget> targets) {
+        double xyStdDev;
+        double thetaStdDev;
+
+        double avgDistance = pose.targetsUsed.stream()
+                .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
+                .average()
+                .orElse(-1);
+
+        // TODO: These numbers are mostly arbitrary.
+        if (pose.targetsUsed.size() > 1) { // Multi target
+            xyStdDev = 0.05 + (avgDistance * 0.02);
+            thetaStdDev = Math.toRadians(2 + avgDistance);
+        } else { // Single Target
+            xyStdDev = 0.5 + (avgDistance * 0.1);
+            thetaStdDev = Math.toRadians(10 + avgDistance * 5); // Really don't trust single tag rotation
+        }
+
+        double ambiguity = targets.stream()
+                .mapToDouble(t -> t.getPoseAmbiguity())
+                .average()
+                .orElse(-1);
+
+        // if we have high ambiguity, remove some trust.
+        xyStdDev *= (1.0 + ambiguity * 3.0);
+        thetaStdDev *= (1.0 + ambiguity * 5.0);
+
+        return VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev);
+    }
+
     public void estimateRobotPose() {
         EstimatedRobotPose newPose = poseEstimator.update(result).orElse(null); // Uses a deprecated method but idk how
                                                                                 // else to do it.
@@ -72,13 +94,13 @@ public class VisionSubsystem extends IronSubsystem {
             return;
         }
         // Actually add the estimate
+        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(newPose, targets));
         DriveSubsystem.getSwerveDrive().addVisionMeasurement(newPose.estimatedPose.toPose2d(),
                 newPose.timestampSeconds);
     }
 
     public double getDistance(PhotonTrackedTarget target) {
-        // *2, as the offset is from the center of the robot, and this wants the
-        // distance
+        // *2, as the offset is from the center of the robot, and this wants the distance
         // from the floor
         return PhotonUtils.calculateDistanceToTargetMeters(
                 Vision.CAMERA_OFFSET.getZ() * 2,
@@ -88,19 +110,12 @@ public class VisionSubsystem extends IronSubsystem {
                 target.getPitch());
     }
 
-    public List<Double> getTargetAngles(PhotonTrackedTarget target) {
-        List<Double> targetRotation;
-        targetRotation.add(target.getYaw());
-        targetRotation.add(target.getPitch());
-        targetRotation.add(target.getSkew());
-
-        return targetRotation;
+    public Double[] getTargetAngles(PhotonTrackedTarget target) {
+        return new Double[] { target.getYaw(), target.getPitch(), target.getSkew() };
     }
 
     @Override
     public void periodic() {
-        visPidController.setSetpoint(0); // Not sure why we do this.
-
         results = camera.getAllUnreadResults();
 
         if (results.isEmpty()) {
@@ -119,25 +134,31 @@ public class VisionSubsystem extends IronSubsystem {
         estimateRobotPose();
 
         // Testing code.
-        publish("Sees target", result.hasTargets());
+        visPidController.setSetpoint(0); // Assume we've rotated to face the target pose
+
+        publish("Sees target?", result.hasTargets());
 
         Map<PhotonTrackedTarget, Double> m = new HashMap<>();
 
-        for (var target : result.getTargets()) {
+        for (var target : targets) {
             m.put(target, getDistance(target));
 
             switch (target.getFiducialId()) {
+                case -1: // Error, not a valid tag!
+                    reportWarning("Vision got an invalid tag!");
+                    return;
                 case 7:
                     // We found our favorite toy! (tag #7)
-                    double requestedMovement = Utils.clamp(-Vision.VISION_ROTATION_MAX_SPEED, 
-                        Vision.VISION_ROTATION_MAX_SPEED, 
-                        visPidController.calculate(target.getYaw()));
+                    double requestedMovement = -Utils.clamp(-Vision.VISION_ROTATION_MAX_SPEED,
+                            Vision.VISION_ROTATION_MAX_SPEED,
+                            visPidController.calculate(target.getYaw()));
 
+                    // Skew is roll I think? (Skew also might just not work?)
                     publish("Yaw, Pitch, Skew", getTargetAngles(target).toString());
                     publish("Requested movement", requestedMovement);
 
-                    DriveSubsystem.setController(Controller.VISION);
-                    DriveSubsystem.requestDriveMovement(Controller.VISION, new Translation2d(0, 0), -requestedMovement, false);
+                    DriveSubsystem.requestDriveMovement(Controller.VISION, new Translation2d(0, 0), requestedMovement,
+                            false);
                     break;
 
                 default:

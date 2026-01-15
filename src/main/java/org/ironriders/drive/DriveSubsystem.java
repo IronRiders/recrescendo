@@ -3,6 +3,7 @@ package org.ironriders.drive;
 import java.io.IOException;
 
 import org.ironriders.lib.Constants.Drive;
+import org.ironriders.lib.Constants.Drive.Controller;
 import org.ironriders.lib.IronSubsystem;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -18,20 +19,12 @@ import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
-enum Controller {
-  DRIVER(),
-  VISION();
-
-  Controller() {
-  }
-}
-
 /**
  * The DriveSubsystem encompasses everything that the Swerve Drive needs to
  * function. It keeps track
  * of the robot's position and angle, and uses the controller input to figure
  * out how the individual
- * modules need to turn and be angled. Contains the vision system
+ * modules need to turn and be angled.
  */
 public class DriveSubsystem extends IronSubsystem {
   public static Controller controller;
@@ -108,12 +101,7 @@ public class DriveSubsystem extends IronSubsystem {
   }
 
   public static int requestDriveStop(Controller requester) {
-    if (controller == requester) {
-      drive(new Translation2d(0, 0), 0, false);
-      return 0; // Succeeded.
-    } else {
-      return 1; // Failed.
-    }
+    return requestDriveMovement(requester, new Translation2d(0, 0), 0, false);
   }
 
   public static void setController(Controller target) {

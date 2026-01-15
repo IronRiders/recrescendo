@@ -39,6 +39,13 @@ public class Constants {
   }
 
   public class Drive {
+    public enum Controller {
+      DRIVER(),
+      VISION();
+
+      Controller() {
+      }
+    }
 
     public static final File SWERVE_JSON_DIRECTORY = new File(Filesystem.getDeployDirectory(), "swerve");
 
@@ -54,6 +61,8 @@ public class Constants {
 
     public static final double SWERVE_MAX_TRANSLATION_TELEOP = 0.6; // m/s
     public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI * 1 / 3; // rad/s
+
+    public static final double DRIVE_OVERRIDE_THRESHOLD = 0.3; // Input threshold to override vision and drive anyway.
   }
 
   public class Vision {
@@ -63,18 +72,17 @@ public class Constants {
     public static final double VISION_ROTATION_MAX_SPEED = 2; // rad/s
     public static final String VISION_CAMERA = "main";
 
-    public static final Transform3d CAMERA_OFFSET = new Transform3d( // idk just guessed 
-            new Translation3d(
-                0.25,   // forward (meters)
-                0.0,    // left (meters)
-                0.5     // up (meters)
-            ),
-            new Rotation3d(
-                0.0,    // roll
-                0.0,   // pitch
-                0.0     // yaw
-            )
-        );
+    public static final Transform3d CAMERA_OFFSET = new Transform3d( // idk just guessed
+        new Translation3d(
+            0.25, // forward (meters)
+            0.0, // left (meters)
+            0.5 // up (meters)
+        ),
+        new Rotation3d(
+            0.0, // roll
+            0.0, // pitch
+            0.0 // yaw
+        ));
 
   }
 
