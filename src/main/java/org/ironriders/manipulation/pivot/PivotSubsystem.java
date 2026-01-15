@@ -46,7 +46,7 @@ public class PivotSubsystem extends IronSubsystem {
             .voltageCompensation(Robot.COMPENSATED_VOLTAGE)
             .idleMode(IdleMode.kBrake);
 
-    motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    motor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
     profile = new TrapezoidProfile(Pivot.CONTROL_CONSTRAINTS);
 
