@@ -4,6 +4,8 @@
 
 package org.ironriders.core;
 
+import org.photonvision.PhotonCamera;
+
 import edu.wpi.first.net.WebServer;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -79,6 +81,11 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testExit() {}
+
+  @Override
+  public void simulationInit() {
+      PhotonCamera.setVersionCheckEnabled(false); // Silence camera not found warnings.
+  }
 
   private void generalInit() {}
 }

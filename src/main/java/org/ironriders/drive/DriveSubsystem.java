@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.ironriders.lib.Constants.Drive;
 import org.ironriders.lib.Constants.Drive.Controller;
-import org.ironriders.lib.Constants;
 import org.ironriders.lib.IronSubsystem;
 
 import com.ctre.phoenix6.hardware.Pigeon2;

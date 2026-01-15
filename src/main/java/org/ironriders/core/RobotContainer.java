@@ -4,12 +4,6 @@
 
 package org.ironriders.core;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import org.ironriders.climber.ClimberCommands;
 import org.ironriders.climber.ClimberSubsystem;
 import org.ironriders.drive.DriveCommands;
@@ -25,6 +19,17 @@ import org.ironriders.manipulation.launcher.LauncherCommands;
 import org.ironriders.manipulation.launcher.LauncherSubsystem;
 import org.ironriders.manipulation.pivot.PivotCommands;
 import org.ironriders.manipulation.pivot.PivotSubsystem;
+import org.ironriders.vision.VisionCommands;
+import org.ironriders.vision.VisionSubsystem;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
 
@@ -46,6 +51,9 @@ public class RobotContainer {
     public LightsSubsystem lightsSubsystem = new LightsSubsystem();
     public LightsCommands lightsCommands = lightsSubsystem.getCommands();
 
+    public VisionSubsystem visionSubsystem = new VisionSubsystem();
+    public VisionCommands visionCommands = visionSubsystem.getCommands();
+
     public Command activeCommand;
 
     public double speedMultiplier = 1;
@@ -61,6 +69,8 @@ public class RobotContainer {
     public RobotContainer() {
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Select", autoChooser);
+
+        DriverStation.silenceJoystickConnectionWarning(true);
 
         configureBindings();
     }
@@ -119,7 +129,6 @@ public class RobotContainer {
                 .a()
                 .onTrue(driveCommands.setController(Controller.VISION)) // Give control of the drive system to vision
                 .onFalse(driveCommands.setController(Controller.DRIVER));
-
 
         primaryController.povUp().onTrue(launcherCommands.upTargetVelocity());
         primaryController.povDown().onTrue(launcherCommands.downTargetVelocity());

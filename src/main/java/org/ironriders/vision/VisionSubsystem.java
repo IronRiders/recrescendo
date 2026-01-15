@@ -1,6 +1,7 @@
 package org.ironriders.vision;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +27,11 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.Filesystem;
 
 public class VisionSubsystem extends IronSubsystem {
+    private final VisionCommands commands = new VisionCommands(this);
+
     private PhotonCamera camera = new PhotonCamera(Vision.VISION_CAMERA);
     private PIDController visPidController = new PIDController(Vision.VISION_P, Vision.VISION_I, Vision.VISION_D);
     private final PhotonPoseEstimator poseEstimator;
@@ -41,7 +45,11 @@ public class VisionSubsystem extends IronSubsystem {
         try {
             // TODO: When WPI gets around to adding the rebuilt tags change this to use the
             // proper one.
-            fieldLayout = AprilTagFieldLayout.loadFromResource("deploy/2026-rebuilt-welded.json");
+            Path layoutPath = Filesystem.getDeployDirectory()
+                    .toPath()
+                    .resolve("2026-rebuilt-welded.json");
+
+            fieldLayout = new AprilTagFieldLayout(layoutPath);
         } catch (IOException e) {
             reportError("Could not load apriltag layout!");
             e.printStackTrace();
@@ -77,11 +85,11 @@ public class VisionSubsystem extends IronSubsystem {
         double ambiguity = targets.stream()
                 .mapToDouble(t -> t.getPoseAmbiguity())
                 .average()
-                .orElse(-1);
+                .orElse(Double.POSITIVE_INFINITY) + 1d; // Make sure we really don't like this pose if the optional is null.
 
         // if we have high ambiguity, remove some trust.
-        xyStdDev *= (1.0 + ambiguity * 3.0);
-        thetaStdDev *= (1.0 + ambiguity * 5.0);
+        xyStdDev *= (ambiguity * 3.0);
+        thetaStdDev *= (ambiguity * 5.0);
 
         return VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev);
     }
@@ -100,7 +108,8 @@ public class VisionSubsystem extends IronSubsystem {
     }
 
     public double getDistance(PhotonTrackedTarget target) {
-        // *2, as the offset is from the center of the robot, and this wants the distance
+        // *2, as the offset is from the center of the robot, and this wants the
+        // distance
         // from the floor
         return PhotonUtils.calculateDistanceToTargetMeters(
                 Vision.CAMERA_OFFSET.getZ() * 2,
@@ -153,7 +162,7 @@ public class VisionSubsystem extends IronSubsystem {
                             Vision.VISION_ROTATION_MAX_SPEED,
                             visPidController.calculate(target.getYaw()));
 
-                    // Skew is roll I think? (Skew also might just not work?)
+                    // Skew is horizontal offset from cam I think?
                     publish("Yaw, Pitch, Skew", getTargetAngles(target).toString());
                     publish("Requested movement", requestedMovement);
 
@@ -166,5 +175,9 @@ public class VisionSubsystem extends IronSubsystem {
             }
         }
         publish("Tags -> Distances", m.toString());
+    }
+
+    public VisionCommands getCommands() {
+        return commands;
     }
 }
