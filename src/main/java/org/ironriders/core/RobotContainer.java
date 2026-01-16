@@ -155,11 +155,9 @@ public class RobotContainer {
 
                 primaryController
                                 .a()
-                                .onTrue(Commands.runOnce(()->DriveSubsystem.pathfindToTag(9)))
-                                .onFalse(Commands.runOnce(()->DriveSubsystem.cancelPathfind()));
-                                //.onTrue(driveCommands.setController(Controller.VISION)) // Give control of the drive
+                                .onTrue(driveCommands.setController(Controller.VISION)) // Give control of the drive
                                                                                         // system to vision
-                                //.onFalse(driveCommands.setController(Controller.DRIVER));
+                                .onFalse(driveCommands.setController(Controller.DRIVER));
 
                 primaryController.povUp().onTrue(launcherCommands.upTargetVelocity());
                 primaryController.povDown().onTrue(launcherCommands.downTargetVelocity());
