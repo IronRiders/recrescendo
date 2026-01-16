@@ -32,7 +32,7 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
  * modules need to turn and be angled.
  */
 public class DriveSubsystem extends IronSubsystem {
-  public static Controller controller;
+  public static Controller controller = Controller.DRIVER;
   private final DriveCommands commands;
 
   private static SwerveDrive swerveDrive;
@@ -76,6 +76,11 @@ public class DriveSubsystem extends IronSubsystem {
           return false;
         },
         this);
+  }
+
+  @Override
+  public void periodic() {
+      publish("Controller", controller.name());
   }
 
   /**
