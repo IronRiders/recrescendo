@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.util.Optional;
 
 import org.ironriders.lib.Constants.Drive;
-import org.ironriders.lib.Constants.Vision;
 import org.ironriders.lib.Constants.Drive.Controller;
-import org.ironriders.vision.VisionSubsystem;
 import org.ironriders.lib.IronSubsystem;
+import org.ironriders.vision.VisionSubsystem;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -39,6 +38,7 @@ public class DriveSubsystem extends IronSubsystem {
   private static SwerveDrive swerveDrive;
   private static boolean rotationInvert = false;
   private static boolean driveInvert = false;
+  private static Command pathfindCommand;
 
   public DriveSubsystem() throws RuntimeException {
     try {
@@ -111,17 +111,17 @@ public class DriveSubsystem extends IronSubsystem {
   }
 
   public static Command pathfindToPose(Pose2d target, PathConstraints constraints) {
-    Command pathfindCommand = AutoBuilder.pathfindToPose(target, constraints);
+    pathfindCommand = AutoBuilder.pathfindToPose(target, constraints);
     return pathfindCommand.withName("Pathfind to " + target.getX() + ", " + target.getY());
   }
 
   public static Command pathfindToPose(Pose2d target) {
-    Command pathfindCommand = AutoBuilder.pathfindToPose(target, Drive.PATHFIND_CONSTRAINTS);
+    pathfindCommand = AutoBuilder.pathfindToPose(target, Drive.PATHFIND_CONSTRAINTS);
     return pathfindCommand.withName("Pathfind to " + target.getX() + ", " + target.getY());
   }
 
   public static Command pathfindThenFollowPath(PathPlannerPath path, PathConstraints constraints) {
-    Command pathfindCommand = AutoBuilder.pathfindThenFollowPath(
+    pathfindCommand = AutoBuilder.pathfindThenFollowPath(
         path,
         constraints);
 
@@ -129,7 +129,7 @@ public class DriveSubsystem extends IronSubsystem {
   }
 
   public static Command pathfindThenFollowPath(PathPlannerPath path) {
-    Command pathfindCommand = AutoBuilder.pathfindThenFollowPath(
+    pathfindCommand = AutoBuilder.pathfindThenFollowPath(
         path, Drive.PATHFIND_CONSTRAINTS);
 
     return pathfindCommand.withName("Pathfind to " + path.name);
@@ -143,6 +143,10 @@ public class DriveSubsystem extends IronSubsystem {
 
     // TODO: Make sure that the z component isn't hight.
     return Optional.of(pathfindToPose(new Pose2d(tag.getX(), tag.getZ(), new Rotation2d(0))));
+  }
+
+  public static void cancelPathfind() {
+    pathfindCommand.cancel();
   }
 
   public static void setController(Controller target) {

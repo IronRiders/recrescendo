@@ -47,6 +47,7 @@ public class DriveCommands {
 		if ((inputTranslationX.getAsDouble() + inputTranslationY.getAsDouble()
 				+ inputRotation.getAsDouble() / 3) > Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
 			DriveSubsystem.setController(Controller.DRIVER);
+			DriveSubsystem.cancelPathfind(); // TODO: we need a better place for this check
 		}
 
 		return drive(
