@@ -44,8 +44,7 @@ public class VisionSubsystem extends IronSubsystem {
 
     public VisionSubsystem() {
         try {
-            // TODO: When WPI gets around to adding the rebuilt tags change this to use the
-            // proper one.
+            // TODO: Update this to use the built in one.
             Path layoutPath = Filesystem.getDeployDirectory()
                     .toPath()
                     .resolve("2026-rebuilt-welded.json");
@@ -104,7 +103,7 @@ public class VisionSubsystem extends IronSubsystem {
             return;
         }
 
-        // Throwaway the pose if its too normal to us or is too far away.
+        // Throwaway the pose if it is too normal to us or is too far away.
         if (result.getBestTarget().getSkew() < Vision.SKEW_THROWAWAY_THRESHOLD
                 || Utils.getPoseDifference(Utils.flattenPose3d(newPose.estimatedPose),
                         DriveSubsystem.getSwerveDrive().getPose()).getNorm() > Vision.DISTANCE_THROWAWAY_THRESHOLD) {
