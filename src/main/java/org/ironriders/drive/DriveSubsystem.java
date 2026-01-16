@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.ironriders.lib.Constants.Drive;
 import org.ironriders.lib.Constants.Drive.Controller;
 import org.ironriders.lib.IronSubsystem;
+import org.ironriders.lib.Utils;
 import org.ironriders.vision.VisionSubsystem;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -146,8 +147,7 @@ public class DriveSubsystem extends IronSubsystem {
       return Optional.empty();
     }
 
-    // TODO: Make sure that the z component isn't hight.
-    return Optional.of(pathfindToPose(new Pose2d(tag.getX(), tag.getZ(), new Rotation2d(0))));
+    return Optional.of(pathfindToPose(Utils.flattenPose3d(tag)));
   }
 
   public static void cancelPathfind() {

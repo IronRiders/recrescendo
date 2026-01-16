@@ -1,5 +1,10 @@
 package org.ironriders.lib;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+
 /** Utility class to encourage the robot's dangerous math addiction. */
 public class Utils {
 
@@ -29,10 +34,19 @@ public class Utils {
    * Normalizes Added Voltage from Feed Forward to a number between (0.0, 1.0).
    *
    * @param input The additional voltage.
-   * @return The normalized volatge value within the range (0.0, 1.0).
+   * @return The normalized voltage value within the range (0.0, 1.0).
    */
   public static double percentOfMaxVoltage(double voltage, int maxVoltage) {
     return (voltage / maxVoltage);
+  }
+
+  // TODO: Make sure that the y component isn't hight.
+  public static Pose2d flattenPose3d(Pose3d pose) {
+    return new Pose2d(new Translation2d(pose.getX(), pose.getY()), new Rotation2d(0));
+  }
+
+  public static Translation2d getPoseDifference(Pose2d pose1, Pose2d pose2) {
+    return new Translation2d(pose1.getX() - pose2.getX(), pose1.getY() - pose2.getY());
   }
 
   public static double clamp(double min, double max, double in) {

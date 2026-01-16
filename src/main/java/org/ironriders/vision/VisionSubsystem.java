@@ -39,7 +39,6 @@ public class VisionSubsystem extends IronSubsystem {
 
     private List<PhotonTrackedTarget> targets;
     private List<PhotonPipelineResult> results;
-    private PhotonPipelineResult result;
 
     public static AprilTagFieldLayout fieldLayout;
 
@@ -98,14 +97,20 @@ public class VisionSubsystem extends IronSubsystem {
     }
 
     public void estimateRobotPose(PhotonPipelineResult result) {
-        EstimatedRobotPose newPose = poseEstimator.estimateCoprocMultiTagPose(result).orElse(null); // Uses a deprecated method
-                                                                                             // but idk how
-        // else to do it.
+        EstimatedRobotPose newPose = poseEstimator.estimateCoprocMultiTagPose(result).orElse(null);
         if (newPose == null) {
             // Something has gone wrong, give up and try again next tick.
-            reportWarning("Giving up");
+            reportWarning("Giving up in pose estimation!");
             return;
         }
+
+        // Throwaway the pose if its too normal to us or is too far away.
+        if (result.getBestTarget().getSkew() < Vision.SKEW_THROWAWAY_THRESHOLD
+                || Utils.getPoseDifference(Utils.flattenPose3d(newPose.estimatedPose),
+                        DriveSubsystem.getSwerveDrive().getPose()).getNorm() > Vision.DISTANCE_THROWAWAY_THRESHOLD) {
+            return;
+        }
+
         // Actually add the estimate
         DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(newPose, targets));
         DriveSubsystem.getSwerveDrive().addVisionMeasurement(newPose.estimatedPose.toPose2d(),
@@ -150,7 +155,6 @@ public class VisionSubsystem extends IronSubsystem {
         if (result != null) {
             estimateRobotPose(result);
         }
-
 
         // Testing code.
         visPidController.setSetpoint(0); // Assume we've rotated to face the target pose
