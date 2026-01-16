@@ -5,9 +5,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.function.DoubleSupplier;
 import org.ironriders.climber.ClimberCommands;
 import org.ironriders.drive.DriveCommands;
+import org.ironriders.drive.DriveSubsystem;
+import org.ironriders.lib.Constants;
 import org.ironriders.lib.Constants.Intake;
 import org.ironriders.lib.Constants.Launcher;
 import org.ironriders.lib.Constants.Pivot;
+import org.ironriders.lib.Constants.Drive.Controller;
 import org.ironriders.manipulation.intake.IntakeCommands;
 import org.ironriders.manipulation.launcher.LauncherCommands;
 import org.ironriders.manipulation.pivot.PivotCommands;
@@ -20,8 +23,6 @@ public class RobotCommands {
   private final IntakeCommands intakeCommands;
   private final LauncherCommands launcherCommands;
 
-  //private final ClimberCommands climberCommands; probably wont exist
-
   public RobotCommands(
       DriveCommands driveCommands,
       LauncherCommands launcherCommands,
@@ -33,7 +34,6 @@ public class RobotCommands {
     this.launcherCommands = launcherCommands;
     this.pivotCommands = pivotCommands;
     this.intakeCommands = intakeCommands;
-   // this.climberCommands = climberCommands;
   }
 
   public Command driveTeleop(
@@ -50,7 +50,8 @@ public class RobotCommands {
         Commands.parallel(
             launcherCommands.set(Launcher.State.LAUNCH),
             intakeCommands.center(),
-            pivotCommands.set(Pivot.State.LAUNCHER)).withName("Intake Parallel")).withName("Intake");
+            pivotCommands.set(Pivot.State.LAUNCHER)).withName("Intake Parallel"))
+        .withName("Intake");
   }
 
   public Command launch() {

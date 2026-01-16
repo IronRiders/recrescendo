@@ -28,6 +28,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.Timer;
 
 public class VisionSubsystem extends IronSubsystem {
     private final VisionCommands commands = new VisionCommands(this);
@@ -39,7 +40,7 @@ public class VisionSubsystem extends IronSubsystem {
     private List<PhotonTrackedTarget> targets;
     private List<PhotonPipelineResult> results;
     private PhotonPipelineResult result;
-    
+
     public static AprilTagFieldLayout fieldLayout;
 
     public VisionSubsystem() {
@@ -76,36 +77,39 @@ public class VisionSubsystem extends IronSubsystem {
 
         // TODO: These numbers are mostly arbitrary.
         if (pose.targetsUsed.size() > 1) { // Multi target
-            xyStdDev = 0.05 + (avgDistance * 0.02);
-            thetaStdDev = Math.toRadians(2 + avgDistance);
+            xyStdDev = 0.02 + (avgDistance * 0.03);
+            thetaStdDev = Math.toRadians(1 + avgDistance);
         } else { // Single Target
-            xyStdDev = 0.5 + (avgDistance * 0.1);
+            xyStdDev = 0.5 + (avgDistance * 0.15);
             thetaStdDev = Math.toRadians(10 + avgDistance * 5); // Really don't trust single tag rotation
         }
 
         double ambiguity = targets.stream()
                 .mapToDouble(t -> t.getPoseAmbiguity())
                 .average()
-                .orElse(Double.POSITIVE_INFINITY) + 1d; // Make sure we really don't like this pose if the optional is null.
+                .orElse(Double.POSITIVE_INFINITY) + 1d; // Make sure we really don't like this pose if the optional is
+                                                        // null.
 
         // if we have high ambiguity, remove some trust.
-        xyStdDev *= (ambiguity * 3.0);
-        thetaStdDev *= (ambiguity * 5.0);
+        xyStdDev *= (ambiguity);
+        thetaStdDev *= (ambiguity * 2.0);
 
         return VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev);
     }
 
-    public void estimateRobotPose() {
-        EstimatedRobotPose newPose = poseEstimator.update(result).orElse(null); // Uses a deprecated method but idk how
-                                                                                // else to do it.
+    public void estimateRobotPose(PhotonPipelineResult result) {
+        EstimatedRobotPose newPose = poseEstimator.estimateCoprocMultiTagPose(result).orElse(null); // Uses a deprecated method
+                                                                                             // but idk how
+        // else to do it.
         if (newPose == null) {
             // Something has gone wrong, give up and try again next tick.
+            reportWarning("Giving up");
             return;
         }
         // Actually add the estimate
         DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(newPose, targets));
         DriveSubsystem.getSwerveDrive().addVisionMeasurement(newPose.estimatedPose.toPose2d(),
-                newPose.timestampSeconds);
+                Timer.getFPGATimestamp());
     }
 
     public double getDistance(PhotonTrackedTarget target) {
@@ -134,31 +138,33 @@ public class VisionSubsystem extends IronSubsystem {
 
         PhotonPipelineResult result = results.get(results.size() - 1); // We only care about the most recent reading.
 
-        if (!result.hasTargets()) {
+        publish("Sees target?", result.hasTargets());
+
+        if (!result.hasTargets() || result == null) {
             DriveSubsystem.requestDriveStop(Controller.VISION); // for testing, just stop if we don't see anything.
             return; // We don't see any tags, give up.
         }
 
         targets = result.getTargets();
 
-        estimateRobotPose();
+        if (result != null) {
+            estimateRobotPose(result);
+        }
+
 
         // Testing code.
         visPidController.setSetpoint(0); // Assume we've rotated to face the target pose
-
-        publish("Sees target?", result.hasTargets());
-
-        Map<PhotonTrackedTarget, Double> m = new HashMap<>();
+        Map<Integer, Double> m = new HashMap<>();
 
         for (var target : targets) {
-            m.put(target, getDistance(target));
+            m.put(target.fiducialId, getDistance(target));
 
             switch (target.getFiducialId()) {
                 case -1: // Error, not a valid tag!
                     reportWarning("Vision got an invalid tag!");
                     return;
-                case 7:
-                    // We found our favorite toy! (tag #7)
+                case -2:
+                    // We found our favorite toy! (tag #9)
                     double requestedMovement = -Utils.clamp(-Vision.VISION_ROTATION_MAX_SPEED,
                             Vision.VISION_ROTATION_MAX_SPEED,
                             visPidController.calculate(target.getYaw()));
@@ -167,7 +173,8 @@ public class VisionSubsystem extends IronSubsystem {
                     publish("Yaw, Pitch, Skew", getTargetAngles(target).toString());
                     publish("Requested movement", requestedMovement);
 
-                    DriveSubsystem.requestDriveMovement(Controller.VISION, new Translation2d(0, 0), requestedMovement,
+                    DriveSubsystem.requestDriveMovement(Controller.VISION, new Translation2d(-0.4, 0),
+                            requestedMovement,
                             false);
                     break;
 

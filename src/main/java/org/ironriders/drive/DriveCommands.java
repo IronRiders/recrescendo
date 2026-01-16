@@ -44,12 +44,6 @@ public class DriveCommands {
 						? 1
 						: -1;
 
-		if ((inputTranslationX.getAsDouble() + inputTranslationY.getAsDouble()
-				+ inputRotation.getAsDouble() / 3) > Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
-			DriveSubsystem.setController(Controller.DRIVER);
-			DriveSubsystem.cancelPathfind(); // TODO: we need a better place for this check
-		}
-
 		return drive(
 				() -> new Translation2d(inputTranslationX.getAsDouble(), inputTranslationY.getAsDouble())
 						.times(Drive.SWERVE_MAX_TRANSLATION_TELEOP * invert),

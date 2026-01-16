@@ -151,7 +151,9 @@ public class DriveSubsystem extends IronSubsystem {
   }
 
   public static void cancelPathfind() {
-    pathfindCommand.cancel();
+    if (pathfindCommand != null) {
+      pathfindCommand.cancel();
+    }
   }
 
   public static void setController(Controller target) {
