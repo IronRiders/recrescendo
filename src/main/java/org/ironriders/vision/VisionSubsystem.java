@@ -166,7 +166,7 @@ public class VisionSubsystem extends IronSubsystem {
                 case -1: // Error, not a valid tag!
                     reportWarning("Vision got an invalid tag!");
                     return;
-                case -2:
+                case -2: // disabled for now,
                     // We found our favorite toy! (tag #9)
                     double requestedMovement = -Utils.clamp(-Vision.VISION_ROTATION_MAX_SPEED,
                             Vision.VISION_ROTATION_MAX_SPEED,
