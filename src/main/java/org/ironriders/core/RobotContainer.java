@@ -127,10 +127,8 @@ public class RobotContainer {
         () -> !intakeSubsystem.hasNote())); // eject unless we don't have a note
 
     primaryController.a()
-        .onTrue(driveCommands.setController(
-            Controller.VISION)) // Give control of the drive
-                                // system to vision
-        .onFalse(driveCommands.setController(Controller.DRIVER));
+        .onTrue(Commands.runOnce(()->{DriveSubsystem.pathfindToTag(9); DriveSubsystem.startPathfind();}))
+        .onFalse(Commands.runOnce(()->DriveSubsystem.cancelPathfind()));
 
     primaryController.povUp().onTrue(launcherCommands.upTargetVelocity());
     primaryController.povDown().onTrue(launcherCommands.downTargetVelocity());

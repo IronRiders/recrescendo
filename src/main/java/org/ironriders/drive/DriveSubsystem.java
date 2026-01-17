@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
@@ -81,7 +82,7 @@ public class DriveSubsystem extends IronSubsystem {
 
   @Override
   public void periodic() {
-      publish("Controller", controller.name());
+    publish("Controller", controller.name());
   }
 
   /**
@@ -148,6 +149,12 @@ public class DriveSubsystem extends IronSubsystem {
     }
 
     return Optional.of(pathfindToPose(Utils.flattenPose3d(tag)));
+  }
+
+  public static void startPathfind() {
+    if (pathfindCommand != null) {
+      CommandScheduler.getInstance().schedule(pathfindCommand);
+    }
   }
 
   public static void cancelPathfind() {
