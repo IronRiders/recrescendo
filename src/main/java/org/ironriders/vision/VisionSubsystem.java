@@ -55,6 +55,10 @@ public class VisionSubsystem extends IronSubsystem {
 
         poseEstimator.setMultiTagFallbackStrategy( // What to do if we can only see one tag.
                 PoseStrategy.LOWEST_AMBIGUITY);
+
+        for (var tag : fieldLayout.getTags()) {
+            System.out.printf("tag %d, %s.\n", tag.ID, tag.pose.toString());
+        }
     }
 
     public Vector<N3> estimateStdDevVector(EstimatedRobotPose pose, List<PhotonTrackedTarget> targets) {

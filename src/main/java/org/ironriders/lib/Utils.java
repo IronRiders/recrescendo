@@ -40,9 +40,8 @@ public class Utils {
     return (voltage / maxVoltage);
   }
 
-  // TODO: Make sure that the y component isn't hight.
   public static Pose2d flattenPose3d(Pose3d pose) {
-    return new Pose2d(new Translation2d(pose.getX(), pose.getY()), new Rotation2d(0));
+    return new Pose2d(new Translation2d(pose.getX(), pose.getY()), new Rotation2d(pose.getRotation().getAngle()));
   }
 
   public static Translation2d getPoseDifference(Pose2d pose1, Pose2d pose2) {
