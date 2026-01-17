@@ -1,6 +1,7 @@
 package org.ironriders.vision;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
@@ -44,17 +46,11 @@ public class VisionSubsystem extends IronSubsystem {
 
     public VisionSubsystem() {
         try {
-            // TODO: Update this to use the built in one.
-            Path layoutPath = Filesystem.getDeployDirectory()
-                    .toPath()
-                    .resolve("2026-rebuilt-welded.json");
-
-            fieldLayout = new AprilTagFieldLayout(layoutPath);
-        } catch (IOException e) {
+            fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
+        } catch (UncheckedIOException e) {
             reportError("Could not load apriltag layout!");
             e.printStackTrace();
         }
-
         poseEstimator = new PhotonPoseEstimator(
                 fieldLayout,
                 PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
