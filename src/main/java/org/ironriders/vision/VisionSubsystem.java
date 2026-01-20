@@ -50,11 +50,7 @@ public class VisionSubsystem extends IronSubsystem {
         }
         poseEstimator = new PhotonPoseEstimator(
                 fieldLayout,
-                PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                 Vision.CAMERA_OFFSET);
-
-        poseEstimator.setMultiTagFallbackStrategy( // What to do if we can only see one tag.
-                PoseStrategy.LOWEST_AMBIGUITY);
 
         for (var tag : fieldLayout.getTags()) {
             System.out.printf("tag %d, %s.\n", tag.ID, tag.pose.toString());
@@ -93,7 +89,15 @@ public class VisionSubsystem extends IronSubsystem {
     }
 
     public void estimateRobotPose(PhotonPipelineResult result) {
-        EstimatedRobotPose newPose = poseEstimator.estimateCoprocMultiTagPose(result).orElse(null);
+        EstimatedRobotPose newPose;
+
+        if (result.getTargets().size() > 1) {
+            newPose = poseEstimator.estimateCoprocMultiTagPose(result).orElse(null);
+        }
+        else {
+            newPose = poseEstimator.estimateLowestAmbiguityPose(result).orElse(null);
+        }
+
         if (newPose == null) {
             // Something has gone wrong, give up and try again next tick.
             reportWarning("Giving up in pose estimation!");
@@ -154,22 +158,19 @@ public class VisionSubsystem extends IronSubsystem {
 
         // Testing code.
         visPidController.setSetpoint(0); // Assume we've rotated to face the target pose
-        Map<Integer, Double> m = new HashMap<>();
-
+        
         for (var target : targets) {
-            m.put(target.fiducialId, getDistance(target));
-
             switch (target.getFiducialId()) {
                 case -1: // Error, not a valid tag!
                     reportWarning("Vision got an invalid tag!");
                     return;
-                case -2: // disabled for now,
+                case -2: // disabled for now
                     // We found our favorite toy! (tag #9)
                     double requestedMovement = -Utils.clamp(-Vision.VISION_ROTATION_MAX_SPEED,
                             Vision.VISION_ROTATION_MAX_SPEED,
                             visPidController.calculate(target.getYaw()));
 
-                    // Skew is horizontal offset from cam I think?
+                    // Skew is horizontal offset from cam
                     publish("Yaw, Pitch, Skew", getTargetAngles(target).toString());
                     publish("Requested movement", requestedMovement);
 
@@ -182,7 +183,6 @@ public class VisionSubsystem extends IronSubsystem {
                     break;
             }
         }
-        publish("Tags -> Distances", m.toString());
     }
 
     public VisionCommands getCommands() {
