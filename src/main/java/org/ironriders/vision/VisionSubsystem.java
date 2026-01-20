@@ -1,9 +1,7 @@
 package org.ironriders.vision;
 
 import java.io.UncheckedIOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants.Drive.Controller;
@@ -13,7 +11,6 @@ import org.ironriders.lib.Utils;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -53,7 +50,7 @@ public class VisionSubsystem extends IronSubsystem {
                 Vision.CAMERA_OFFSET);
 
         for (var tag : fieldLayout.getTags()) {
-            System.out.printf("tag %d, %s.\n", tag.ID, tag.pose.toString());
+            System.out.printf("tag %d, %s.\n", tag.ID, tag.pose.getTranslation().toString());
         }
     }
 
@@ -93,8 +90,7 @@ public class VisionSubsystem extends IronSubsystem {
 
         if (result.getTargets().size() > 1) {
             newPose = poseEstimator.estimateCoprocMultiTagPose(result).orElse(null);
-        }
-        else {
+        } else {
             newPose = poseEstimator.estimateLowestAmbiguityPose(result).orElse(null);
         }
 
@@ -158,7 +154,7 @@ public class VisionSubsystem extends IronSubsystem {
 
         // Testing code.
         visPidController.setSetpoint(0); // Assume we've rotated to face the target pose
-        
+
         for (var target : targets) {
             switch (target.getFiducialId()) {
                 case -1: // Error, not a valid tag!
