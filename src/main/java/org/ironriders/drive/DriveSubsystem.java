@@ -83,6 +83,7 @@ public class DriveSubsystem extends IronSubsystem {
   @Override
   public void periodic() {
     publish("Controller", controller.name());
+    swerveDrive.updateOdometry();
   }
 
   /**

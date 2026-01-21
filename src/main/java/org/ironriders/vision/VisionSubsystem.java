@@ -36,6 +36,9 @@ public class VisionSubsystem extends IronSubsystem {
     private List<PhotonTrackedTarget> targets;
     private List<PhotonPipelineResult> results;
 
+    double skew;
+    double lastSkew;
+
     public static AprilTagFieldLayout fieldLayout;
 
     public VisionSubsystem() {
@@ -68,7 +71,7 @@ public class VisionSubsystem extends IronSubsystem {
             xyStdDev = 0.02 + (avgDistance * 0.03);
             thetaStdDev = Math.toRadians(1 + avgDistance);
         } else { // Single Target
-            xyStdDev = 0.5 + (avgDistance * 0.15);
+            xyStdDev = 0.5 + (avgDistance * 0.1);
             thetaStdDev = Math.toRadians(10 + avgDistance * 5); // Really don't trust single tag rotation
         }
 
@@ -100,12 +103,25 @@ public class VisionSubsystem extends IronSubsystem {
             return;
         }
 
-        // Throwaway the pose if it is too normal to us or is too far away.
-        if (result.getBestTarget().getSkew() < Vision.SKEW_THROWAWAY_THRESHOLD
-                || Utils.getPoseDifference(Utils.flattenPose3d(newPose.estimatedPose),
-                        DriveSubsystem.getSwerveDrive().getPose()).getNorm() > Vision.DISTANCE_THROWAWAY_THRESHOLD) {
+        skew = result.getBestTarget().getBestCameraToTarget().getRotation().getZ() * 180.0 / Math.PI;
+        skew -= 90;
+
+        if (Math.abs(lastSkew - skew) > 50) {
             return;
         }
+
+        // Throwaway the pose if it is too normal to us or is too far away.
+        if (skew < Vision.SKEW_THROWAWAY_THRESHOLD
+        /*
+         * || Utils.getPoseDifference(Utils.flattenPose3d(newPose.estimatedPose),
+         * DriveSubsystem.getSwerveDrive().getPose()).getNorm() >
+         * Vision.DISTANCE_THROWAWAY_THRESHOLD
+         */) {
+            return;
+        }
+
+        publish("Skew", skew);
+        lastSkew = skew;
 
         // Actually add the estimate
         DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(newPose, targets));
