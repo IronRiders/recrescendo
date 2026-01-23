@@ -37,7 +37,7 @@ public class VisionSubsystem extends IronSubsystem {
     private List<PhotonPipelineResult> results;
 
     double skew;
-    double lastSkew;
+    double lastSkew = -9999;
 
     public static AprilTagFieldLayout fieldLayout;
 
@@ -106,21 +106,25 @@ public class VisionSubsystem extends IronSubsystem {
         skew = result.getBestTarget().getBestCameraToTarget().getRotation().getZ() * 180.0 / Math.PI;
         skew -= 90;
 
-        if (Math.abs(lastSkew - skew) > 50) {
+        publish("skew", skew);
+        publish("last skew", lastSkew);
+
+        if (Math.abs(lastSkew - skew) > 50 && lastSkew != -9999) {
+            reportWarning("Skew Jump");
             return;
         }
 
         // Throwaway the pose if it is too normal to us or is too far away.
-        if (skew < Vision.SKEW_THROWAWAY_THRESHOLD
+        if (Math.abs(skew) < Vision.SKEW_THROWAWAY_THRESHOLD
         /*
          * || Utils.getPoseDifference(Utils.flattenPose3d(newPose.estimatedPose),
          * DriveSubsystem.getSwerveDrive().getPose()).getNorm() >
          * Vision.DISTANCE_THROWAWAY_THRESHOLD
          */) {
+            reportWarning("Skew Throaway");
             return;
         }
 
-        publish("Skew", skew);
         lastSkew = skew;
 
         // Actually add the estimate

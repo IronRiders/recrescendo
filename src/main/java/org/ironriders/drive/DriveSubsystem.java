@@ -18,6 +18,8 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -67,7 +69,7 @@ public class DriveSubsystem extends IronSubsystem {
         swerveDrive::getPose,
         swerveDrive::resetOdometry,
         swerveDrive::getRobotVelocity,
-        (speeds, feedforwards) -> swerveDrive.setChassisSpeeds(speeds),
+        (speeds, feedforwards) -> swerveDrive.drive(speeds),
         Drive.HOLONOMIC_CONFIG,
         robotConfig,
         () -> {

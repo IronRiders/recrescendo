@@ -5,6 +5,8 @@
 package org.ironriders.core;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -92,17 +94,17 @@ public class RobotContainer {
         robotCommands
             .driveTeleop(
                 ()
-                    -> Utils.controlCurve(-primaryController.getLeftY(),
+                    -> Utils.controlCurve(primaryController.getLeftY(),
                            Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
                            Constants.Drive.TRANSLATION_CONTROL_DEADBAND)
                     * speedMultiplier,
                 ()
-                    -> Utils.controlCurve(-primaryController.getLeftX(),
+                    -> Utils.controlCurve(primaryController.getLeftX(),
                            Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
                            Constants.Drive.TRANSLATION_CONTROL_DEADBAND)
                     * speedMultiplier,
                 ()
-                    -> Utils.controlCurve(-primaryController.getRightX(),
+                    -> Utils.controlCurve(primaryController.getRightX(),
                            Constants.Drive.ROTATION_CONTROL_EXPONENT,
                            Constants.Drive.ROTATION_CONTROL_DEADBAND)
                     * angleMultiplier)
@@ -127,7 +129,7 @@ public class RobotContainer {
         () -> !intakeSubsystem.hasNote())); // eject unless we don't have a note
 
     primaryController.a()
-        .onTrue(Commands.runOnce(()->{DriveSubsystem.pathfindToTag(9); DriveSubsystem.startPathfind();}))
+        .onTrue(DriveSubsystem.pathfindToTag(9).get())
         .onFalse(Commands.runOnce(()->DriveSubsystem.cancelPathfind()));
 
     primaryController.povUp().onTrue(launcherCommands.upTargetVelocity());
