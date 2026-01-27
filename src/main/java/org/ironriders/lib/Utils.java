@@ -1,5 +1,7 @@
 package org.ironriders.lib;
 
+import java.util.List;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -66,5 +68,19 @@ public class Utils {
     } else {
       return true;
     }
+  }
+
+  public static int[] everyIntInRange(int min, int max) {
+    int[] out = {0};
+    
+    if (max < min) {
+      return out;
+    }
+  
+    for (int i = 0; min < max; i++) {
+      out[i] = min + i;
+    }
+
+    return out;
   }
 }
