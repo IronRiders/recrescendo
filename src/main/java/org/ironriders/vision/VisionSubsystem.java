@@ -43,7 +43,7 @@ public class VisionSubsystem extends IronSubsystem {
 
     public VisionSubsystem() {
         try {
-            fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
+            fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
         } catch (UncheckedIOException e) {
             reportError("Could not load apriltag layout!");
             e.printStackTrace();
