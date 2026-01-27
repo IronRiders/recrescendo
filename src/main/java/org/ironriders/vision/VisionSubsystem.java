@@ -121,7 +121,7 @@ public class VisionSubsystem extends IronSubsystem {
          * DriveSubsystem.getSwerveDrive().getPose()).getNorm() >
          * Vision.DISTANCE_THROWAWAY_THRESHOLD
          */) {
-            reportWarning("Skew Throaway");
+            reportWarning("Skew Throwaway");
             return;
         }
 
