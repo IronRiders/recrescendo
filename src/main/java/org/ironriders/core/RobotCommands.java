@@ -1,19 +1,18 @@
 package org.ironriders.core;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.function.DoubleSupplier;
+
 import org.ironriders.climber.ClimberCommands;
 import org.ironriders.drive.DriveCommands;
-import org.ironriders.drive.DriveSubsystem;
-import org.ironriders.lib.Constants;
 import org.ironriders.lib.Constants.Intake;
 import org.ironriders.lib.Constants.Launcher;
 import org.ironriders.lib.Constants.Pivot;
-import org.ironriders.lib.Constants.Drive.Controller;
 import org.ironriders.manipulation.intake.IntakeCommands;
 import org.ironriders.manipulation.launcher.LauncherCommands;
 import org.ironriders.manipulation.pivot.PivotCommands;
+
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 public class RobotCommands {
 

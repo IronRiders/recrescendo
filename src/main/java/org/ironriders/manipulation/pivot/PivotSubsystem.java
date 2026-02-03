@@ -1,15 +1,5 @@
 package org.ironriders.manipulation.pivot;
 
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkBaseConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import org.ironriders.lib.Constants;
 import org.ironriders.lib.Constants.Identifiers;
 import org.ironriders.lib.Constants.Pivot;
@@ -17,20 +7,33 @@ import org.ironriders.lib.Constants.Robot;
 import org.ironriders.lib.IronSubsystem;
 import org.ironriders.lib.Utils;
 
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
+
 public class PivotSubsystem extends IronSubsystem {
 
   private final PivotCommands commands = new PivotCommands(this);
 
   private final SparkMax motor = new SparkMax(Identifiers.PIVOT_MOTOR, MotorType.kBrushless);
 
-  private final PIDController pidControl =
-      new PIDController(
-          Constants.Pivot.CONTROL_P, Constants.Pivot.CONTROL_I, Constants.Pivot.CONTROL_D);
+  private final PIDController pidControl = new PIDController(
+      Constants.Pivot.CONTROL_P, Constants.Pivot.CONTROL_I, Constants.Pivot.CONTROL_D);
 
   private final DutyCycleEncoder encoder = new DutyCycleEncoder(Identifiers.PIVOT_ENCODER);
 
-  //private final SparkLimitSwitch forwardLimitSwitch = motor.getForwardLimitSwitch(); No longer on robot I think
-  //private final SparkLimitSwitch reverseLimitSwitch = motor.getReverseLimitSwitch();
+  // private final SparkLimitSwitch forwardLimitSwitch =
+  // motor.getForwardLimitSwitch(); No longer on robot I think
+  // private final SparkLimitSwitch reverseLimitSwitch =
+  // motor.getReverseLimitSwitch();
 
   // goalSetpoint is the final goal. periodicSetpoint is a sort-of inbetween
   // setpoint generated every periodic.
@@ -40,11 +43,10 @@ public class PivotSubsystem extends IronSubsystem {
   private final TrapezoidProfile profile;
 
   public PivotSubsystem() {
-    SparkBaseConfig config =
-        new SparkMaxConfig()
-            .smartCurrentLimit(Pivot.MOTOR_CURRENT_LIMIT)
-            .voltageCompensation(Robot.COMPENSATED_VOLTAGE)
-            .idleMode(IdleMode.kBrake);
+    SparkBaseConfig config = new SparkMaxConfig()
+        .smartCurrentLimit(Pivot.MOTOR_CURRENT_LIMIT)
+        .voltageCompensation(Robot.COMPENSATED_VOLTAGE)
+        .idleMode(IdleMode.kBrake);
 
     motor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 

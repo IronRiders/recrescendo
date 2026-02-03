@@ -4,9 +4,8 @@ import java.io.UncheckedIOException;
 import java.util.List;
 
 import org.ironriders.drive.DriveSubsystem;
-import org.ironriders.lib.Constants.Drive.Controller;
-import org.ironriders.lib.Constants.Vision;
 import org.ironriders.lib.Constants;
+import org.ironriders.lib.Constants.Vision;
 import org.ironriders.lib.IronSubsystem;
 import org.ironriders.lib.Utils;
 import org.photonvision.EstimatedRobotPose;
@@ -21,7 +20,6 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
 
