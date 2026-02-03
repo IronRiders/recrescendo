@@ -6,6 +6,7 @@ import java.util.List;
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants.Drive.Controller;
 import org.ironriders.lib.Constants.Vision;
+import org.ironriders.lib.Constants;
 import org.ironriders.lib.IronSubsystem;
 import org.ironriders.lib.Utils;
 import org.photonvision.EstimatedRobotPose;
@@ -20,8 +21,6 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
@@ -36,8 +35,8 @@ public class VisionSubsystem extends IronSubsystem {
     private List<PhotonTrackedTarget> targets;
     private List<PhotonPipelineResult> results;
 
-    double skew;
-    double lastSkew = -9999;
+    private Double skew;
+    private Double lastSkew = null;
 
     public static AprilTagFieldLayout fieldLayout;
 
@@ -48,13 +47,10 @@ public class VisionSubsystem extends IronSubsystem {
             reportError("Could not load apriltag layout!");
             e.printStackTrace();
         }
+
         poseEstimator = new PhotonPoseEstimator(
                 fieldLayout,
                 Vision.CAMERA_OFFSET);
-
-        for (var tag : fieldLayout.getTags()) {
-            System.out.printf("tag %d, %s.\n", tag.ID, tag.pose.getTranslation().toString());
-        }
     }
 
     public Vector<N3> estimateStdDevVector(EstimatedRobotPose pose, List<PhotonTrackedTarget> targets) {
@@ -103,24 +99,20 @@ public class VisionSubsystem extends IronSubsystem {
             return;
         }
 
-        skew = result.getBestTarget().getBestCameraToTarget().getRotation().getZ() * 180.0 / Math.PI;
-        skew -= 90;
+        skew = calculateSkew(result.getBestTarget());
 
-        publish("skew", skew);
-        publish("last skew", lastSkew);
+        publish("Skew", skew);
+        publish("Last Skew", lastSkew);
 
-        if (Math.abs(lastSkew - skew) > 50 && lastSkew != -9999) {
+        if (Math.abs(lastSkew - skew) > Constants.Vision.SKEW_THROWAWAY_THRESHOLD && lastSkew != null) {
             reportWarning("Skew Jump");
             return;
         }
 
         // Throwaway the pose if it is too normal to us or is too far away.
         if (Math.abs(skew) < Vision.SKEW_THROWAWAY_THRESHOLD
-        /*
-         * || Utils.getPoseDifference(Utils.flattenPose3d(newPose.estimatedPose),
-         * DriveSubsystem.getSwerveDrive().getPose()).getNorm() >
-         * Vision.DISTANCE_THROWAWAY_THRESHOLD
-         */) {
+                || Utils.getPoseDifference(Utils.flattenPose3d(newPose.estimatedPose),
+                        DriveSubsystem.getSwerveDrive().getPose()).getNorm() > Vision.DISTANCE_THROWAWAY_THRESHOLD) {
             reportWarning("Skew Throwaway");
             return;
         }
@@ -133,20 +125,27 @@ public class VisionSubsystem extends IronSubsystem {
                 Timer.getFPGATimestamp());
     }
 
+    public double calculateSkew(PhotonTrackedTarget target) {
+        return (target.getBestCameraToTarget().getRotation().getZ() * 180.0 / Math.PI) - 90;
+    }
+
+    /*
+     * Get the distance to the provided target from the camera. Can throw an error
+     * if the provided target's tag is not valid
+     */
     public double getDistance(PhotonTrackedTarget target) {
         // *2, as the offset is from the center of the robot, and this wants the
-        // distance
-        // from the floor
+        // distance from the floor
         return PhotonUtils.calculateDistanceToTargetMeters(
                 Vision.CAMERA_OFFSET.getZ() * 2,
                 fieldLayout.getTagPose(target.getFiducialId())
-                        .orElse(new Pose3d(0, 0, 0, new Rotation3d(0, 0, 0))).getZ(),
+                        .orElseThrow().getZ(),
                 Vision.CAMERA_OFFSET.getRotation().getY(), // Pitch
                 target.getPitch());
     }
 
     public Double[] getTargetAngles(PhotonTrackedTarget target) {
-        return new Double[] { target.getYaw(), target.getPitch(), target.getSkew() };
+        return new Double[] { target.getYaw(), target.getPitch(), calculateSkew(target) };
     }
 
     @Override
@@ -161,44 +160,13 @@ public class VisionSubsystem extends IronSubsystem {
 
         publish("Sees target?", result.hasTargets());
 
-        if (!result.hasTargets() || result == null) {
-            DriveSubsystem.requestDriveStop(Controller.VISION); // for testing, just stop if we don't see anything.
+        if (result == null || !result.hasTargets()) {
             return; // We don't see any tags, give up.
         }
 
         targets = result.getTargets();
 
-        if (result != null) {
-            estimateRobotPose(result);
-        }
-
-        // Testing code.
-        visPidController.setSetpoint(0); // Assume we've rotated to face the target pose
-
-        for (var target : targets) {
-            switch (target.getFiducialId()) {
-                case -1: // Error, not a valid tag!
-                    reportWarning("Vision got an invalid tag!");
-                    return;
-                case -2: // disabled for now
-                    // We found our favorite toy! (tag #9)
-                    double requestedMovement = -Utils.clamp(-Vision.VISION_ROTATION_MAX_SPEED,
-                            Vision.VISION_ROTATION_MAX_SPEED,
-                            visPidController.calculate(target.getYaw()));
-
-                    // Skew is horizontal offset from cam
-                    publish("Yaw, Pitch, Skew", getTargetAngles(target).toString());
-                    publish("Requested movement", requestedMovement);
-
-                    DriveSubsystem.requestDriveMovement(Controller.VISION, new Translation2d(-0.4, 0),
-                            requestedMovement,
-                            false);
-                    break;
-
-                default:
-                    break;
-            }
-        }
+        estimateRobotPose(result);
     }
 
     public VisionCommands getCommands() {
