@@ -4,14 +4,19 @@
 
 package org.ironriders.core;
 
+import java.util.Optional;
+
 import org.ironriders.climber.ClimberCommands;
 import org.ironriders.climber.ClimberSubsystem;
 import org.ironriders.drive.DriveCommands;
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants;
-import org.ironriders.lib.Constants.Drive;
-import org.ironriders.lib.Constants.Drive.Controller;
+import org.ironriders.lib.DriverRequest;
+import org.ironriders.lib.DriverRequest.AlignTargetingMode;
+import org.ironriders.lib.DriverRequest.PriorityMode;
 import org.ironriders.lib.Utils;
+import org.ironriders.lib.field.Zone;
+import org.ironriders.lib.field.Zone.ZoneType;
 import org.ironriders.lights.LightsCommands;
 import org.ironriders.lights.LightsSubsystem;
 import org.ironriders.manipulation.intake.IntakeCommands;
@@ -29,10 +34,15 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
+    public static Zone passingZone = new Zone(ZoneType.PASSING);
+    public static Zone scoringZone = new Zone(ZoneType.SCORING);
+
     public DriveSubsystem driveSubsystem = new DriveSubsystem();
     public DriveCommands driveCommands = driveSubsystem.getCommands();
 
@@ -54,11 +64,10 @@ public class RobotContainer {
     public VisionSubsystem visionSubsystem = new VisionSubsystem();
     public VisionCommands visionCommands = visionSubsystem.getCommands();
 
-    public Command activeCommand;
-
-    public double speedMultiplier = 1;
-    public double angleMultiplier = 1;
     private final SendableChooser<Command> autoChooser;
+
+    private boolean targetingHub = false;
+    private boolean targetingPassing = false;
 
     private final CommandXboxController primaryController = new CommandXboxController(
             Constants.Identifiers.CONTROLLER_PRIMARY_PORT);
@@ -72,20 +81,33 @@ public class RobotContainer {
 
         DriverStation.silenceJoystickConnectionWarning(true);
 
+        passingZone = new Zone(ZoneType.PASSING);
+        scoringZone = new Zone(ZoneType.SCORING);
+
         configureBindings();
     }
 
-    private void checkControl() {
-        double average = (Math.abs(primaryController.getLeftY())
-                + Math.abs(primaryController.getLeftX())
-                + Math.abs(primaryController.getRightX()))
-                / 3d;
+    public static Optional<Zone> getCurrentZone() {
+        if (passingZone.inside()) {
+            return Optional.of(passingZone);
+        } else if (scoringZone.inside()) {
+            return Optional.of(scoringZone);
+        }
 
-        SmartDashboard.putNumber("RobotContainer/average", average);
+        return Optional.empty();
+    }
 
-        if (average > Drive.DRIVE_OVERRIDE_THRESHOLD) {
-            DriveSubsystem.setController(Controller.DRIVER);
-            DriveSubsystem.cancelPathfind();
+    private void revertToSafeDefaults() {
+        targetingHub = false;
+        targetingPassing = false;
+        TargetingControl.revertToSafeDefaults();
+    }
+
+    private void periodic() {
+        TargetingControl.update();
+
+        if (Math.abs(primaryController.getRightX()) > Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
+            revertToSafeDefaults();
         }
     }
 
@@ -95,49 +117,58 @@ public class RobotContainer {
                         .driveTeleop(
                                 () -> Utils.controlCurve(primaryController.getLeftY(),
                                         Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
-                                        Constants.Drive.TRANSLATION_CONTROL_DEADBAND)
-                                        * speedMultiplier,
+                                        Constants.Drive.TRANSLATION_CONTROL_DEADBAND),
                                 () -> Utils.controlCurve(primaryController.getLeftX(),
                                         Constants.Drive.TRANSLATION_CONTROL_EXPONENT,
-                                        Constants.Drive.TRANSLATION_CONTROL_DEADBAND)
-                                        * speedMultiplier,
+                                        Constants.Drive.TRANSLATION_CONTROL_DEADBAND),
                                 () -> Utils.controlCurve(primaryController.getRightX(),
                                         Constants.Drive.ROTATION_CONTROL_EXPONENT,
-                                        Constants.Drive.ROTATION_CONTROL_DEADBAND)
-                                        * angleMultiplier)
+                                        Constants.Drive.ROTATION_CONTROL_DEADBAND))
                         .withName("Drive Teleop"),
-                Commands.run(this::checkControl)));
+                Commands.run(this::periodic)));
 
-        primaryController.rightTrigger()
-                .onTrue(activeCommand = robotCommands.intake())
-                .onFalse(robotCommands.launch().unless(
-                        () -> !intakeSubsystem.hasNote())); // intake waits for a note and then moves to position,
-                                                            // launch ejects from
-                                                            // the manipulator and spins up the launcher for 0.4 (might
-                                                            // have changed) second(s)
+        primaryController.a().onTrue(
+                new InstantCommand(() -> {
+                    targetingHub = !targetingHub;
+                    if (targetingHub) {
+                        targetingPassing = false;
+                        TargetingControl.targetHubInternal();
+                    } else {
+                        revertToSafeDefaults();
+                    }
+                }));
 
-        primaryController.leftTrigger().onTrue(robotCommands.launch());
+        primaryController.x().onTrue(
+                new InstantCommand(() -> {
+                    targetingPassing = !targetingPassing;
+                    if (targetingPassing) {
+                        targetingHub = false;
+                        TargetingControl.targetPassingInternal();
+                    } else {
+                        revertToSafeDefaults();
+                    }
+                }));
 
-        primaryController.x().onTrue(Commands.parallel(
-                Commands.runOnce(() -> activeCommand.cancel()), robotCommands.reset()));
+        // --- Align ---
+        primaryController.y()
+                .onTrue(Commands
+                        .runOnce(() -> {
+                            new DriverRequest(PriorityMode.ALIGN_PRIORITY, AlignTargetingMode.OUTPOST)
+                                    .send("align outpost");
+                            targetingHub = false;
+                            targetingPassing = false;
+                        }))
+                .onFalse(Commands.runOnce(() -> revertToSafeDefaults()));
 
-        primaryController.b().onTrue(launcherCommands.set(
-                Constants.Launcher.State.STOP)); // force stop launcher
+        primaryController.b()
+                .onTrue(Commands
+                        .runOnce(() -> {
+                            new DriverRequest(PriorityMode.ALIGN_PRIORITY, AlignTargetingMode.BUMP).send("align bump");
+                            targetingHub = false;
+                            targetingPassing = false;
+                        }))
+                .onFalse(Commands.runOnce(() -> revertToSafeDefaults()));
 
-        primaryController.y().onTrue(robotCommands.eject().unless(
-                () -> !intakeSubsystem.hasNote())); // eject unless we don't have a note
-
-        primaryController.a()
-                .onTrue(DriveSubsystem.pathfindToTag(9).get())
-                .onFalse(Commands.runOnce(() -> DriveSubsystem.cancelPathfind()));
-
-        primaryController.povUp().onTrue(launcherCommands.upTargetVelocity());
-        primaryController.povDown().onTrue(launcherCommands.downTargetVelocity());
-
-        primaryController.povRight().onTrue(
-                Commands.runOnce(() -> speedMultiplier += 0.5));
-        primaryController.povLeft().onTrue(
-                Commands.runOnce(() -> speedMultiplier -= 0.5));
     }
 
     /**

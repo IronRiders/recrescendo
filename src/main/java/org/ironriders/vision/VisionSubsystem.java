@@ -19,7 +19,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -27,7 +26,6 @@ public class VisionSubsystem extends IronSubsystem {
     private final VisionCommands commands = new VisionCommands(this);
 
     private PhotonCamera camera = new PhotonCamera(Vision.VISION_CAMERA);
-    private PIDController visPidController = new PIDController(Vision.VISION_P, Vision.VISION_I, Vision.VISION_D);
     private final PhotonPoseEstimator poseEstimator;
 
     private List<PhotonTrackedTarget> targets;
