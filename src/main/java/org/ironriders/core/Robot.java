@@ -77,6 +77,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
+      generalInit();
   }
 
   @Override
@@ -88,7 +89,11 @@ public class Robot extends TimedRobot {
   @Override
   public void simulationInit() {
       PhotonCamera.setVersionCheckEnabled(false); // Silence camera not found warnings.
+      generalInit();
   }
 
-  private void generalInit() {}
+  private void generalInit() {
+    TargetingControl.init();
+    RobotContainer.init();
+  }
 }

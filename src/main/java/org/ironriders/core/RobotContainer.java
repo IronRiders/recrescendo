@@ -34,7 +34,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -43,20 +42,20 @@ public class RobotContainer {
     public static Zone passingZone = new Zone(ZoneType.PASSING);
     public static Zone scoringZone = new Zone(ZoneType.SCORING);
 
-    public DriveSubsystem driveSubsystem = new DriveSubsystem();
-    public DriveCommands driveCommands = driveSubsystem.getCommands();
+    public static DriveSubsystem driveSubsystem = new DriveSubsystem();
+    public static DriveCommands driveCommands = driveSubsystem.getCommands();
 
-    public PivotSubsystem pivotSubsystem = new PivotSubsystem();
-    public PivotCommands pivotCommands = pivotSubsystem.getCommands();
+    public static PivotSubsystem pivotSubsystem = new PivotSubsystem();
+    public static PivotCommands pivotCommands = pivotSubsystem.getCommands();
 
-    public IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
-    public IntakeCommands intakeCommands = intakeSubsystem.getCommands();
+    public static IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+    public static IntakeCommands intakeCommands = intakeSubsystem.getCommands();
 
-    public LauncherSubsystem launcherSubsystem = new LauncherSubsystem();
-    public LauncherCommands launcherCommands = launcherSubsystem.getCommands();
+    public static LauncherSubsystem launcherSubsystem = new LauncherSubsystem();
+    public static LauncherCommands launcherCommands = launcherSubsystem.getCommands();
 
-    public ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-    public ClimberCommands climberCommands = climberSubsystem.getCommands();
+    public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+    public static ClimberCommands climberCommands = climberSubsystem.getCommands();
 
     public LightsSubsystem lightsSubsystem = new LightsSubsystem();
     public LightsCommands lightsCommands = lightsSubsystem.getCommands();
@@ -72,7 +71,7 @@ public class RobotContainer {
     private final CommandXboxController primaryController = new CommandXboxController(
             Constants.Identifiers.CONTROLLER_PRIMARY_PORT);
 
-    public RobotCommands robotCommands = new RobotCommands(driveCommands,
+    public static RobotCommands robotCommands = new RobotCommands(driveCommands,
             launcherCommands, pivotCommands, intakeCommands, climberCommands);
 
     public RobotContainer() {
@@ -85,6 +84,10 @@ public class RobotContainer {
         scoringZone = new Zone(ZoneType.SCORING);
 
         configureBindings();
+    }
+
+    public static void init() {
+        robotCommands.reset().schedule();
     }
 
     public static Optional<Zone> getCurrentZone() {
