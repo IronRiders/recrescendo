@@ -51,6 +51,8 @@ public class DriveSubsystem extends IronSubsystem {
 
     private static Command pathfindCommand;
 
+    public static Pigeon2 pigeon = new Pigeon2(11);
+
     private static ProfiledPIDController rotationPid = new ProfiledPIDController(Constants.Drive.ROTATE_TO_TARGET_P, Constants.Drive.ROTATE_TO_TARGET_I,
             Constants.Drive.ROTATE_TO_TARGET_D, Constants.Drive.ROTATION_CONSTRAINTS);
 
@@ -91,11 +93,9 @@ public class DriveSubsystem extends IronSubsystem {
                 },
                 this);
 
-        rotationPid.reset(0);
+        rotationPid.reset(getRotation());
         rotationPid.enableContinuousInput(0, Math.PI * 2);
-        rotationPid.setTolerance(5);
-
-        // debug setRotationGoal(180);
+        rotationPid.setTolerance(0.005);
     }
 
     @Override
@@ -105,6 +105,9 @@ public class DriveSubsystem extends IronSubsystem {
         if (!isDriving.get() && PIDAlign) {
             drivePID(new Translation2d());
         }
+
+        publish("PID", rotationPid);
+        publish("Yaw", getRotation());
     }
 
     /**
@@ -135,16 +138,16 @@ public class DriveSubsystem extends IronSubsystem {
 
     public static void drivePID(Translation2d translation) {
         swerveDrive.drive(translation.times(driveInvert ? -1 : 1),
-                rotationPid.calculate(getRotation().in(Radians)),
+                -rotationPid.calculate(getRotation()),
                 true,
-                true);
+                false);
     }
 
     /**
      * @return The robot's current rotation.
      */
-    public static Angle getRotation() {
-        return swerveDrive.getGyroRotation3d().toRotation2d().getMeasure();
+    public static double getRotation() {
+        return Math.toRadians(Utils.absoluteRotation(pigeon.getYaw(true).getValueAsDouble()));
     }
 
     /** Where is the robot? */
@@ -159,7 +162,7 @@ public class DriveSubsystem extends IronSubsystem {
         PIDAlign = PIDControl;
 
         if (!PIDControl) {
-            rotationPid.reset(getRotation().in(Radians));
+            rotationPid.reset(getRotation());
         }
     }
 
@@ -288,17 +291,17 @@ public class DriveSubsystem extends IronSubsystem {
     }
 
     /**
-     * Opens a {@link Pidgeon2} sensor and gets yaw, waits 1 second, then gets that
+     * Opens a {@link Pidgeon2} sensor and gets yaw, waits 1 second or until the signal updates, then gets that
      * value as double.
      */
-    public void resetRotation() {
-        Pigeon2 pigeon2 = new Pigeon2(9);
+    public static void resetRotation() {
+        pigeon.reset();
         swerveDrive.resetOdometry(
                 new Pose2d(
                         swerveDrive.getPose().getTranslation(),
                         new Rotation2d(
-                                pigeon2.getYaw(true).waitForUpdate(1).getValueAsDouble() * (Math.PI / 180f))));
-        pigeon2.close();
+                                getRotation())));
+        rotationPid.reset(getRotation());
     }
 
     /**

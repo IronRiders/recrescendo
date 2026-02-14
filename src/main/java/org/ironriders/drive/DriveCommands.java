@@ -16,6 +16,8 @@ public class DriveCommands {
 
     public DriveCommands(DriveSubsystem driveSubsystem) {
         this.driveSubsystem = driveSubsystem;
+
+        driveSubsystem.publish("Reset rotation", resetGyro());
     }
 
     /**
@@ -67,5 +69,9 @@ public class DriveCommands {
                         .times(Constants.Drive.SWERVE_MAX_TRANSLATION_TELEOP * invert),
                 () -> inputRotation.getAsDouble() * Constants.Drive.SWERVE_MAX_ANGULAR_TELEOP * invert,
                 () -> fieldRelative);
+    }
+
+    public Command resetGyro() {
+        return Commands.runOnce(()->DriveSubsystem.resetRotation());
     }
 }

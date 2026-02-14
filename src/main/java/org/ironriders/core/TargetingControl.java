@@ -109,7 +109,7 @@ public class TargetingControl {
 
             case BUMP:
                 return Math.toDegrees(
-                        findClosest45DegreeAngleInRadians(DriveSubsystem.getPose().getRotation().getRadians()));
+                        findClosest45DegreeAngleInRadians(DriveSubsystem.getRotation()));
         }
     }
 
