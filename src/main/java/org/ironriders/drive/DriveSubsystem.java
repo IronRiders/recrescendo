@@ -146,8 +146,6 @@ public class DriveSubsystem extends IronSubsystem {
      */
     public static double getRotation() {
         return getPose().getRotation().getRadians();
-        // return
-        // Math.toRadians(Utils.absoluteRotation(pigeon.getYaw(true).getValueAsDouble()));
     }
 
     /** Where is the robot? */
