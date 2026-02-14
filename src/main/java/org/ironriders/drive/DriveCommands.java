@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import org.ironriders.lib.Constants;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,6 +19,7 @@ public class DriveCommands {
         this.driveSubsystem = driveSubsystem;
 
         driveSubsystem.publish("Reset rotation", resetGyro());
+        driveSubsystem.publish("Reset odometry", resetOdometry());
     }
 
     /**
@@ -73,5 +75,9 @@ public class DriveCommands {
 
     public Command resetGyro() {
         return Commands.runOnce(()->DriveSubsystem.resetRotation());
+    }
+
+    public Command resetOdometry() {
+        return Commands.runOnce(()->DriveSubsystem.resetOdometry(new Pose2d()));
     }
 }

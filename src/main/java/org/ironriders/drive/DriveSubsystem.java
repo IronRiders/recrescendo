@@ -1,6 +1,7 @@
 package org.ironriders.drive;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -12,8 +13,12 @@ import org.ironriders.vision.VisionSubsystem;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.PathPoint;
+import com.pathplanner.lib.pathfinding.LocalADStar;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -79,7 +84,12 @@ public class DriveSubsystem extends IronSubsystem {
                 swerveDrive::getPose,
                 swerveDrive::resetOdometry,
                 swerveDrive::getRobotVelocity,
-                (speeds, feedforwards) -> swerveDrive.drive(speeds),
+                (speeds, feedforwards) -> {
+                    System.out.println("PathPlanner calling drive: vx=" + speeds.vxMetersPerSecond +
+                            " vy=" + speeds.vyMetersPerSecond +
+                            " omega=" + speeds.omegaRadiansPerSecond);
+                    swerveDrive.drive(speeds);
+                },
                 Constants.Drive.HOLONOMIC_CONFIG,
                 robotConfig,
                 () -> {
@@ -94,6 +104,8 @@ public class DriveSubsystem extends IronSubsystem {
         rotationPid.reset(getRotation());
         rotationPid.enableContinuousInput(0, Math.PI * 2);
         rotationPid.setTolerance(0.05);
+
+        Pathfinding.setPathfinder(new LocalADStar());
     }
 
     @Override
