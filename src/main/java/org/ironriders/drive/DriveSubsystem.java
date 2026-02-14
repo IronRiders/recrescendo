@@ -1,7 +1,5 @@
 package org.ironriders.drive;
 
-import static edu.wpi.first.units.Units.Radians;
-
 import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,7 +20,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -53,7 +50,8 @@ public class DriveSubsystem extends IronSubsystem {
 
     public static Pigeon2 pigeon = new Pigeon2(11);
 
-    private static ProfiledPIDController rotationPid = new ProfiledPIDController(Constants.Drive.ROTATE_TO_TARGET_P, Constants.Drive.ROTATE_TO_TARGET_I,
+    private static ProfiledPIDController rotationPid = new ProfiledPIDController(Constants.Drive.ROTATE_TO_TARGET_P,
+            Constants.Drive.ROTATE_TO_TARGET_I,
             Constants.Drive.ROTATE_TO_TARGET_D, Constants.Drive.ROTATION_CONSTRAINTS);
 
     public DriveSubsystem() throws RuntimeException {
@@ -95,7 +93,7 @@ public class DriveSubsystem extends IronSubsystem {
 
         rotationPid.reset(getRotation());
         rotationPid.enableContinuousInput(0, Math.PI * 2);
-        rotationPid.setTolerance(0.005);
+        rotationPid.setTolerance(0.05);
     }
 
     @Override
@@ -148,7 +146,8 @@ public class DriveSubsystem extends IronSubsystem {
      */
     public static double getRotation() {
         return getPose().getRotation().getRadians();
-        //return Math.toRadians(Utils.absoluteRotation(pigeon.getYaw(true).getValueAsDouble()));
+        // return
+        // Math.toRadians(Utils.absoluteRotation(pigeon.getYaw(true).getValueAsDouble()));
     }
 
     /** Where is the robot? */
@@ -157,7 +156,8 @@ public class DriveSubsystem extends IronSubsystem {
     }
 
     /*
-     * Enable and disable PID rotation control. Set goal using {@link #setRotationGoal()}
+     * Enable and disable PID rotation control. Set goal using {@link
+     * #setRotationGoal()}
      */
     public static void setPIDControl(boolean PIDControl) {
         PIDAlign = PIDControl;
@@ -292,17 +292,14 @@ public class DriveSubsystem extends IronSubsystem {
     }
 
     /**
-     * Opens a {@link Pidgeon2} sensor and gets yaw, waits 1 second or until the signal updates, then gets that
+     * Opens a {@link Pidgeon2} sensor and gets yaw, waits 1 second or until the
+     * signal updates, then gets that
      * value as double.
      */
     public static void resetRotation() {
         pigeon.reset();
-        swerveDrive.resetOdometry(
-                new Pose2d(
-                        swerveDrive.getPose().getTranslation(),
-                        new Rotation2d(
-                                getRotation())));
-        rotationPid.reset(getRotation());
+        resetOdometry(swerveDrive.getPose());
+        rotationPid.reset(0);
     }
 
     /**
@@ -310,7 +307,7 @@ public class DriveSubsystem extends IronSubsystem {
      * 
      * @param pose2d The pose to reset the odometry to.
      */
-    public void resetOdometry(Pose2d pose2d) {
+    public static void resetOdometry(Pose2d pose2d) {
         swerveDrive.resetOdometry(new Pose2d(pose2d.getTranslation(), new Rotation2d(0)));
     }
 

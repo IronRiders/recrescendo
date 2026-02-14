@@ -48,9 +48,9 @@ public class Constants {
         new PIDConstants(10.0, 0.0, 0.0) // Rotation PID
     );
 
-    public static final double ROTATE_TO_TARGET_P = 2.5;
+    public static final double ROTATE_TO_TARGET_P = 8;
     public static final double ROTATE_TO_TARGET_I = 0;
-    public static final double ROTATE_TO_TARGET_D = 0.1;
+    public static final double ROTATE_TO_TARGET_D = 0;
 
     public static final Constraints ROTATION_CONSTRAINTS = new Constraints(Math.PI, Math.PI / 1.2); // Radians
 

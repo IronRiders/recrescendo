@@ -100,9 +100,10 @@ public class TargetingControl {
         switch (request.r_alignTargetingMode) {
             default:
             case LAUNCHER:
-                return Utils.getAngleToPoint(DriveSubsystem.getPose(),
-                        FieldPositions.prepareInchesPose(new Pose2d(FieldPositions.Field.FIELD_LENGTH / 2,
-                                FieldPositions.Field.FIELD_WIDTH / 2, new Rotation2d())));
+                //return Utils.getAngleToPoint(DriveSubsystem.getPose(),
+                  //      FieldPositions.prepareInchesPose(new Pose2d(FieldPositions.Field.FIELD_LENGTH / 2,
+                    //            FieldPositions.Field.FIELD_WIDTH / 2, new Rotation2d())));
+                return 0;
 
             case OUTPOST:
                 return 180;
