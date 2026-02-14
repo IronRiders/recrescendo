@@ -28,7 +28,6 @@ public class VisionSubsystem extends IronSubsystem {
     private PhotonCamera camera = new PhotonCamera(Vision.VISION_CAMERA);
     private final PhotonPoseEstimator poseEstimator;
 
-    private List<PhotonTrackedTarget> targets;
     private List<PhotonPipelineResult> results;
 
     private Double skew;
@@ -116,7 +115,7 @@ public class VisionSubsystem extends IronSubsystem {
         lastSkew = skew;
 
         // Actually add the estimate
-        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(newPose, targets));
+        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(newPose, result.targets));
         DriveSubsystem.getSwerveDrive().addVisionMeasurement(newPose.estimatedPose.toPose2d(),
                 Timer.getFPGATimestamp());
     }
@@ -159,8 +158,6 @@ public class VisionSubsystem extends IronSubsystem {
         if (result == null || !result.hasTargets()) {
             return; // We don't see any tags, give up.
         }
-
-        targets = result.getTargets();
 
         estimateRobotPose(result);
     }
