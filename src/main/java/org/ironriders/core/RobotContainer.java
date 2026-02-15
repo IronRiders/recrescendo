@@ -30,6 +30,7 @@ import org.ironriders.vision.VisionSubsystem;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -111,9 +112,11 @@ public class RobotContainer {
 
         if (Math.abs(primaryController.getRightX()) > Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
             revertToSafeDefaults();
-            //if (Math.abs(primaryController.getLeftX()) + Math.abs(primaryController.getLeftY()) / 2 > Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
-            //    DriveSubsystem.cancelPathfind();
-            //}
+            // if (Math.abs(primaryController.getLeftX()) +
+            // Math.abs(primaryController.getLeftY()) / 2 >
+            // Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
+            // DriveSubsystem.cancelPathfind();
+            // }
         }
     }
 
@@ -174,6 +177,12 @@ public class RobotContainer {
                             targetingPassing = false;
                         }))
                 .onFalse(Commands.runOnce(() -> revertToSafeDefaults()));
+
+        primaryController.rightTrigger(0.7)
+                .onTrue(Commands.runOnce(() -> {
+                    DriveSubsystem.setPIDPositionControl(true);
+                    DriveSubsystem.setPositionGoal(new Translation2d(0, 0.2));
+                })).onFalse(Commands.runOnce(() -> DriveSubsystem.setPIDPositionControl(false)));
     }
 
     /**

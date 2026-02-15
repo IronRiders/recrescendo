@@ -84,13 +84,13 @@ public class TargetingControl {
         switch (request.r_priorityMode) {
             default:
             case DRIVER_PRIORITY:
-                DriveSubsystem.setPIDControl(false);
+                DriveSubsystem.setPIDRotationControl(false);
 
                 return;
 
             case ALIGN_PRIORITY:
             case LAUNCHER_PRIORITY:
-                DriveSubsystem.setPIDControl(true);
+                DriveSubsystem.setPIDRotationControl(true);
 
                 return;
         }

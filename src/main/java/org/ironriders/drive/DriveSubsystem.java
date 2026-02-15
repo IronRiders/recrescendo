@@ -2,32 +2,26 @@ package org.ironriders.drive;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.ironriders.lib.Constants;
 import org.ironriders.lib.IronSubsystem;
-import org.ironriders.lib.Utils;
-import org.ironriders.vision.VisionSubsystem;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.GoalEndState;
-import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.PathPoint;
+import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.pathfinding.LocalADStar;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
@@ -47,17 +41,21 @@ public class DriveSubsystem extends IronSubsystem {
     private static boolean rotationInvert = false;
     private static boolean driveInvert = false;
 
-    public static boolean PIDAlign = false;
+    public static boolean PIDRotation = false;
+    public static boolean PIDPosition = false;
 
     public static AtomicBoolean isDriving = new AtomicBoolean(false);
-
-    private static Command pathfindCommand;
 
     public static Pigeon2 pigeon = new Pigeon2(11);
 
     private static ProfiledPIDController rotationPid = new ProfiledPIDController(Constants.Drive.ROTATE_TO_TARGET_P,
             Constants.Drive.ROTATE_TO_TARGET_I,
             Constants.Drive.ROTATE_TO_TARGET_D, Constants.Drive.ROTATION_CONSTRAINTS);
+
+    private static ProfiledPIDController xPid = new ProfiledPIDController(Constants.Drive.POSITION_P,
+            Constants.Drive.POSITION_I, Constants.Drive.POSITION_D, Constants.Drive.TRANSLATION_CONSTRAINTS);
+    private static ProfiledPIDController yPid = new ProfiledPIDController(Constants.Drive.POSITION_P,
+            Constants.Drive.POSITION_I, Constants.Drive.POSITION_D, Constants.Drive.TRANSLATION_CONSTRAINTS);
 
     public DriveSubsystem() throws RuntimeException {
         try {
@@ -88,7 +86,7 @@ public class DriveSubsystem extends IronSubsystem {
                     System.out.println("PathPlanner calling drive: vx=" + speeds.vxMetersPerSecond +
                             " vy=" + speeds.vyMetersPerSecond +
                             " omega=" + speeds.omegaRadiansPerSecond);
-                    swerveDrive.drive(speeds);
+                    swerveDrive.drive(speeds.times(-1));
                 },
                 Constants.Drive.HOLONOMIC_CONFIG,
                 robotConfig,
@@ -105,6 +103,9 @@ public class DriveSubsystem extends IronSubsystem {
         rotationPid.enableContinuousInput(0, Math.PI * 2);
         rotationPid.setTolerance(0.05);
 
+        xPid.reset(getPose().getX());
+        yPid.reset(getPose().getY());
+
         Pathfinding.setPathfinder(new LocalADStar());
     }
 
@@ -112,12 +113,12 @@ public class DriveSubsystem extends IronSubsystem {
     public void periodic() {
         swerveDrive.updateOdometry();
 
-        if (!isDriving.get() && PIDAlign) {
-            drivePID(new Translation2d());
+        if (!isDriving.get() && (PIDRotation || PIDPosition)) {
+            drive(new Translation2d(), 0, true);
         }
 
-        publish("PID", rotationPid);
-        publish("Yaw", getRotation());
+        publish("x PID", xPid);
+        publish("y PID", yPid);
     }
 
     /**
@@ -133,8 +134,21 @@ public class DriveSubsystem extends IronSubsystem {
     public static void drive(Translation2d translation, double rotation, boolean fieldRelative) {
         isDriving.getAndSet(true);
 
-        if (PIDAlign) {
-            drivePID(translation);
+        if (PIDRotation && PIDPosition) {
+            swerveDrive.drive(getNextPose(),
+                    -rotationPid.calculate(getRotation()),
+                    fieldRelative,
+                    false);
+        } else if (PIDRotation && !PIDPosition) {
+            swerveDrive.drive(translation.times(driveInvert ? -1 : 1),
+                    -rotationPid.calculate(getRotation()),
+                    fieldRelative,
+                    false);
+        } else if (!PIDRotation && PIDPosition) {
+            swerveDrive.drive(getNextPose(),
+                    rotation * (rotationInvert ? -1 : 1),
+                    fieldRelative,
+                    false);
         } else {
             swerveDrive.drive(
                     translation.times(driveInvert ? -1 : 1),
@@ -144,13 +158,6 @@ public class DriveSubsystem extends IronSubsystem {
         }
 
         isDriving.getAndSet(false);
-    }
-
-    public static void drivePID(Translation2d translation) {
-        swerveDrive.drive(translation.times(driveInvert ? -1 : 1),
-                -rotationPid.calculate(getRotation()),
-                true,
-                false);
     }
 
     /**
@@ -169,11 +176,23 @@ public class DriveSubsystem extends IronSubsystem {
      * Enable and disable PID rotation control. Set goal using {@link
      * #setRotationGoal()}
      */
-    public static void setPIDControl(boolean PIDControl) {
-        PIDAlign = PIDControl;
+    public static void setPIDRotationControl(boolean PIDControl) {
+        PIDRotation = PIDControl;
 
         if (!PIDControl) {
             rotationPid.reset(getRotation());
+        }
+    }
+
+    /*
+     * Enable and disable PID position control.
+     */
+    public static void setPIDPositionControl(boolean PIDControl) {
+        PIDPosition = PIDControl;
+
+        if (!PIDControl) {
+            xPid.reset(getPose().getX());
+            yPid.reset(getPose().getY());
         }
     }
 
@@ -191,95 +210,55 @@ public class DriveSubsystem extends IronSubsystem {
         rotationPid.setGoal(goal);
     }
 
-    /**
-     * Pathfinds to a given pose using PathPlanner's pathfinding. See
-     * {@link #pathfindToPose()} for more information.
-     * 
-     * @param target      The {@link Pose2d} to pathfind to.
-     * @param constraints The {@link PathConstraints} to pathfind with.
-     */
-    public static Command pathfindToPose(Pose2d target, PathConstraints constraints) {
-        pathfindCommand = AutoBuilder.pathfindToPose(target, constraints);
-        return pathfindCommand.withName("Pathfind to " + target.getX() + ", " + target.getY());
+    public static void setPositionGoal(Translation2d target) {
+        xPid.setGoal(target.getX());
+        yPid.setGoal(target.getY());
     }
 
-    /**
-     * Same as {@link #pathfindToPose(Pose2d, PathConstraints) pathfindToPose} but
-     * with default constraints.
-     * 
-     * @param target The {@link Pose2d} to pathfind to.
-     * @return A {@link Command} to do the above.
-     */
+    public static Translation2d getNextPose() {
+        return new Translation2d(xPid.calculate(getPose().getX()), yPid.calculate(getPose().getY()));
+    }
+
+    public static boolean atGoal() {
+        return xPid.atGoal() && yPid.atGoal();
+    }
+
     public static Command pathfindToPose(Pose2d target) {
-        pathfindCommand = AutoBuilder.pathfindToPose(target, Constants.Drive.PATHFIND_CONSTRAINTS);
-        return pathfindCommand.withName("Pathfind to " + target.getX() + ", " + target.getY());
-    }
+        return new Command() {
+            PathPlannerPath path;
+            List<Waypoint> waypoints;
+            int i = 0;
 
-    /**
-     * Pathfinds to a given path using PathPlanner's pathfinding.
-     * 
-     * @param path        The {@link PathPlannerPath} to pathfind with
-     * @param constraints The {@link PathConstraints} for pathfinding
-     * @return A {@link Command} to do the above with the name "Pathfind to " +
-     *         path.name
-     */
-    public static Command pathfindThenFollowPath(PathPlannerPath path, PathConstraints constraints) {
-        pathfindCommand = AutoBuilder.pathfindThenFollowPath(
-                path,
-                constraints);
+            @Override
+            public void initialize() {
+                Pathfinding.ensureInitialized();
+                Pathfinding.setStartPosition(getPose().getTranslation());
+                Pathfinding.setGoalPosition(target.getTranslation());
 
-        return pathfindCommand.withName("Pathfind to " + path.name);
-    }
+                path = Pathfinding.getCurrentPath(Constants.Drive.PATHFIND_CONSTRAINTS,
+                        new GoalEndState(0, target.getRotation()));
 
-    /**
-     * Same as {@link #pathfindThenFollowPath(PathPlannerPath, PathConstraints)
-     * pathfindThenFollowPath} but with default constraints.
-     * 
-     * @param path The {@link PathPlannerPath} to follow.
-     * @return A {@link Command} to do the above with the name "Pathfind to " +
-     *         path.name
-     */
-    public static Command pathfindThenFollowPath(PathPlannerPath path) {
-        pathfindCommand = AutoBuilder.pathfindThenFollowPath(
-                path, Constants.Drive.PATHFIND_CONSTRAINTS);
+                waypoints = path.getWaypoints();
+                i = 0;
 
-        return pathfindCommand.withName("Pathfind to " + path.name);
-    }
+                if (!waypoints.isEmpty()) {
+                    setPositionGoal(waypoints.get(i).nextControl());
+                }
+            }
 
-    /**
-     * Pathfinds to a given AprilTag using PathPlanner's pathfinding. Uses
-     * {@link #pathfindToPose(Pose2d) pathfindToPose} on the flattened
-     * {@link Pose3d} of the {@code tag id}.
-     * 
-     * @param id The ID of the AprilTag to pathfind to.
-     * @return An {@link Optional} containing a {@link Command} to do the above if
-     *         the tag exists, or an empty {@link Optional} if it does not.
-     */
-    public static Optional<Command> pathfindToTag(int id) {
-        var tag = VisionSubsystem.fieldLayout.getTagPose(id).orElse(null);
-        if (tag == null) {
-            return Optional.empty();
-        }
+            @Override
+            public void execute() {
+                if (atGoal() && i < waypoints.size() - 1) {
+                    i++;
+                    setPositionGoal(waypoints.get(i).nextControl());
+                }
+            }
 
-        return Optional.of(pathfindToPose(Utils.flattenPose3d(tag)));
-    }
-
-    /**
-     * Schedules the current pathfind command, if it exists.
-     */
-    public static void startPathfind() {
-        if (pathfindCommand != null) {
-            CommandScheduler.getInstance().schedule(pathfindCommand);
-        }
-    }
-
-    /**
-     * Stops the currently running pathfind.
-     */
-    public static void cancelPathfind() {
-        if (pathfindCommand != null) {
-            pathfindCommand.cancel();
-        }
+            @Override
+            public boolean isFinished() {
+                return i >= waypoints.size() - 1 && atGoal();
+            }
+        };
     }
 
     /** Fetch the DriveCommands instance */
