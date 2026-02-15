@@ -1,7 +1,7 @@
 package org.ironriders.manipulation.launcher;
 
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -44,7 +44,6 @@ public class LauncherSubsystem extends IronSubsystem {
         .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(Constants.Launcher.LAUNCHER_MOTOR_STALL_LIMIT)
         .inverted(true);
-
     primaryMotor.configure(
         primaryConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     followerMotor.configure(
