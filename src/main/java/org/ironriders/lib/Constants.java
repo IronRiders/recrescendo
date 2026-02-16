@@ -15,7 +15,10 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +27,7 @@ import java.util.Map;
 
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 public class Constants {
     public class Robot {
@@ -118,9 +122,11 @@ public class Constants {
             String m_name;
             Transform3d m_offset;
             Double m_trustWeight;
-            
+
             PhotonCamera m_photonCamera;
             PhotonPoseEstimator m_estimator;
+
+            PhotonPipelineResult m_mostRecent;
 
             AprilTagFieldLayout m_fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
@@ -138,6 +144,36 @@ public class Constants {
 
             public Double getWeight() {
                 return m_trustWeight;
+            }
+
+            /*
+             * You should call this every tick exactly once. (Will probably be fine if called more often)
+             */
+            public void updateResultBuffer() {
+                List<PhotonPipelineResult> results = m_photonCamera.getAllUnreadResults();
+
+                if (results == null) {
+                    return; // don't update the buffer if we get a null response. Could be incorrect.
+                }
+
+                m_mostRecent = results.get(results.size() - 1); // get the most recent
+            }
+
+            /*
+             * Get the most recent result from this camera.
+             * Could potentially return null.
+             */
+            public PhotonPipelineResult getResult() {
+                if (m_mostRecent == null) {
+                    updateResultBuffer();
+                }
+
+                if (m_mostRecent == null) { // could still be null after the update, check again
+                    // although I don't know what we can do about it...
+                    DriverStation.reportError("getResult() returning null!", null);
+                }
+
+                return m_mostRecent;
             }
 
             /*

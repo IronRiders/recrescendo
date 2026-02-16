@@ -48,22 +48,15 @@ public class VisionSubsystem extends IronSubsystem {
     @Override
     public void periodic() {
         // for every camera...
-        Vision.CAMERAS.parallelStream().forEach((cam) -> {
-            List<PhotonPipelineResult> results = cam.getPhotonCamera().getAllUnreadResults();
+        Vision.CAMERAS.parallelStream().forEach((camera) -> {
+            camera.updateResultBuffer();
 
-            if (results.isEmpty()) {
-                return; // Immediately give up if there is no new work to do.
-            }
-
-            PhotonPipelineResult result = results.get(results.size() - 1); // We only care about the most recent
-                                                                           // reading.
-
-            if (result == null || !result.hasTargets()) {
+            if (!camera.getResult().hasTargets()) {
                 return; // We don't see any tags, give up.
             }
 
             // estimate the pose
-            estimateRobotPose(result, cam);
+            estimateRobotPose(camera);
         });
     }
 
@@ -99,8 +92,9 @@ public class VisionSubsystem extends IronSubsystem {
         xyStdDev *= (ambiguity);
         thetaStdDev *= (ambiguity * 2.0);
 
-        xyStdDev += camera.getWeight() * Vision.WEIGHT_SCALE;
-        thetaStdDev += camera.getWeight() * Vision.WEIGHT_SCALE;
+        // add camera weighting. Inverted because higher numbers are less trusting.
+        xyStdDev += -camera.getWeight() * Vision.WEIGHT_SCALE;
+        thetaStdDev += -camera.getWeight() * Vision.WEIGHT_SCALE;
 
         return VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev);
     }
@@ -109,17 +103,18 @@ public class VisionSubsystem extends IronSubsystem {
      * Try to estimate the position of the robot using the visible tags.
      * This function should be called for every camera.
      */
-    public void estimateRobotPose(PhotonPipelineResult result, VisionCamera camera) {
+    public void estimateRobotPose(VisionCamera camera) {
         List<PhotonTrackedTarget> validTargets = new ArrayList<PhotonTrackedTarget>();
         Map<PhotonTrackedTarget, String> tagStrings = new HashMap<PhotonTrackedTarget, String>();
-        Double skew;
+
+        PhotonPipelineResult result = camera.getResult();
 
         // for every target (tag)...
         for (PhotonTrackedTarget target : result.getTargets()) {
             makeDebugString(target);
 
             // get the skew (the angle off of straight on)
-            skew = calculateSkew(target);
+            Double skew = calculateSkew(target);
 
             // get the distance from the camera to the target.
             double distance = target.getBestCameraToTarget().getTranslation().getNorm();
