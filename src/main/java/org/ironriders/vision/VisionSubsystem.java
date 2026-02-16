@@ -2,8 +2,9 @@ package org.ironriders.vision;
 
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collector;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.ironriders.drive.DriveSubsystem;
@@ -22,8 +23,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -36,7 +35,6 @@ public class VisionSubsystem extends IronSubsystem {
     private List<PhotonPipelineResult> results;
 
     private Double skew;
-    private Double lastSkew = null;
 
     public static AprilTagFieldLayout fieldLayout;
 
@@ -88,31 +86,47 @@ public class VisionSubsystem extends IronSubsystem {
         EstimatedRobotPose newPose;
 
         List<PhotonTrackedTarget> goodTargets = new ArrayList<PhotonTrackedTarget>();
+        Map<PhotonTrackedTarget, String> tagStrings = new HashMap<PhotonTrackedTarget, String>();
 
         for (PhotonTrackedTarget target : result.getTargets()) {
             skew = calculateSkew(target);
 
+            String str = "Tag " + String.valueOf(target.getFiducialId()) + ": ";
+
             if (Math.abs(skew) < Constants.Vision.SKEW_THROWAWAY_THRESHOLD) {
                 reportWarning("Skew throwaway");
+                str += "BAD: ";
+
+                str += "not enough skew, " + String.valueOf(skew);
+
+                tagStrings.put(target, str);
                 continue;
             }
 
-            double distance = Utils.distanceToPose(Utils.expandPose2d(DriveSubsystem.getPose()),
-                    fieldLayout.getTagPose(target.fiducialId)
-                            .orElse(new Pose3d(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                    Double.POSITIVE_INFINITY,
-                                    new Rotation3d())));
+            double distance = target.getBestCameraToTarget().getTranslation().getNorm();
 
             if (distance < 0) {
-                reportWarning("Target too distant");
+                reportWarning("Target inside us");
+                str += "BAD: ";
+
+                str += "Negative distance: " + String.valueOf(distance);
+                tagStrings.put(target, str);
+
                 continue;
             }
 
-            
             if (distance > Constants.Vision.TARGET_DISTANCE_THROWAWAY_THRESHOLD) {
-                reportWarning("Target inside us");
+                reportWarning("Target too distant");
+                str += "BAD: ";
+                str += "Too far: " + String.valueOf(distance);
+                tagStrings.put(target, str);
+
                 continue;
             }
+            str += "GOOD: ";
+
+            str += "Distance: " + String.valueOf(distance);
+            tagStrings.put(target, str);
 
             goodTargets.add(target);
         }
@@ -126,8 +140,9 @@ public class VisionSubsystem extends IronSubsystem {
 
         publish("Good tags:",
                 goodTargets.stream().map(PhotonTrackedTarget::getFiducialId).map(i -> String.valueOf(i))
-                        .collect(Collectors.joining(" | ")) );
+                        .collect(Collectors.joining(" | ")));
 
+        publish("Tag data:", tagStrings.values().parallelStream().collect(Collectors.joining(" | ")));
 
         if (result.getTargets().size() > 1) {
             newPose = poseEstimator.estimateCoprocMultiTagPose(result).orElse(null);
