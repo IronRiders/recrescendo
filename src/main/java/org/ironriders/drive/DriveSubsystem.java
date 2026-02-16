@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;
@@ -233,7 +234,7 @@ public class DriveSubsystem extends IronSubsystem {
     public static Command pathfindToPose(Pose2d target) {
         return new Command() {
             PathPlannerPath path;
-            List<Waypoint> waypoints;
+            List<Pose2d> poses;
             int i = 0;
 
             @Override
@@ -245,25 +246,32 @@ public class DriveSubsystem extends IronSubsystem {
                 path = Pathfinding.getCurrentPath(Constants.Drive.PATHFIND_CONSTRAINTS,
                         new GoalEndState(0, target.getRotation()));
 
-                waypoints = path.getWaypoints();
+                poses = path.getPathPoses();
+
+                Field2d field = swerveDrive.field;
+
+                for (int i = 0; i < poses.size(); i++) {
+                    field.getObject("Pose " + String.valueOf(i)).setPose(poses.get(i));
+                }
+
                 i = 0;
 
-                if (!waypoints.isEmpty()) {
-                    setPositionGoal(waypoints.get(i).nextControl());
+                if (!poses.isEmpty()) {
+                    setPositionGoal(poses.get(i).getTranslation());
                 }
             }
 
             @Override
             public void execute() {
-                if (atGoal() && i < waypoints.size() - 1) {
+                if (atGoal() && i < poses.size() - 1) {
                     i++;
-                    setPositionGoal(waypoints.get(i).nextControl());
+                    setPositionGoal(poses.get(i).getTranslation());
                 }
             }
 
             @Override
             public boolean isFinished() {
-                return i >= waypoints.size() - 1 && atGoal();
+                return i >= poses.size() - 1 && atGoal();
             }
         };
     }
