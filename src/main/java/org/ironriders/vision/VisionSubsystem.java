@@ -15,7 +15,6 @@ import org.ironriders.lib.Utils;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -35,8 +34,9 @@ public class VisionSubsystem extends IronSubsystem {
 
     private final VisionCommands commands = new VisionCommands(this);
 
-    private PhotonCamera camera = new PhotonCamera(Vision.VISION_CAMERA);
-    private final PhotonPoseEstimator poseEstimator;
+    private final List<PhotonCamera> cameras = new ArrayList<PhotonCamera>();
+
+    private final Map<PhotonCamera, PhotonPoseEstimator> poseEstimatorsMap = new HashMap<PhotonCamera, PhotonPoseEstimator>();
 
     private List<PhotonPipelineResult> results;
 
@@ -54,9 +54,11 @@ public class VisionSubsystem extends IronSubsystem {
             e.printStackTrace();
         }
 
-        poseEstimator = new PhotonPoseEstimator(
-                fieldLayout,
-                Vision.CAMERA_OFFSET);
+        for (String name : Vision.VISION_CAMERAS) {
+            PhotonCamera cam = new PhotonCamera(name);
+            cameras.add(cam);
+            poseEstimatorsMap.put(cam, new PhotonPoseEstimator(fieldLayout, Vision.CAMERA_OFFSETS.get(name)));
+        }
     }
 
     public Vector<N3> estimateStdDevVector(List<PhotonTrackedTarget> targets) {
@@ -90,7 +92,7 @@ public class VisionSubsystem extends IronSubsystem {
         return VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev);
     }
 
-    public void estimateRobotPose(PhotonPipelineResult result) {
+    public void estimateRobotPose(PhotonPipelineResult result, PhotonPoseEstimator estimator) {
         List<PhotonTrackedTarget> validTargets = new ArrayList<PhotonTrackedTarget>();
         Map<PhotonTrackedTarget, String> tagStrings = new HashMap<PhotonTrackedTarget, String>();
 
@@ -110,7 +112,7 @@ public class VisionSubsystem extends IronSubsystem {
 
             // if we are too normal to the tag, we can't trust the result. this is for
             // complicated reasons involving how photon vision sees tags. ask Issy in
-            // discord if you need to know (you probably don't)
+            // discord if you really need to know (you probably don't)
             if (Math.abs(skew) < Constants.Vision.SKEW_THROWAWAY_THRESHOLD) {
                 reportWarning("No skew");
                 addBadTagToString(TagInvalidReason.NO_SKEW, String.valueOf(skew));
@@ -162,10 +164,10 @@ public class VisionSubsystem extends IronSubsystem {
 
         if (result.getTargets().size() > 1) {
             // if we have more than one tag, do multi-tag estimation,
-            estimatedPose = poseEstimator.estimateCoprocMultiTagPose(result).orElse(null);
+            estimatedPose = estimator.estimateCoprocMultiTagPose(result).orElse(null);
         } else {
             // otherwise do single tag.
-            estimatedPose = poseEstimator.estimateLowestAmbiguityPose(result).orElse(null);
+            estimatedPose = estimator.estimateLowestAmbiguityPose(result).orElse(null);
         }
 
         if (estimatedPose == null) {
@@ -213,42 +215,29 @@ public class VisionSubsystem extends IronSubsystem {
         return (target.getBestCameraToTarget().getRotation().getZ() * 180.0 / Math.PI) - 90;
     }
 
-    /*
-     * Get the distance to the provided target from the camera. Can throw an error
-     * if the provided target's tag is not valid
-     */
-    public double getDistance(PhotonTrackedTarget target) {
-        // *2, as the offset is from the center of the robot, and this wants the
-        // distance from the floor
-        return PhotonUtils.calculateDistanceToTargetMeters(
-                Vision.CAMERA_OFFSET.getZ() * 2,
-                fieldLayout.getTagPose(target.getFiducialId())
-                        .orElseThrow().getZ(),
-                Vision.CAMERA_OFFSET.getRotation().getY(), // Pitch
-                target.getPitch());
-    }
-
     public Double[] getTargetAngles(PhotonTrackedTarget target) {
         return new Double[] { target.getYaw(), target.getPitch(), calculateSkew(target) };
     }
 
     @Override
     public void periodic() {
-        results = camera.getAllUnreadResults();
+        // for every camera...
+        cameras.parallelStream().forEach((PhotonCamera c) -> {
+            results = c.getAllUnreadResults();
 
-        if (results.isEmpty()) {
-            return; // Immediately give up if there is no new work to do.
-        }
+            if (results.isEmpty()) {
+                return; // Immediately give up if there is no new work to do.
+            }
 
-        PhotonPipelineResult result = results.get(results.size() - 1); // We only care about the most recent reading.
+            PhotonPipelineResult result = results.get(results.size() - 1); // We only care about the most recent
+                                                                           // reading.
 
-        publish("Sees target?", result.hasTargets());
+            if (result == null || !result.hasTargets()) {
+                return; // We don't see any tags, give up.
+            }
 
-        if (result == null || !result.hasTargets()) {
-            return; // We don't see any tags, give up.
-        }
-
-        estimateRobotPose(result);
+            estimateRobotPose(result, poseEstimatorsMap.get(c));
+        });
     }
 
     public VisionCommands getCommands() {
