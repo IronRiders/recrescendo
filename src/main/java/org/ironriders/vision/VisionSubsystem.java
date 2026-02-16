@@ -10,10 +10,9 @@ import java.util.stream.Collectors;
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants;
 import org.ironriders.lib.Constants.Vision;
+import org.ironriders.lib.Constants.Vision.VisionCamera;
 import org.ironriders.lib.IronSubsystem;
 import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -33,10 +32,6 @@ public class VisionSubsystem extends IronSubsystem {
 
     private final VisionCommands commands = new VisionCommands(this);
 
-    private final List<PhotonCamera> cameras = new ArrayList<PhotonCamera>();
-
-    private final Map<PhotonCamera, PhotonPoseEstimator> poseEstimatorsMap = new HashMap<PhotonCamera, PhotonPoseEstimator>();
-
     private String debugString;
 
     public static AprilTagFieldLayout fieldLayout;
@@ -48,24 +43,13 @@ public class VisionSubsystem extends IronSubsystem {
             reportError("Could not load apriltag layout!");
             e.printStackTrace();
         }
-
-        // for every camera definition, construct it and add it to the list.
-        for (String name : Vision.VISION_CAMERAS) {
-            PhotonCamera cam = new PhotonCamera(name);
-            cameras.add(cam);
-
-            // each camera requires it's own pose estimator. (see
-            // https://tinyurl.com/ywzups2b, https://tinyurl.com/nynhx2ey)
-            // these are put in a hashmap for convenience.
-            poseEstimatorsMap.put(cam, new PhotonPoseEstimator(fieldLayout, Vision.CAMERA_OFFSETS.get(name)));
-        }
     }
 
     @Override
     public void periodic() {
         // for every camera...
-        cameras.parallelStream().forEach((PhotonCamera cam) -> {
-            List<PhotonPipelineResult> results = cam.getAllUnreadResults();
+        Vision.CAMERAS.parallelStream().forEach((cam) -> {
+            List<PhotonPipelineResult> results = cam.getPhotonCamera().getAllUnreadResults();
 
             if (results.isEmpty()) {
                 return; // Immediately give up if there is no new work to do.
@@ -79,7 +63,7 @@ public class VisionSubsystem extends IronSubsystem {
             }
 
             // estimate the pose
-            estimateRobotPose(result, poseEstimatorsMap.get(cam));
+            estimateRobotPose(result, cam);
         });
     }
 
@@ -87,7 +71,7 @@ public class VisionSubsystem extends IronSubsystem {
      * Try to estimate how much we should trust the opinion of this camera. Higher
      * numbers mean less trust.
      */
-    public Vector<N3> estimateStdDevVector(List<PhotonTrackedTarget> targets) {
+    public Vector<N3> estimateStdDevVector(List<PhotonTrackedTarget> targets, VisionCamera camera) {
         double xyStdDev;
         double thetaStdDev;
 
@@ -115,6 +99,9 @@ public class VisionSubsystem extends IronSubsystem {
         xyStdDev *= (ambiguity);
         thetaStdDev *= (ambiguity * 2.0);
 
+        xyStdDev += camera.getWeight() * Vision.WEIGHT_SCALE;
+        thetaStdDev += camera.getWeight() * Vision.WEIGHT_SCALE;
+
         return VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev);
     }
 
@@ -122,7 +109,7 @@ public class VisionSubsystem extends IronSubsystem {
      * Try to estimate the position of the robot using the visible tags.
      * This function should be called for every camera.
      */
-    public void estimateRobotPose(PhotonPipelineResult result, PhotonPoseEstimator estimator) {
+    public void estimateRobotPose(PhotonPipelineResult result, VisionCamera camera) {
         List<PhotonTrackedTarget> validTargets = new ArrayList<PhotonTrackedTarget>();
         Map<PhotonTrackedTarget, String> tagStrings = new HashMap<PhotonTrackedTarget, String>();
         Double skew;
@@ -189,16 +176,16 @@ public class VisionSubsystem extends IronSubsystem {
                 validTargets.stream().map(PhotonTrackedTarget::getFiducialId).map(i -> String.valueOf(i))
                         .collect(Collectors.joining(" | ")));
 
-        publish("Tag data:", tagStrings.values().stream().sorted().collect(Collectors.joining(" | ")));
+        publish(String.format("Tag data for camera: %s", camera.getName()), tagStrings.values().stream().sorted().collect(Collectors.joining(" | ")));
 
         EstimatedRobotPose estimatedPose;
 
         if (result.getTargets().size() > 1) {
             // if we have more than one tag, do multi-tag estimation,
-            estimatedPose = estimator.estimateCoprocMultiTagPose(result).orElse(null);
+            estimatedPose = camera.getEstimator().estimateCoprocMultiTagPose(result).orElse(null);
         } else if (result.getTargets().size() == 1) {
             // if we only have one, do single tag.
-            estimatedPose = estimator.estimateLowestAmbiguityPose(result).orElse(null);
+            estimatedPose = camera.getEstimator().estimateLowestAmbiguityPose(result).orElse(null);
         } else {
             // otherwise, we must not have any, show a warning and exit.
             reportWarning("No valid targets");
@@ -220,7 +207,7 @@ public class VisionSubsystem extends IronSubsystem {
 
         // Actually add the estimate. Adding an estimate for each camera is apparently
         // the right way to do it, but seems wrong. idk
-        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(validTargets));
+        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(validTargets, camera));
         DriveSubsystem.getSwerveDrive().addVisionMeasurement(estimatedPose.estimatedPose.toPose2d(),
                 Timer.getFPGATimestamp());
     }

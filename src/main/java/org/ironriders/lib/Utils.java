@@ -83,7 +83,7 @@ public class Utils {
     }
 
     /**
-     * Clamps a value between a minimum and maximum range.
+     * Inclusively clamps a value between a minimum and maximum range.
      * 
      * @param min The minimum value.
      * @param max The maximum value.
@@ -91,10 +91,10 @@ public class Utils {
      * @return The clamped value.
      */
     public static double clamp(double min, double max, double in) {
-        if (in > max) {
+        if (in >= max) {
             in = max;
         }
-        if (in < min) {
+        if (in <= min) {
             in = min;
         }
         return in;

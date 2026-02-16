@@ -6,6 +6,9 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -16,7 +19,11 @@ import edu.wpi.first.wpilibj.Filesystem;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
 
 public class Constants {
     public class Robot {
@@ -85,12 +92,10 @@ public class Constants {
     }
 
     public class Vision {
-        public static final String[] VISION_CAMERAS = { "main" };
-
-        public static final Map<String, Transform3d> CAMERA_OFFSETS = new HashMap<String, Transform3d>();
+        public static final List<VisionCamera> CAMERAS = new ArrayList<VisionCamera>();
 
         static {
-            CAMERA_OFFSETS.put(VISION_CAMERAS[0], new Transform3d(
+            CAMERAS.add(new VisionCamera("main", new Transform3d(
                     new Translation3d(
                             -0.25, // forward (meters)
                             0.0, // left (meters)
@@ -100,12 +105,80 @@ public class Constants {
                             0.0, // roll
                             0.0, // pitch
                             Math.PI // yaw
-                    )));
+                    ))));
         }
 
         public static final Double SKEW_THROWAWAY_THRESHOLD = 15d; // deg,
         public static final Double POSE_DISTANCE_THROWAWAY_THRESHOLD = 6d; // meters, TODO: Tune
         public static final Double TARGET_DISTANCE_THROWAWAY_THRESHOLD = 5d; // meters, TODO: Tune
+
+        public static final Double WEIGHT_SCALE = 5d;
+
+        public static class VisionCamera {
+            String m_name;
+            Transform3d m_offset;
+            Double m_trustWeight;
+            
+            PhotonCamera m_photonCamera;
+            PhotonPoseEstimator m_estimator;
+
+            AprilTagFieldLayout m_fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+
+            public PhotonCamera getPhotonCamera() {
+                return m_photonCamera;
+            }
+
+            public PhotonPoseEstimator getEstimator() {
+                return m_estimator;
+            }
+
+            public String getName() {
+                return m_name;
+            }
+
+            public Double getWeight() {
+                return m_trustWeight;
+            }
+
+            /*
+             * Define a new camera.
+             * 
+             * @param name is the camera name set in the photonvision dashboard.
+             * 
+             * @param offset is the offset from the center of the robot, positive x towards
+             * the battery.
+             * 
+             * @param trustWeight is the weight on the trust we have in estimations made
+             * by this camera. Useful if you have one crapy camera and one good one or
+             * something similar. Should be in the range [-1 (least trusting) to 1 (most
+             * trusting)]. Zero is no weighing.
+             */
+            public VisionCamera(String name, Transform3d offset, Double trustWeight) {
+                m_name = name;
+                m_offset = offset;
+                m_trustWeight = Utils.clamp(-1, 1, trustWeight);
+
+                m_photonCamera = new PhotonCamera(name);
+                m_estimator = new PhotonPoseEstimator(m_fieldLayout, offset);
+            }
+
+            /*
+             * Define a new camera.
+             * 
+             * @param name is the camera name set in the photonvision dashboard.
+             * 
+             * @param offset is the offset from the center of the robot, positive x towards
+             * the battery.
+             */
+            public VisionCamera(String name, Transform3d offset) {
+                m_name = name;
+                m_offset = offset;
+                m_trustWeight = 0d;
+
+                m_photonCamera = new PhotonCamera(name);
+                m_estimator = new PhotonPoseEstimator(m_fieldLayout, offset);
+            }
+        }
     }
 
     public class Intake {
