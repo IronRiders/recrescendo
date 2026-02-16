@@ -27,6 +27,12 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
 
 public class VisionSubsystem extends IronSubsystem {
+    public enum TagInvalidReason {
+        NO_SKEW,
+        TOO_DISTANT,
+        TOO_CLOSE
+    }
+
     private final VisionCommands commands = new VisionCommands(this);
 
     private PhotonCamera camera = new PhotonCamera(Vision.VISION_CAMERA);
@@ -35,6 +41,8 @@ public class VisionSubsystem extends IronSubsystem {
     private List<PhotonPipelineResult> results;
 
     private Double skew;
+
+    private String debugString;
 
     public static AprilTagFieldLayout fieldLayout;
 
@@ -83,91 +91,122 @@ public class VisionSubsystem extends IronSubsystem {
     }
 
     public void estimateRobotPose(PhotonPipelineResult result) {
-        EstimatedRobotPose newPose;
-
-        List<PhotonTrackedTarget> goodTargets = new ArrayList<PhotonTrackedTarget>();
+        List<PhotonTrackedTarget> validTargets = new ArrayList<PhotonTrackedTarget>();
         Map<PhotonTrackedTarget, String> tagStrings = new HashMap<PhotonTrackedTarget, String>();
 
+        // for every target (tag)...
         for (PhotonTrackedTarget target : result.getTargets()) {
+            makeDebugString(target);
+
+            // get the skew (the angle off of straight on)
             skew = calculateSkew(target);
 
-            String str = "Tag " + String.valueOf(target.getFiducialId()) + ": ";
+            // get the distance from the camera to the target.
+            double distance = target.getBestCameraToTarget().getTranslation().getNorm();
 
+            String distanceString = String.format("%03.2f", distance);
+
+            // -- Checks to make sure that tag is valid --
+
+            // if we are too normal to the tag, we can't trust the result. this is for
+            // complicated reasons involving how photon vision sees tags. ask Issy in
+            // discord if you need to know (you probably don't)
             if (Math.abs(skew) < Constants.Vision.SKEW_THROWAWAY_THRESHOLD) {
-                reportWarning("Skew throwaway");
-                str += "BAD: ";
+                reportWarning("No skew");
+                addBadTagToString(TagInvalidReason.NO_SKEW, String.valueOf(skew));
 
-                str += "not enough skew, " + String.valueOf(skew);
-
-                tagStrings.put(target, str);
                 continue;
             }
 
-            double distance = target.getBestCameraToTarget().getTranslation().getNorm(); // TODO: fix
-            String distString = String.format("%03.2f", distance);
-
+            // the distance is negative, something has gone wrong.
             if (distance < 0) {
-                reportWarning("Target inside us");
-                str += "BAD: ";
-
-                str += "Negative distance: " + distString;
-                tagStrings.put(target, str);
+                reportWarning("Target too close");
+                addBadTagToString(TagInvalidReason.TOO_CLOSE, distanceString);
 
                 continue;
             }
 
+            // if the distance is too great, we can't trust that the tag will be read
+            // reliably, so just ignore it.
             if (distance > Constants.Vision.TARGET_DISTANCE_THROWAWAY_THRESHOLD) {
                 reportWarning("Target too distant");
-                str += "BAD: ";
-                str += "Too far: " + distString;
-                tagStrings.put(target, str);
+                addBadTagToString(TagInvalidReason.TOO_DISTANT, distanceString);
 
                 continue;
             }
-            str += "GOOD: ";
 
-            str += "Distance: " + distString;
-            tagStrings.put(target, str);
+            addGoodTagToString(distanceString);
+            tagStrings.put(target, debugString);
 
-            goodTargets.add(target);
+            // tag is valid!
+            validTargets.add(target);
         }
 
-        List<PhotonTrackedTarget> badTags = result.targets;
-        badTags.removeAll(goodTargets);
+        List<PhotonTrackedTarget> invalidTargets = result.targets;
+        invalidTargets.removeAll(validTargets);
 
-        publish("Bad tags", badTags.stream().map(t -> String.valueOf(t.fiducialId)).collect(Collectors.joining(" | ")));
+        publish("Invalid targets",
+                invalidTargets.stream().map(t -> String.valueOf(t.fiducialId)).collect(Collectors.joining(" | ")));
 
-        result.targets = goodTargets;
+        // set the targets in the pipeline result to only be the valid ones. (kinda
+        // silly but better than constructing a new pipeline result)
+        result.targets = validTargets;
 
-        publish("Good tags:",
-                goodTargets.stream().map(PhotonTrackedTarget::getFiducialId).map(i -> String.valueOf(i))
+        publish("Valid targets:",
+                validTargets.stream().map(PhotonTrackedTarget::getFiducialId).map(i -> String.valueOf(i))
                         .collect(Collectors.joining(" | ")));
 
         publish("Tag data:", tagStrings.values().stream().sorted().collect(Collectors.joining(" | ")));
 
+        EstimatedRobotPose estimatedPose;
+
         if (result.getTargets().size() > 1) {
-            newPose = poseEstimator.estimateCoprocMultiTagPose(result).orElse(null);
+            // if we have more than one tag, do multi-tag estimation,
+            estimatedPose = poseEstimator.estimateCoprocMultiTagPose(result).orElse(null);
         } else {
-            newPose = poseEstimator.estimateLowestAmbiguityPose(result).orElse(null);
+            // otherwise do single tag.
+            estimatedPose = poseEstimator.estimateLowestAmbiguityPose(result).orElse(null);
         }
 
-        if (newPose == null) {
+        if (estimatedPose == null) {
             // Something has gone wrong, give up and try again next tick.
-            reportWarning("Giving up in pose estimation!");
+            reportWarning("Estimated pose was null!");
             return;
         }
 
-        // Throwaway the pose if it is too normal to us or is too far away.
-        if (Utils.getPoseDifference(Utils.flattenPose3d(newPose.estimatedPose),
+        // Throwaway the pose if it is too far away.
+        if (Utils.getPoseDifference(Utils.flattenPose3d(estimatedPose.estimatedPose),
                 DriveSubsystem.getSwerveDrive().getPose()).getNorm() > Vision.POSE_DISTANCE_THROWAWAY_THRESHOLD) {
-            reportWarning("new pose two distant");
+            reportWarning("Estimated pose too distant");
             return;
         }
 
         // Actually add the estimate
-        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(newPose, goodTargets));
-        DriveSubsystem.getSwerveDrive().addVisionMeasurement(newPose.estimatedPose.toPose2d(),
+        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(estimatedPose, validTargets));
+        DriveSubsystem.getSwerveDrive().addVisionMeasurement(estimatedPose.estimatedPose.toPose2d(),
                 Timer.getFPGATimestamp());
+    }
+
+    public void makeDebugString(PhotonTrackedTarget target) {
+        debugString = "Tag " + String.valueOf(target.getFiducialId()) + ": ";
+    }
+
+    public void addBadTagToString(TagInvalidReason reason, String extra) {
+        if (debugString != null) {
+            debugString += "BAD: " + reason.toString();
+            if (extra != null) {
+                debugString += " | " + extra;
+            }
+        }
+    }
+
+    public void addGoodTagToString(String extra) {
+        if (debugString != null) {
+            debugString += "GOOD: ";
+            if (extra != null) {
+                debugString += " | " + extra;
+            }
+        }
     }
 
     public double calculateSkew(PhotonTrackedTarget target) {
