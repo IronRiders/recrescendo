@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants;
 import org.ironriders.lib.Constants.Vision;
-import org.ironriders.lib.Constants.Vision.VisionCamera;
+import org.ironriders.lib.VisionCamera;
 import org.ironriders.lib.IronSubsystem;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -37,7 +37,7 @@ public class VisionSubsystem extends IronSubsystem {
         Vision.CAMERAS.parallelStream().forEach((camera) -> {
             camera.updateResultBuffer();
 
-            if (!camera.getResult().hasTargets()) {
+            if (!camera.seesTargets()) {
                 return; // We don't see any tags, give up.
             }
 
@@ -157,8 +157,7 @@ public class VisionSubsystem extends IronSubsystem {
                 validTargets.stream().map(PhotonTrackedTarget::getFiducialId).map(i -> String.valueOf(i))
                         .collect(Collectors.joining(" | ")));
 
-        publish(String.format("Tag data for camera: %s", camera.getName()),
-                tagStrings.values().stream().sorted().collect(Collectors.joining(" | ")));
+        publish(String.format("Tag data for camera: %s", camera.getName()), tagStrings.values().stream().sorted().collect(Collectors.joining(" | ")));
 
         EstimatedRobotPose estimatedPose;
 

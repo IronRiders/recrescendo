@@ -6,23 +6,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.targeting.PhotonPipelineResult;
-
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 
 public class Constants {
@@ -113,104 +106,6 @@ public class Constants {
         public static final Double TARGET_DISTANCE_THROWAWAY_THRESHOLD = 5d; // meters, TODO: Tune
 
         public static final Double WEIGHT_SCALE = 5d;
-
-        public static class VisionCamera {
-            String m_name;
-            Transform3d m_offset;
-            Double m_trustWeight;
-
-            PhotonCamera m_photonCamera;
-            PhotonPoseEstimator m_estimator;
-
-            PhotonPipelineResult m_mostRecent;
-
-            private AprilTagFieldLayout m_fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
-
-            public PhotonCamera getPhotonCamera() {
-                return m_photonCamera;
-            }
-
-            public PhotonPoseEstimator getEstimator() {
-                return m_estimator;
-            }
-
-            public String getName() {
-                return m_name;
-            }
-
-            public Double getWeight() {
-                return m_trustWeight;
-            }
-
-            /*
-             * You should call this every tick exactly once. (Will probably be fine if called more often)
-             */
-            public void updateResultBuffer() {
-                List<PhotonPipelineResult> results = m_photonCamera.getAllUnreadResults();
-
-                if (results == null) {
-                    return; // don't update the buffer if we get a null response. Could be incorrect.
-                }
-
-                m_mostRecent = results.get(results.size() - 1); // get the most recent
-            }
-
-            /*
-             * Get the most recent result from this camera.
-             * Could potentially return null.
-             */
-            public PhotonPipelineResult getResult() {
-                if (m_mostRecent == null) {
-                    updateResultBuffer();
-                }
-
-                if (m_mostRecent == null) { // could still be null after the update, check again
-                    // although I don't know what we can do about it...
-                    DriverStation.reportError("getResult() returning null!", null);
-                }
-
-                return m_mostRecent;
-            }
-
-            /*
-             * Define a new camera.
-             * 
-             * @param name is the camera name set in the photonvision dashboard.
-             * 
-             * @param offset is the offset from the center of the robot, positive x towards
-             * the battery.
-             * 
-             * @param trustWeight is the weight on the trust we have in estimations made
-             * by this camera. Useful if you have one crapy camera and one good one or
-             * something similar. Should be in the range [-1 (least trusting) to 1 (most
-             * trusting)]. Zero is no weighing.
-             */
-            public VisionCamera(String name, Transform3d offset, Double trustWeight) {
-                m_name = name;
-                m_offset = offset;
-                m_trustWeight = Utils.clamp(-1, 1, trustWeight);
-
-                m_photonCamera = new PhotonCamera(name);
-                m_estimator = new PhotonPoseEstimator(m_fieldLayout, offset);
-            }
-
-            /*
-             * Define a new camera.
-             * 
-             * @param name is the camera name set in the photonvision dashboard.
-             * 
-             * @param offset is the offset from the center of the robot, positive x towards
-             * the battery.
-             */
-            public VisionCamera(String name, Transform3d offset) {
-                m_name = name;
-                m_offset = offset;
-                m_trustWeight = 0d;
-
-                m_photonCamera = new PhotonCamera(name);
-                m_estimator = new PhotonPoseEstimator(m_fieldLayout, offset);
-            }
-        }
     }
 
     public class Intake {
