@@ -222,8 +222,8 @@ public class VisionSubsystem extends IronSubsystem {
     @Override
     public void periodic() {
         // for every camera...
-        cameras.parallelStream().forEach((PhotonCamera c) -> {
-            results = c.getAllUnreadResults();
+        cameras.parallelStream().forEach((PhotonCamera cam) -> {
+            results = cam.getAllUnreadResults();
 
             if (results.isEmpty()) {
                 return; // Immediately give up if there is no new work to do.
@@ -236,7 +236,7 @@ public class VisionSubsystem extends IronSubsystem {
                 return; // We don't see any tags, give up.
             }
 
-            estimateRobotPose(result, poseEstimatorsMap.get(c));
+            estimateRobotPose(result, poseEstimatorsMap.get(cam));
         });
     }
 
