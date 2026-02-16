@@ -181,4 +181,8 @@ public class Utils {
     public static double getAngleToPoint(Pose2d p1, Pose2d p2) {
         return Math.toDegrees(getAngleToPointRadians(p1, p2));
     }
+
+    public static double distanceToPose(Pose3d p1, Pose3d p2) {
+        return Math.sqrt(Math.pow(p2.getX() - p1.getX(), 2) + Math.pow(p2.getY() - p1.getY(), 2) + Math.pow(p2.getZ() - p1.getZ(), 2));
+    }
 }

@@ -1,7 +1,10 @@
 package org.ironriders.vision;
 
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants;
@@ -19,6 +22,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -82,6 +87,48 @@ public class VisionSubsystem extends IronSubsystem {
     public void estimateRobotPose(PhotonPipelineResult result) {
         EstimatedRobotPose newPose;
 
+        List<PhotonTrackedTarget> goodTargets = new ArrayList<PhotonTrackedTarget>();
+
+        for (PhotonTrackedTarget target : result.getTargets()) {
+            skew = calculateSkew(target);
+
+            if (Math.abs(skew) < Constants.Vision.SKEW_THROWAWAY_THRESHOLD) {
+                reportWarning("Skew throwaway");
+                continue;
+            }
+
+            double distance = Utils.distanceToPose(Utils.expandPose2d(DriveSubsystem.getPose()),
+                    fieldLayout.getTagPose(target.fiducialId)
+                            .orElse(new Pose3d(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                    Double.POSITIVE_INFINITY,
+                                    new Rotation3d())));
+
+            if (distance < 0) {
+                reportWarning("Target too distant");
+                continue;
+            }
+
+            
+            if (distance > Constants.Vision.TARGET_DISTANCE_THROWAWAY_THRESHOLD) {
+                reportWarning("Target inside us");
+                continue;
+            }
+
+            goodTargets.add(target);
+        }
+
+        List<PhotonTrackedTarget> badTags = result.targets;
+        badTags.removeAll(goodTargets);
+
+        publish("Bad tags", badTags.stream().map(t -> String.valueOf(t.fiducialId)).collect(Collectors.joining(" | ")));
+
+        result.targets = goodTargets;
+
+        publish("Good tags:",
+                goodTargets.stream().map(PhotonTrackedTarget::getFiducialId).map(i -> String.valueOf(i))
+                        .collect(Collectors.joining(" | ")) );
+
+
         if (result.getTargets().size() > 1) {
             newPose = poseEstimator.estimateCoprocMultiTagPose(result).orElse(null);
         } else {
@@ -94,28 +141,15 @@ public class VisionSubsystem extends IronSubsystem {
             return;
         }
 
-        skew = calculateSkew(result.getBestTarget());
-
-        publish("Skew", skew);
-        publish("Last Skew", lastSkew);
-
-        if (Math.abs(lastSkew - skew) > Constants.Vision.SKEW_THROWAWAY_THRESHOLD && lastSkew != null) {
-            reportWarning("Skew Jump");
-            return;
-        }
-
         // Throwaway the pose if it is too normal to us or is too far away.
-        if (Math.abs(skew) < Vision.SKEW_THROWAWAY_THRESHOLD
-                || Utils.getPoseDifference(Utils.flattenPose3d(newPose.estimatedPose),
-                        DriveSubsystem.getSwerveDrive().getPose()).getNorm() > Vision.DISTANCE_THROWAWAY_THRESHOLD) {
-            reportWarning("Skew Throwaway");
+        if (Utils.getPoseDifference(Utils.flattenPose3d(newPose.estimatedPose),
+                DriveSubsystem.getSwerveDrive().getPose()).getNorm() > Vision.POSE_DISTANCE_THROWAWAY_THRESHOLD) {
+            reportWarning("new pose two distant");
             return;
         }
-
-        lastSkew = skew;
 
         // Actually add the estimate
-        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(newPose, result.targets));
+        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(newPose, goodTargets));
         DriveSubsystem.getSwerveDrive().addVisionMeasurement(newPose.estimatedPose.toPose2d(),
                 Timer.getFPGATimestamp());
     }

@@ -182,7 +182,7 @@ public class RobotContainer {
         primaryController.rightTrigger(0.7)
                 .onTrue(Commands.runOnce(() -> {
                     DriveSubsystem.setPIDPositionControl(true);
-                    DriveSubsystem.setPositionGoal(new Translation2d(0, 0.2));
+                    DriveSubsystem.setPositionGoal(new Translation2d(2.5, 1.5));
                 })).onFalse(Commands.runOnce(() -> DriveSubsystem.setPIDPositionControl(false)));
     }
 

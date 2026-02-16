@@ -86,7 +86,7 @@ public class DriveSubsystem extends IronSubsystem {
                     System.out.println("PathPlanner calling drive: vx=" + speeds.vxMetersPerSecond +
                             " vy=" + speeds.vyMetersPerSecond +
                             " omega=" + speeds.omegaRadiansPerSecond);
-                    swerveDrive.drive(speeds.times(-1));
+                    swerveDrive.drive(speeds);
                 },
                 Constants.Drive.HOLONOMIC_CONFIG,
                 robotConfig,

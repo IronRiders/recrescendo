@@ -63,11 +63,11 @@ public class Constants {
     public static final double ROTATION_CONTROL_EXPONENT = 3.0;
     public static final double ROTATION_CONTROL_DEADBAND = 0.8;
 
-    public static final double SWERVE_MAX_TRANSLATION_TELEOP = 0.3; // m/s
-    public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI / 2; // rad/s
+    public static final double SWERVE_MAX_TRANSLATION_TELEOP = 4; // m/s
+    public static final double SWERVE_MAX_ANGULAR_TELEOP = Math.PI / 1.2; // rad/s
 
-    public static final double SWERVE_MAX_TRANSLATION_PATHFIND = 0.3; // m/s
-    public static final double SWERVE_MAX_ANGULAR_PATHFIND = Math.PI / 2; // rad/s
+    public static final double SWERVE_MAX_TRANSLATION_PATHFIND = 4; // m/s
+    public static final double SWERVE_MAX_ANGULAR_PATHFIND = Math.PI / 1.2; // rad/s
 
     public static final double SWERVE_MAX_TRANSLATION_ACCEL_PATHFIND = SWERVE_MAX_TRANSLATION_PATHFIND / 1.2;
     public static final double SWERVE_MAX_ANGULAR_ACCEL_PATHFIND = SWERVE_MAX_ANGULAR_PATHFIND / 1.2;
@@ -83,20 +83,22 @@ public class Constants {
   public class Vision {
     public static final String VISION_CAMERA = "main";
 
-    public static final Double SKEW_THROWAWAY_THRESHOLD = 50d; // deg,
-    public static final Double DISTANCE_THROWAWAY_THRESHOLD = 6d; // meters, TODO: Tune
+    public static final Double SKEW_THROWAWAY_THRESHOLD = 15d; // deg,
+    public static final Double POSE_DISTANCE_THROWAWAY_THRESHOLD = 6d; // meters, TODO: Tune
+    public static final Double TARGET_DISTANCE_THROWAWAY_THRESHOLD = 5d; // meters, TODO: Tune
+
 
 
     public static final Transform3d CAMERA_OFFSET = new Transform3d( // idk just guessed
         new Translation3d(
-            0.25, // forward (meters)
+            -0.25, // forward (meters)
             0.0, // left (meters)
             0.5 // up (meters)
         ),
         new Rotation3d(
             0.0, // roll
             0.0, // pitch
-            0.0 // yaw
+            Math.PI // yaw
         ));
 
   }
