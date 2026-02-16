@@ -1,6 +1,5 @@
 package org.ironriders.vision;
 
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,8 +15,6 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.numbers.N3;
@@ -33,17 +30,6 @@ public class VisionSubsystem extends IronSubsystem {
     private final VisionCommands commands = new VisionCommands(this);
 
     private String debugString;
-
-    public static AprilTagFieldLayout fieldLayout;
-
-    public VisionSubsystem() {
-        try {
-            fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
-        } catch (UncheckedIOException e) {
-            reportError("Could not load apriltag layout!");
-            e.printStackTrace();
-        }
-    }
 
     @Override
     public void periodic() {
@@ -171,7 +157,8 @@ public class VisionSubsystem extends IronSubsystem {
                 validTargets.stream().map(PhotonTrackedTarget::getFiducialId).map(i -> String.valueOf(i))
                         .collect(Collectors.joining(" | ")));
 
-        publish(String.format("Tag data for camera: %s", camera.getName()), tagStrings.values().stream().sorted().collect(Collectors.joining(" | ")));
+        publish(String.format("Tag data for camera: %s", camera.getName()),
+                tagStrings.values().stream().sorted().collect(Collectors.joining(" | ")));
 
         EstimatedRobotPose estimatedPose;
 
