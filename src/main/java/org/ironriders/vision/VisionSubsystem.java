@@ -38,10 +38,6 @@ public class VisionSubsystem extends IronSubsystem {
 
     private final Map<PhotonCamera, PhotonPoseEstimator> poseEstimatorsMap = new HashMap<PhotonCamera, PhotonPoseEstimator>();
 
-    private List<PhotonPipelineResult> results;
-
-    private Double skew;
-
     private String debugString;
 
     public static AprilTagFieldLayout fieldLayout;
@@ -54,13 +50,44 @@ public class VisionSubsystem extends IronSubsystem {
             e.printStackTrace();
         }
 
+        // for every camera definition, construct it and add it to the list.
         for (String name : Vision.VISION_CAMERAS) {
             PhotonCamera cam = new PhotonCamera(name);
             cameras.add(cam);
+
+            // each camera requires it's own pose estimator. (see
+            // https://tinyurl.com/ywzups2b, https://tinyurl.com/nynhx2ey)
+            // these are put in a hashmap for convenience.
             poseEstimatorsMap.put(cam, new PhotonPoseEstimator(fieldLayout, Vision.CAMERA_OFFSETS.get(name)));
         }
     }
 
+    @Override
+    public void periodic() {
+        // for every camera...
+        cameras.parallelStream().forEach((PhotonCamera cam) -> {
+            List<PhotonPipelineResult> results = cam.getAllUnreadResults();
+
+            if (results.isEmpty()) {
+                return; // Immediately give up if there is no new work to do.
+            }
+
+            PhotonPipelineResult result = results.get(results.size() - 1); // We only care about the most recent
+                                                                           // reading.
+
+            if (result == null || !result.hasTargets()) {
+                return; // We don't see any tags, give up.
+            }
+
+            // estimate the pose
+            estimateRobotPose(result, poseEstimatorsMap.get(cam));
+        });
+    }
+
+    /*
+     * Try to estimate how much we should trust the opinion of this camera. Higher
+     * numbers mean less trust.
+     */
     public Vector<N3> estimateStdDevVector(List<PhotonTrackedTarget> targets) {
         double xyStdDev;
         double thetaStdDev;
@@ -92,9 +119,14 @@ public class VisionSubsystem extends IronSubsystem {
         return VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev);
     }
 
+    /*
+     * Try to estimate the position of the robot using the visible tags.
+     * This function should be called for every camera.
+     */
     public void estimateRobotPose(PhotonPipelineResult result, PhotonPoseEstimator estimator) {
         List<PhotonTrackedTarget> validTargets = new ArrayList<PhotonTrackedTarget>();
         Map<PhotonTrackedTarget, String> tagStrings = new HashMap<PhotonTrackedTarget, String>();
+        Double skew;
 
         // for every target (tag)...
         for (PhotonTrackedTarget target : result.getTargets()) {
@@ -140,7 +172,7 @@ public class VisionSubsystem extends IronSubsystem {
             addGoodTagToString(distanceString);
             tagStrings.put(target, debugString);
 
-            // tag is valid!
+            // tag is valid! yay :3
             validTargets.add(target);
         }
 
@@ -165,30 +197,36 @@ public class VisionSubsystem extends IronSubsystem {
         if (result.getTargets().size() > 1) {
             // if we have more than one tag, do multi-tag estimation,
             estimatedPose = estimator.estimateCoprocMultiTagPose(result).orElse(null);
-        } else {
-            // otherwise do single tag.
+        } else if (result.getTargets().size() == 1) {
+            // if we only have one, do single tag.
             estimatedPose = estimator.estimateLowestAmbiguityPose(result).orElse(null);
+        } else {
+            // otherwise, we must not have any, show a warning and exit.
+            reportWarning("No valid targets");
+            return;
         }
 
         if (estimatedPose == null) {
             // Something has gone wrong, give up and try again next tick.
-            reportWarning("Estimated pose was null!");
+            reportWarning("Estimated pose was null");
             return;
         }
 
-        // Throwaway the pose if it is too far away.
-        if (Utils.getPoseDifference(Utils.flattenPose3d(estimatedPose.estimatedPose),
-                DriveSubsystem.getSwerveDrive().getPose()).getNorm() > Vision.POSE_DISTANCE_THROWAWAY_THRESHOLD) {
+        // Throw away the new pose if it is too far away.
+        if (estimatedPose.estimatedPose.getTranslation()
+                .getDistance(DriveSubsystem.getPose3d().getTranslation()) > Vision.POSE_DISTANCE_THROWAWAY_THRESHOLD) {
             reportWarning("Estimated pose too distant");
             return;
         }
 
-        // Actually add the estimate
+        // Actually add the estimate. Adding an estimate for each camera is apparently
+        // the right way to do it, but seems wrong. idk
         DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(validTargets));
         DriveSubsystem.getSwerveDrive().addVisionMeasurement(estimatedPose.estimatedPose.toPose2d(),
                 Timer.getFPGATimestamp());
     }
 
+    // debugging helper functions
     public void makeDebugString(PhotonTrackedTarget target) {
         debugString = "Tag " + String.valueOf(target.getFiducialId()) + ": ";
     }
@@ -211,33 +249,18 @@ public class VisionSubsystem extends IronSubsystem {
         }
     }
 
+    /*
+     * Calculate the skew for a tag
+     */
     public double calculateSkew(PhotonTrackedTarget target) {
         return (target.getBestCameraToTarget().getRotation().getZ() * 180.0 / Math.PI) - 90;
     }
 
+    /*
+     * Get a list of the angles of a tag
+     */
     public Double[] getTargetAngles(PhotonTrackedTarget target) {
         return new Double[] { target.getYaw(), target.getPitch(), calculateSkew(target) };
-    }
-
-    @Override
-    public void periodic() {
-        // for every camera...
-        cameras.parallelStream().forEach((PhotonCamera cam) -> {
-            results = cam.getAllUnreadResults();
-
-            if (results.isEmpty()) {
-                return; // Immediately give up if there is no new work to do.
-            }
-
-            PhotonPipelineResult result = results.get(results.size() - 1); // We only care about the most recent
-                                                                           // reading.
-
-            if (result == null || !result.hasTargets()) {
-                return; // We don't see any tags, give up.
-            }
-
-            estimateRobotPose(result, poseEstimatorsMap.get(cam));
-        });
     }
 
     public VisionCommands getCommands() {

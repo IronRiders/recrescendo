@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.ironriders.lib.Constants;
 import org.ironriders.lib.IronSubsystem;
+import org.ironriders.lib.Utils;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -18,6 +19,7 @@ import com.pathplanner.lib.pathfinding.Pathfinding;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -170,6 +172,11 @@ public class DriveSubsystem extends IronSubsystem {
     /** Where is the robot? */
     public static Pose2d getPose() {
         return DriveSubsystem.swerveDrive.getPose();
+    }
+
+    /** Where is the robot in 3d? */
+    public static Pose3d getPose3d() {
+        return Utils.expandPose2d(getPose());
     }
 
     /*
