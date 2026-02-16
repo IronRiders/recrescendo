@@ -59,17 +59,17 @@ public class VisionSubsystem extends IronSubsystem {
                 Vision.CAMERA_OFFSET);
     }
 
-    public Vector<N3> estimateStdDevVector(EstimatedRobotPose pose, List<PhotonTrackedTarget> targets) {
+    public Vector<N3> estimateStdDevVector(List<PhotonTrackedTarget> targets) {
         double xyStdDev;
         double thetaStdDev;
 
-        double avgDistance = pose.targetsUsed.stream()
+        double avgDistance = targets.stream()
                 .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
                 .average()
                 .orElse(-1);
 
         // TODO: These numbers are mostly arbitrary.
-        if (pose.targetsUsed.size() > 1) { // Multi target
+        if (targets.size() > 1) { // Multi target
             xyStdDev = 0.02 + (avgDistance * 0.03);
             thetaStdDev = Math.toRadians(1 + avgDistance);
         } else { // Single Target
@@ -182,7 +182,7 @@ public class VisionSubsystem extends IronSubsystem {
         }
 
         // Actually add the estimate
-        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(estimatedPose, validTargets));
+        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(validTargets));
         DriveSubsystem.getSwerveDrive().addVisionMeasurement(estimatedPose.estimatedPose.toPose2d(),
                 Timer.getFPGATimestamp());
     }
