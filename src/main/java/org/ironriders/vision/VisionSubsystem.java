@@ -103,13 +103,14 @@ public class VisionSubsystem extends IronSubsystem {
                 continue;
             }
 
-            double distance = target.getBestCameraToTarget().getTranslation().getNorm();
+            double distance = target.getBestCameraToTarget().getTranslation().getNorm(); // TODO: fix
+            String distString = String.format("%03.2f", distance);
 
             if (distance < 0) {
                 reportWarning("Target inside us");
                 str += "BAD: ";
 
-                str += "Negative distance: " + String.valueOf(distance);
+                str += "Negative distance: " + distString;
                 tagStrings.put(target, str);
 
                 continue;
@@ -118,14 +119,14 @@ public class VisionSubsystem extends IronSubsystem {
             if (distance > Constants.Vision.TARGET_DISTANCE_THROWAWAY_THRESHOLD) {
                 reportWarning("Target too distant");
                 str += "BAD: ";
-                str += "Too far: " + String.valueOf(distance);
+                str += "Too far: " + distString;
                 tagStrings.put(target, str);
 
                 continue;
             }
             str += "GOOD: ";
 
-            str += "Distance: " + String.valueOf(distance);
+            str += "Distance: " + distString;
             tagStrings.put(target, str);
 
             goodTargets.add(target);
@@ -142,7 +143,7 @@ public class VisionSubsystem extends IronSubsystem {
                 goodTargets.stream().map(PhotonTrackedTarget::getFiducialId).map(i -> String.valueOf(i))
                         .collect(Collectors.joining(" | ")));
 
-        publish("Tag data:", tagStrings.values().parallelStream().collect(Collectors.joining(" | ")));
+        publish("Tag data:", tagStrings.values().stream().sorted().collect(Collectors.joining(" | ")));
 
         if (result.getTargets().size() > 1) {
             newPose = poseEstimator.estimateCoprocMultiTagPose(result).orElse(null);
