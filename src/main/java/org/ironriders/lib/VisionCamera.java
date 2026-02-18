@@ -5,6 +5,7 @@ import java.util.List;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -20,6 +21,8 @@ public class VisionCamera {
     PhotonPoseEstimator m_estimator;
 
     PhotonPipelineResult m_mostRecent;
+
+    public List<PhotonTrackedTarget> m_targets;
 
     private AprilTagFieldLayout m_fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
@@ -51,6 +54,8 @@ public class VisionCamera {
         }
 
         m_mostRecent = results.get(results.size() - 1); // get the most recent
+
+        m_targets = m_mostRecent.targets;
     }
 
     /*
@@ -68,6 +73,13 @@ public class VisionCamera {
         }
 
         return m_mostRecent;
+    }
+
+    public void updateTargets() {
+    }
+
+    public List<PhotonTrackedTarget> getTargets() {
+        return m_targets;
     }
 
     public boolean seesTargets() {

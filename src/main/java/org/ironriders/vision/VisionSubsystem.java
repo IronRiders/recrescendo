@@ -9,10 +9,9 @@ import java.util.stream.Collectors;
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants;
 import org.ironriders.lib.Constants.Vision;
-import org.ironriders.lib.VisionCamera;
 import org.ironriders.lib.IronSubsystem;
+import org.ironriders.lib.VisionCamera;
 import org.photonvision.EstimatedRobotPose;
-import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.VecBuilder;
@@ -50,17 +49,17 @@ public class VisionSubsystem extends IronSubsystem {
      * Try to estimate how much we should trust the opinion of this camera. Higher
      * numbers mean less trust.
      */
-    public Vector<N3> estimateStdDevVector(List<PhotonTrackedTarget> targets, VisionCamera camera) {
+    public Vector<N3> estimateStdDevVector(VisionCamera camera) {
         double xyStdDev;
         double thetaStdDev;
 
-        double avgDistance = targets.stream()
+        double avgDistance = camera.getTargets().stream()
                 .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
                 .average()
                 .orElse(-1);
 
         // TODO: These numbers are mostly arbitrary.
-        if (targets.size() > 1) { // Multi target
+        if (camera.getTargets().size() > 1) { // Multi target
             xyStdDev = 0.02 + (avgDistance * 0.03);
             thetaStdDev = Math.toRadians(1 + avgDistance);
         } else { // Single Target
@@ -68,7 +67,7 @@ public class VisionSubsystem extends IronSubsystem {
             thetaStdDev = Math.toRadians(10 + avgDistance * 5); // Really don't trust single tag rotation
         }
 
-        double ambiguity = targets.stream()
+        double ambiguity = camera.getTargets().stream()
                 .mapToDouble(t -> t.getPoseAmbiguity())
                 .average()
                 .orElse(Double.POSITIVE_INFINITY) + 1d; // Make sure we really don't like this pose if the optional is
@@ -93,10 +92,8 @@ public class VisionSubsystem extends IronSubsystem {
         List<PhotonTrackedTarget> validTargets = new ArrayList<PhotonTrackedTarget>();
         Map<PhotonTrackedTarget, String> tagStrings = new HashMap<PhotonTrackedTarget, String>();
 
-        PhotonPipelineResult result = camera.getResult();
-
         // for every target (tag)...
-        for (PhotonTrackedTarget target : result.getTargets()) {
+        for (PhotonTrackedTarget target : camera.getTargets()) {
             makeDebugString(target);
 
             // get the skew (the angle off of straight on)
@@ -143,15 +140,15 @@ public class VisionSubsystem extends IronSubsystem {
             validTargets.add(target);
         }
 
-        List<PhotonTrackedTarget> invalidTargets = result.targets;
+        List<PhotonTrackedTarget> invalidTargets = camera.getTargets();
         invalidTargets.removeAll(validTargets);
 
         publish("Invalid targets",
                 invalidTargets.stream().map(t -> String.valueOf(t.fiducialId)).collect(Collectors.joining(" | ")));
 
-        // set the targets in the pipeline result to only be the valid ones. (kinda
+        // set the targets in the camera to only be the valid ones. (kinda
         // silly but better than constructing a new pipeline result)
-        result.targets = validTargets;
+        camera.m_targets = validTargets;
 
         publish("Valid targets:",
                 validTargets.stream().map(PhotonTrackedTarget::getFiducialId).map(i -> String.valueOf(i))
@@ -161,12 +158,12 @@ public class VisionSubsystem extends IronSubsystem {
 
         EstimatedRobotPose estimatedPose;
 
-        if (result.getTargets().size() > 1) {
+        if (camera.getTargets().size() > 1) {
             // if we have more than one tag, do multi-tag estimation,
-            estimatedPose = camera.getEstimator().estimateCoprocMultiTagPose(result).orElse(null);
-        } else if (result.getTargets().size() == 1) {
+            estimatedPose = camera.getEstimator().estimateCoprocMultiTagPose(camera.getResult()).orElse(null);
+        } else if (camera.getTargets().size() == 1) {
             // if we only have one, do single tag.
-            estimatedPose = camera.getEstimator().estimateLowestAmbiguityPose(result).orElse(null);
+            estimatedPose = camera.getEstimator().estimateLowestAmbiguityPose(camera.getResult()).orElse(null);
         } else {
             // otherwise, we must not have any, show a warning and exit.
             reportWarning("No valid targets");
@@ -188,7 +185,7 @@ public class VisionSubsystem extends IronSubsystem {
 
         // Actually add the estimate. Adding an estimate for each camera is apparently
         // the right way to do it, but seems wrong. idk
-        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(validTargets, camera));
+        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(camera));
         DriveSubsystem.getSwerveDrive().addVisionMeasurement(estimatedPose.estimatedPose.toPose2d(),
                 Timer.getFPGATimestamp());
     }
