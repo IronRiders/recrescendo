@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.ironriders.drive.DriveSubsystem;
@@ -15,7 +16,6 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.targeting.PhotonPipelineMetadata;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -196,10 +196,8 @@ public class VisionSubsystem extends IronSubsystem {
                 tagStrings.values().stream().sorted().collect(Collectors.joining(" | ")));
 
         // construct a new result
-        PhotonPipelineMetadata meta = camera.getResult().metadata;
-        PhotonPipelineResult validResult = new PhotonPipelineResult(meta.getSequenceID(),
-                meta.getCaptureTimestampMicros(), meta.getPublishTimestampMicros(), meta.timeSinceLastPong,
-                validTargets);
+        PhotonPipelineResult validResult = new PhotonPipelineResult(camera.getResult().metadata,
+                validTargets, Optional.empty());
 
         EstimatedRobotPose estimatedPose;
 
