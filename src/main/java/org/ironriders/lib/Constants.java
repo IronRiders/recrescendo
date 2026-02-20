@@ -99,6 +99,18 @@ public class Constants {
                             0.0, // pitch
                             Math.PI // yaw
                     ))));
+
+            CAMERAS.add(new VisionCamera("sim-testing", new Transform3d(
+                    new Translation3d(
+                            0.25, // forward (meters)
+                            0.0, // left (meters)
+                            0.5 // up (meters)
+                    ),
+                    new Rotation3d(
+                            0.0, // roll
+                            0.0, // pitch
+                            0.0 // yaw
+                    ))));
         }
 
         public static final Double SKEW_THROWAWAY_THRESHOLD = 15d; // deg,
