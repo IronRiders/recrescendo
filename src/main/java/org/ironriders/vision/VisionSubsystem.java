@@ -15,6 +15,8 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.targeting.PhotonPipelineMetadata;
+import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -22,9 +24,6 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -50,7 +49,8 @@ public class VisionSubsystem extends IronSubsystem {
 
         cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(60));
 
-        cameraProp.setCalibError(0.25, 0.08);
+        cameraProp.setCalibError(4, 0.1);
+        //cameraProp.setCalibError(0.25, 0.08);
 
         cameraProp.setFPS(40);
 
@@ -131,8 +131,6 @@ public class VisionSubsystem extends IronSubsystem {
         List<PhotonTrackedTarget> validTargets = new ArrayList<PhotonTrackedTarget>();
         Map<PhotonTrackedTarget, String> tagStrings = new HashMap<PhotonTrackedTarget, String>();
 
-        List<Translation3d> targetTranslations = new ArrayList<Translation3d>();
-
         // for every target (tag)...
         for (PhotonTrackedTarget target : camera.getTargets()) {
             makeDebugString(target);
@@ -187,9 +185,8 @@ public class VisionSubsystem extends IronSubsystem {
         publish("Invalid targets",
                 invalidTargets.stream().map(t -> String.valueOf(t.fiducialId)).collect(Collectors.joining(" | ")));
 
-        // set the targets in the camera to only be the valid ones. (kinda
-        // silly but better than constructing a new pipeline result)
-        camera.m_targets = validTargets;
+        PhotonPipelineMetadata meta = camera.getResult().metadata;
+        PhotonPipelineResult validResult = new PhotonPipelineResult(meta.getSequenceID(), meta.getCaptureTimestampMicros(), meta.getPublishTimestampMicros(), meta.timeSinceLastPong, validTargets);
 
         publish("Valid targets:",
                 validTargets.stream().map(PhotonTrackedTarget::getFiducialId).map(i -> String.valueOf(i))
@@ -202,10 +199,10 @@ public class VisionSubsystem extends IronSubsystem {
 
         if (camera.getTargets().size() > 1) {
             // if we have more than one tag, do multi-tag estimation,
-            estimatedPose = camera.getEstimator().estimateCoprocMultiTagPose(camera.getResult()).orElse(null);
+            estimatedPose = camera.getEstimator().estimateCoprocMultiTagPose(validResult).orElse(null);
         } else if (camera.getTargets().size() == 1) {
             // if we only have one, do single tag.
-            estimatedPose = camera.getEstimator().estimateLowestAmbiguityPose(camera.getResult()).orElse(null);
+            estimatedPose = camera.getEstimator().estimateLowestAmbiguityPose(validResult).orElse(null);
         } else {
             // otherwise, we must not have any, show a warning and exit.
             reportWarning("No valid targets");
