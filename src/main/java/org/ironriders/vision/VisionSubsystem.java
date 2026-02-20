@@ -12,10 +12,19 @@ import org.ironriders.lib.Constants.Vision;
 import org.ironriders.lib.IronSubsystem;
 import org.ironriders.lib.VisionCamera;
 import org.photonvision.EstimatedRobotPose;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -29,6 +38,36 @@ public class VisionSubsystem extends IronSubsystem {
     private final VisionCommands commands = new VisionCommands(this);
 
     private String debugString;
+
+    public static VisionSystemSim visionSim = new VisionSystemSim("main");
+
+    public VisionSubsystem() {
+        AprilTagFieldLayout tagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+
+        visionSim.addAprilTags(tagLayout);
+
+        SimCameraProperties cameraProp = new SimCameraProperties();
+
+        cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(60));
+
+        cameraProp.setCalibError(0.25, 0.08);
+
+        cameraProp.setFPS(40);
+
+        cameraProp.setAvgLatencyMs(35);
+        cameraProp.setLatencyStdDevMs(5);
+
+        Vision.CAMERAS.parallelStream().forEach((camera) -> {
+            PhotonCameraSim cameraSim = new PhotonCameraSim(camera.getPhotonCamera(), cameraProp);
+
+            cameraSim.enableRawStream(true);
+            cameraSim.enableProcessedStream(true);
+
+            cameraSim.enableDrawWireframe(true);
+
+            visionSim.addCamera(cameraSim, camera.getOffset());
+        });
+    }
 
     @Override
     public void periodic() {
@@ -92,6 +131,8 @@ public class VisionSubsystem extends IronSubsystem {
         List<PhotonTrackedTarget> validTargets = new ArrayList<PhotonTrackedTarget>();
         Map<PhotonTrackedTarget, String> tagStrings = new HashMap<PhotonTrackedTarget, String>();
 
+        List<Translation3d> targetTranslations = new ArrayList<Translation3d>();
+
         // for every target (tag)...
         for (PhotonTrackedTarget target : camera.getTargets()) {
             makeDebugString(target);
@@ -154,7 +195,8 @@ public class VisionSubsystem extends IronSubsystem {
                 validTargets.stream().map(PhotonTrackedTarget::getFiducialId).map(i -> String.valueOf(i))
                         .collect(Collectors.joining(" | ")));
 
-        publish(String.format("Tag data for camera: %s", camera.getName()), tagStrings.values().stream().sorted().collect(Collectors.joining(" | ")));
+        publish(String.format("Tag data for camera: %s", camera.getName()),
+                tagStrings.values().stream().sorted().collect(Collectors.joining(" | ")));
 
         EstimatedRobotPose estimatedPose;
 

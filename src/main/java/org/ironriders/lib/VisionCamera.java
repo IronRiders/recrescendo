@@ -10,7 +10,6 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj.DriverStation;
 
 public class VisionCamera {
     String m_name;
@@ -42,6 +41,10 @@ public class VisionCamera {
         return m_trustWeight;
     }
 
+    public Transform3d getOffset() {
+        return m_offset;
+    }
+
     /*
      * You should call this every tick exactly once. (Will probably be fine if
      * called more often)
@@ -49,7 +52,7 @@ public class VisionCamera {
     public void updateResultBuffer() {
         List<PhotonPipelineResult> results = m_photonCamera.getAllUnreadResults();
 
-        if (results == null) {
+        if (results == null || results.size() <= 0) {
             return; // don't update the buffer if we get a null response. Could be incorrect.
         }
 
@@ -68,14 +71,10 @@ public class VisionCamera {
         }
 
         if (m_mostRecent == null) { // could still be null after the update, check again
-            // although I don't know what we can do about it...
-            DriverStation.reportError("getResult() returning null!", null);
+            m_mostRecent = new PhotonPipelineResult();
         }
 
         return m_mostRecent;
-    }
-
-    public void updateTargets() {
     }
 
     public List<PhotonTrackedTarget> getTargets() {
