@@ -197,7 +197,7 @@ public class VisionSubsystem extends IronSubsystem {
 
         // construct a new result
         PhotonPipelineResult validResult = new PhotonPipelineResult(camera.getResult().metadata,
-                validTargets, Optional.empty());
+                validTargets, camera.getResult().getMultiTagResult());
 
         EstimatedRobotPose estimatedPose;
 
