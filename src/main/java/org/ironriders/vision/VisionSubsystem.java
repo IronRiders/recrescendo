@@ -192,7 +192,7 @@ public class VisionSubsystem extends IronSubsystem {
                 validTargets.stream().map(PhotonTrackedTarget::getFiducialId).map(i -> String.valueOf(i))
                         .collect(Collectors.joining(" | ")));
 
-        publish(String.format("Tag data for camera: %s", camera.getName()),
+        publish(String.format("Tag data for camera: %s", camera.getSimpleName()),
                 tagStrings.values().stream().sorted().collect(Collectors.joining(" | ")));
 
         // construct a new result
