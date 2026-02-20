@@ -49,8 +49,8 @@ public class VisionSubsystem extends IronSubsystem {
 
         cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(60));
 
-        cameraProp.setCalibError(4, 0.1);
-        //cameraProp.setCalibError(0.25, 0.08);
+        // cameraProp.setCalibError(4, 0.1);
+        cameraProp.setCalibError(0.25, 0.08);
 
         cameraProp.setFPS(40);
 
@@ -151,6 +151,7 @@ public class VisionSubsystem extends IronSubsystem {
             if (Math.abs(skew) < Constants.Vision.SKEW_THROWAWAY_THRESHOLD) {
                 reportWarning("No skew");
                 addBadTagToString(TagInvalidReason.NO_SKEW, String.valueOf(skew));
+                tagStrings.put(target, debugString);
 
                 continue;
             }
@@ -159,6 +160,7 @@ public class VisionSubsystem extends IronSubsystem {
             if (distance < 0) {
                 reportWarning("Target too close");
                 addBadTagToString(TagInvalidReason.TOO_CLOSE, distanceString);
+                tagStrings.put(target, debugString);
 
                 continue;
             }
@@ -168,6 +170,7 @@ public class VisionSubsystem extends IronSubsystem {
             if (distance > Constants.Vision.TARGET_DISTANCE_THROWAWAY_THRESHOLD) {
                 reportWarning("Target too distant");
                 addBadTagToString(TagInvalidReason.TOO_DISTANT, distanceString);
+                tagStrings.put(target, debugString);
 
                 continue;
             }
@@ -185,15 +188,18 @@ public class VisionSubsystem extends IronSubsystem {
         publish("Invalid targets",
                 invalidTargets.stream().map(t -> String.valueOf(t.fiducialId)).collect(Collectors.joining(" | ")));
 
-        PhotonPipelineMetadata meta = camera.getResult().metadata;
-        PhotonPipelineResult validResult = new PhotonPipelineResult(meta.getSequenceID(), meta.getCaptureTimestampMicros(), meta.getPublishTimestampMicros(), meta.timeSinceLastPong, validTargets);
-
         publish("Valid targets:",
                 validTargets.stream().map(PhotonTrackedTarget::getFiducialId).map(i -> String.valueOf(i))
                         .collect(Collectors.joining(" | ")));
 
         publish(String.format("Tag data for camera: %s", camera.getName()),
                 tagStrings.values().stream().sorted().collect(Collectors.joining(" | ")));
+
+        // construct a new result
+        PhotonPipelineMetadata meta = camera.getResult().metadata;
+        PhotonPipelineResult validResult = new PhotonPipelineResult(meta.getSequenceID(),
+                meta.getCaptureTimestampMicros(), meta.getPublishTimestampMicros(), meta.timeSinceLastPong,
+                validTargets);
 
         EstimatedRobotPose estimatedPose;
 
@@ -256,7 +262,7 @@ public class VisionSubsystem extends IronSubsystem {
      * Calculate the skew for a tag
      */
     public double calculateSkew(PhotonTrackedTarget target) {
-        return (target.getBestCameraToTarget().getRotation().getZ() * 180.0 / Math.PI) - 90;
+        return (target.getBestCameraToTarget().getRotation().getZ() * 180.0 / Math.PI) - 180;
     }
 
     /*

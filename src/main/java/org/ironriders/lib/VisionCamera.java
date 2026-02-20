@@ -33,8 +33,12 @@ public class VisionCamera {
         return m_estimator;
     }
 
-    public String getName() {
+    public String getSimpleName() {
         return m_name;
+    }
+
+    public String getName() {
+        return m_name.substring(0, 1).toUpperCase() + m_name.substring(1);
     }
 
     public Double getWeight() {
