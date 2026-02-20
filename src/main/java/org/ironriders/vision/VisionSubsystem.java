@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.ironriders.drive.DriveSubsystem;
@@ -149,7 +148,6 @@ public class VisionSubsystem extends IronSubsystem {
             // complicated reasons involving how photon vision sees tags. ask Issy in
             // discord if you really need to know (you probably don't)
             if (Math.abs(skew) < Constants.Vision.SKEW_THROWAWAY_THRESHOLD) {
-                reportWarning("No skew");
                 addBadTagToString(TagInvalidReason.NO_SKEW, String.valueOf(skew));
                 tagStrings.put(target, debugString);
 
@@ -158,7 +156,6 @@ public class VisionSubsystem extends IronSubsystem {
 
             // the distance is negative, something has gone wrong.
             if (distance < 0) {
-                reportWarning("Target too close");
                 addBadTagToString(TagInvalidReason.TOO_CLOSE, distanceString);
                 tagStrings.put(target, debugString);
 
@@ -168,7 +165,6 @@ public class VisionSubsystem extends IronSubsystem {
             // if the distance is too great, we can't trust that the tag will be read
             // reliably, so just ignore it.
             if (distance > Constants.Vision.TARGET_DISTANCE_THROWAWAY_THRESHOLD) {
-                reportWarning("Target too distant");
                 addBadTagToString(TagInvalidReason.TOO_DISTANT, distanceString);
                 tagStrings.put(target, debugString);
 
@@ -208,26 +204,22 @@ public class VisionSubsystem extends IronSubsystem {
             // if we only have one, do single tag.
             estimatedPose = camera.getEstimator().estimateLowestAmbiguityPose(validResult).orElse(null);
         } else {
-            // otherwise, we must not have any, show a warning and exit.
-            reportWarning("No valid targets");
+            // otherwise, we must not have any, exit.
             return;
         }
 
         if (estimatedPose == null) {
             // Something has gone wrong, give up and try again next tick.
-            reportWarning("Estimated pose was null");
             return;
         }
 
         // Throw away the new pose if it is too far away.
         if (estimatedPose.estimatedPose.getTranslation()
                 .getDistance(DriveSubsystem.getPose3d().getTranslation()) > Vision.POSE_DISTANCE_THROWAWAY_THRESHOLD) {
-            reportWarning("Estimated pose too distant");
             return;
         }
 
-        // Actually add the estimate. Adding an estimate for each camera is apparently
-        // the right way to do it, but seems wrong. idk
+        // Actually add the estimate.
         DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(camera));
         DriveSubsystem.getSwerveDrive().addVisionMeasurement(estimatedPose.estimatedPose.toPose2d(),
                 Timer.getFPGATimestamp());

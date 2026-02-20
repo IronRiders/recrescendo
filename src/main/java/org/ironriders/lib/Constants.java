@@ -100,7 +100,7 @@ public class Constants {
                             Math.PI // yaw
                     ))));
 
-            CAMERAS.add(new VisionCamera("sim-testing", new Transform3d(
+            CAMERAS.add(new VisionCamera("sim-testing-0", new Transform3d(
                     new Translation3d(
                             0.25, // forward (meters)
                             0.0, // left (meters)
@@ -110,6 +110,30 @@ public class Constants {
                             0.0, // roll
                             0.0, // pitch
                             0.0 // yaw
+                    ))));
+
+            CAMERAS.add(new VisionCamera("sim-testing-1", new Transform3d(
+                    new Translation3d(
+                            0.0, // forward (meters)
+                            0.25, // left (meters)
+                            0.5 // up (meters)
+                    ),
+                    new Rotation3d(
+                            0.0, // roll
+                            0.0, // pitch
+                            Math.PI / 2 // yaw
+                    ))));
+
+            CAMERAS.add(new VisionCamera("sim-testing-2", new Transform3d(
+                    new Translation3d(
+                            0.0, // forward (meters)
+                            -0.25, // left (meters)
+                            0.5 // up (meters)
+                    ),
+                    new Rotation3d(
+                            0.0, // roll
+                            0.0, // pitch
+                            -(Math.PI / 2) // yaw
                     ))));
         }
 
