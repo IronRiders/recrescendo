@@ -170,7 +170,7 @@ public class RobotContainer {
         // (constructing the command at configure-time can cause lifecycle/reuse
         // issues). We schedule a fresh pathfind command on each button press.
         primaryController.leftBumper().onTrue(Commands.runOnce(() -> {
-            DriveSubsystem.pathfindToPose(new Pose2d(2.5, 1.5, new Rotation2d(Math.toRadians(120)))).schedule();
+            DriveSubsystem.pathfindToPose(passingZone.centerPoint()).schedule();
         }));
 
         // Line up to score
