@@ -107,11 +107,12 @@ public class DriveSubsystem extends IronSubsystem {
         TargetingControl.update();
 
         if (Math.abs(RobotContainer.primaryController.getRightX()) > Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
-            cancelPathfind();
             RobotContainer.revertToSafeDefaults();
         }
-        if (Math.abs(RobotContainer.primaryController.getLeftX()) +
-                Math.abs(RobotContainer.primaryController.getLeftY()) / 2 > Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
+
+        double leftMag = Math.hypot(RobotContainer.primaryController.getLeftX(),
+                RobotContainer.primaryController.getLeftY());
+        if (leftMag > Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
             cancelPathfind();
         }
     }
@@ -188,11 +189,18 @@ public class DriveSubsystem extends IronSubsystem {
         rotationPid.setGoal(goal);
     }
 
+    /*
+     * Command to pathfind to a given pose.
+     */
     public static Command pathfindToPose(Pose2d target) {
+        //cancelPathfind();
         pathfindingCommand = AutoBuilder.pathfindToPose(target, Constants.Drive.PATHFIND_CONSTRAINTS);
         return pathfindingCommand;
     }
 
+    /*
+     * Cancel the current pathfinding operation.
+     */
     public static void cancelPathfind() {
         pathfindingCommand.cancel();
     }

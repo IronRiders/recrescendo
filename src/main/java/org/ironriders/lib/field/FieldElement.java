@@ -1,11 +1,5 @@
 package org.ironriders.lib.field;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.wpilibj.DriverStation;
-
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,7 +8,12 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.ironriders.lib.Utils;
-import org.ironriders.vision.VisionSubsystem;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.wpilibj.DriverStation;
 
 /**
  * Representation of an element on the field. Includes pose, function, and

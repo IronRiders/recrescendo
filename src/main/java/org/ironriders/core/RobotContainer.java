@@ -166,9 +166,16 @@ public class RobotContainer {
                         }))
                 .onFalse(Commands.runOnce(() -> revertToSafeDefaults()));
 
-        primaryController.leftBumper()
-                .onTrue(DriveSubsystem.pathfindToPose(new Pose2d(2.5, 1.5, new Rotation2d(Math.toRadians(120)))));
-        // .onFalse(Commands.runOnce(() -> DriveSubsystem.cancelPathfind()));
+        // Create and schedule the pathfind command when the bumper is pressed
+        // (constructing the command at configure-time can cause lifecycle/reuse
+        // issues). We schedule a fresh pathfind command on each button press.
+        primaryController.leftBumper().onTrue(Commands.runOnce(() -> {
+            DriveSubsystem.pathfindToPose(new Pose2d(2.5, 1.5, new Rotation2d(Math.toRadians(120)))).schedule();
+        }));
+
+        primaryController.rightBumper().onTrue(Commands.runOnce(() -> {
+            DriveSubsystem.pathfindToPose(new Pose2d(14, 4.5, new Rotation2d(Math.toRadians(120)))).schedule();
+        }));
     }
 
     /**
