@@ -30,8 +30,6 @@ import org.ironriders.vision.VisionSubsystem;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -170,12 +168,12 @@ public class RobotContainer {
         // (constructing the command at configure-time can cause lifecycle/reuse
         // issues). We schedule a fresh pathfind command on each button press.
         primaryController.leftBumper().onTrue(Commands.runOnce(() -> {
-            DriveSubsystem.pathfindToPose(passingZone.centerPoint()).schedule();
+            CommandScheduler.getInstance().schedule(DriveSubsystem.pathfindToPose(passingZone.centerPoint()));
         }));
 
         // Line up to score
         primaryController.rightBumper().onTrue(Commands.runOnce(() -> {
-            DriveSubsystem.pathfindToPose(scoringZone.centerPoint()).schedule();
+            CommandScheduler.getInstance().schedule(DriveSubsystem.pathfindToPose(scoringZone.centerPoint()));
         }));
     }
 
