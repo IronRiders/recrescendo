@@ -25,6 +25,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 
 public class VisionSubsystem extends IronSubsystem {
@@ -47,7 +48,7 @@ public class VisionSubsystem extends IronSubsystem {
 
         SimCameraProperties cameraProp = new SimCameraProperties();
 
-        cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(90));
+        cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(70));
 
         // cameraProp.setCalibError(4, 0.1);
         cameraProp.setCalibError(0.25, 0.08);
@@ -71,6 +72,7 @@ public class VisionSubsystem extends IronSubsystem {
             System.out.printf(
                     "Camera %s's processed stream is at http://localhost:118%d, it's raw stream is at http://localhost:118%d\n",
                     camera.getSimpleName(), i.get() * 2, ((i.get() * 2) - 1));
+            System.out.println(camera.toString());
             i.getAndIncrement();
         });
     }
@@ -222,7 +224,7 @@ public class VisionSubsystem extends IronSubsystem {
 
         // Throw away the new pose if it is too far away.
         if (estimatedPose.estimatedPose.getTranslation()
-                .getDistance(DriveSubsystem.getPose3d().getTranslation()) > Vision.POSE_DISTANCE_THROWAWAY_THRESHOLD) {
+                .getDistance(DriveSubsystem.getPose3d().getTranslation()) > Vision.POSE_DISTANCE_THROWAWAY_THRESHOLD && DriverStation.isTeleopEnabled()) {
             return;
         }
 

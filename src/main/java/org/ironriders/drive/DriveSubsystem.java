@@ -1,9 +1,10 @@
 package org.ironriders.drive;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.ironriders.core.RobotContainer;
+import org.ironriders.core.TargetingControl;
 import org.ironriders.lib.Constants;
 import org.ironriders.lib.IronSubsystem;
 import org.ironriders.lib.Utils;
@@ -11,11 +12,6 @@ import org.ironriders.lib.Utils;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.path.GoalEndState;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.Waypoint;
-import com.pathplanner.lib.pathfinding.LocalADStar;
-import com.pathplanner.lib.pathfinding.Pathfinding;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -23,8 +19,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
@@ -45,20 +41,16 @@ public class DriveSubsystem extends IronSubsystem {
     private static boolean driveInvert = false;
 
     public static boolean PIDRotation = false;
-    public static boolean PIDPosition = false;
 
     public static AtomicBoolean isDriving = new AtomicBoolean(false);
+
+    public static Command pathfindingCommand = new InstantCommand();
 
     public static Pigeon2 pigeon = new Pigeon2(11);
 
     private static ProfiledPIDController rotationPid = new ProfiledPIDController(Constants.Drive.ROTATE_TO_TARGET_P,
             Constants.Drive.ROTATE_TO_TARGET_I,
             Constants.Drive.ROTATE_TO_TARGET_D, Constants.Drive.ROTATION_CONSTRAINTS);
-
-    private static ProfiledPIDController xPid = new ProfiledPIDController(Constants.Drive.POSITION_P,
-            Constants.Drive.POSITION_I, Constants.Drive.POSITION_D, Constants.Drive.TRANSLATION_CONSTRAINTS);
-    private static ProfiledPIDController yPid = new ProfiledPIDController(Constants.Drive.POSITION_P,
-            Constants.Drive.POSITION_I, Constants.Drive.POSITION_D, Constants.Drive.TRANSLATION_CONSTRAINTS);
 
     public DriveSubsystem() throws RuntimeException {
         try {
@@ -86,9 +78,10 @@ public class DriveSubsystem extends IronSubsystem {
                 swerveDrive::resetOdometry,
                 swerveDrive::getRobotVelocity,
                 (speeds, feedforwards) -> {
-                    System.out.println("PathPlanner calling drive: vx=" + speeds.vxMetersPerSecond +
-                            " vy=" + speeds.vyMetersPerSecond +
-                            " omega=" + speeds.omegaRadiansPerSecond);
+                    // System.out.println("PathPlanner calling drive: vx=" +
+                    // speeds.vxMetersPerSecond +
+                    // " vy=" + speeds.vyMetersPerSecond +
+                    // " omega=" + speeds.omegaRadiansPerSecond);
                     swerveDrive.drive(speeds);
                 },
                 Constants.Drive.HOLONOMIC_CONFIG,
@@ -105,23 +98,22 @@ public class DriveSubsystem extends IronSubsystem {
         rotationPid.reset(getRotation());
         rotationPid.enableContinuousInput(0, Math.PI * 2);
         rotationPid.setTolerance(0.05);
-
-        xPid.reset(getPose().getX());
-        yPid.reset(getPose().getY());
-
-        Pathfinding.setPathfinder(new LocalADStar());
     }
 
     @Override
     public void periodic() {
         swerveDrive.updateOdometry();
 
-        if (!isDriving.get() && (PIDRotation || PIDPosition)) {
-            drive(new Translation2d(), 0, true);
-        }
+        TargetingControl.update();
 
-        publish("x PID", xPid);
-        publish("y PID", yPid);
+        if (Math.abs(RobotContainer.primaryController.getRightX()) > Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
+            cancelPathfind();
+            RobotContainer.revertToSafeDefaults();
+        }
+        if (Math.abs(RobotContainer.primaryController.getLeftX()) +
+                Math.abs(RobotContainer.primaryController.getLeftY()) / 2 > Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
+            cancelPathfind();
+        }
     }
 
     /**
@@ -137,19 +129,9 @@ public class DriveSubsystem extends IronSubsystem {
     public static void drive(Translation2d translation, double rotation, boolean fieldRelative) {
         isDriving.getAndSet(true);
 
-        if (PIDRotation && PIDPosition) {
-            swerveDrive.drive(getNextPose(),
-                    -rotationPid.calculate(getRotation()),
-                    fieldRelative,
-                    false);
-        } else if (PIDRotation && !PIDPosition) {
+        if (PIDRotation) {
             swerveDrive.drive(translation.times(driveInvert ? -1 : 1),
                     -rotationPid.calculate(getRotation()),
-                    fieldRelative,
-                    false);
-        } else if (!PIDRotation && PIDPosition) {
-            swerveDrive.drive(getNextPose(),
-                    rotation * (rotationInvert ? -1 : 1),
                     fieldRelative,
                     false);
         } else {
@@ -192,18 +174,6 @@ public class DriveSubsystem extends IronSubsystem {
         }
     }
 
-    /*
-     * Enable and disable PID position control.
-     */
-    public static void setPIDPositionControl(boolean PIDControl) {
-        PIDPosition = PIDControl;
-
-        if (!PIDControl) {
-            xPid.reset(getPose().getX());
-            yPid.reset(getPose().getY());
-        }
-    }
-
     /**
      * Sets the PID rotation goal in degrees.
      */
@@ -218,62 +188,13 @@ public class DriveSubsystem extends IronSubsystem {
         rotationPid.setGoal(goal);
     }
 
-    public static void setPositionGoal(Translation2d target) {
-        xPid.setGoal(target.getX());
-        yPid.setGoal(target.getY());
-    }
-
-    public static Translation2d getNextPose() {
-        return new Translation2d(xPid.calculate(getPose().getX()), yPid.calculate(getPose().getY()));
-    }
-
-    public static boolean atGoal() {
-        return xPid.atGoal() && yPid.atGoal();
-    }
-
     public static Command pathfindToPose(Pose2d target) {
-        return new Command() {
-            PathPlannerPath path;
-            List<Pose2d> poses;
-            int i = 0;
+        pathfindingCommand = AutoBuilder.pathfindToPose(target, Constants.Drive.PATHFIND_CONSTRAINTS);
+        return pathfindingCommand;
+    }
 
-            @Override
-            public void initialize() {
-                Pathfinding.ensureInitialized();
-                Pathfinding.setStartPosition(getPose().getTranslation());
-                Pathfinding.setGoalPosition(target.getTranslation());
-
-                path = Pathfinding.getCurrentPath(Constants.Drive.PATHFIND_CONSTRAINTS,
-                        new GoalEndState(0, target.getRotation()));
-
-                poses = path.getPathPoses();
-
-                Field2d field = swerveDrive.field;
-
-                for (int i = 0; i < poses.size(); i++) {
-                    field.getObject("Pose " + String.valueOf(i)).setPose(poses.get(i));
-                }
-
-                i = 0;
-
-                if (!poses.isEmpty()) {
-                    setPositionGoal(poses.get(i).getTranslation());
-                }
-            }
-
-            @Override
-            public void execute() {
-                if (atGoal() && i < poses.size() - 1) {
-                    i++;
-                    setPositionGoal(poses.get(i).getTranslation());
-                }
-            }
-
-            @Override
-            public boolean isFinished() {
-                return i >= poses.size() - 1 && atGoal();
-            }
-        };
+    public static void cancelPathfind() {
+        pathfindingCommand.cancel();
     }
 
     /** Fetch the DriveCommands instance */

@@ -30,7 +30,8 @@ import org.ironriders.vision.VisionSubsystem;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -67,10 +68,10 @@ public class RobotContainer {
 
     private final SendableChooser<Command> autoChooser;
 
-    private boolean targetingHub = false;
-    private boolean targetingPassing = false;
+    private static boolean targetingHub = false;
+    private static boolean targetingPassing = false;
 
-    private final CommandXboxController primaryController = new CommandXboxController(
+    public static final CommandXboxController primaryController = new CommandXboxController(
             Constants.Identifiers.CONTROLLER_PRIMARY_PORT);
 
     public static RobotCommands robotCommands = new RobotCommands(driveCommands,
@@ -102,23 +103,10 @@ public class RobotContainer {
         return Optional.empty();
     }
 
-    private void revertToSafeDefaults() {
+    public static void revertToSafeDefaults() {
         targetingHub = false;
         targetingPassing = false;
         TargetingControl.revertToSafeDefaults();
-    }
-
-    private void periodic() {
-        TargetingControl.update();
-
-        if (Math.abs(primaryController.getRightX()) > Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
-            revertToSafeDefaults();
-            // if (Math.abs(primaryController.getLeftX()) +
-            // Math.abs(primaryController.getLeftY()) / 2 >
-            // Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
-            // DriveSubsystem.cancelPathfind();
-            // }
-        }
     }
 
     private void configureBindings() {
@@ -134,8 +122,7 @@ public class RobotContainer {
                                 () -> Utils.controlCurve(primaryController.getRightX(),
                                         Constants.Drive.ROTATION_CONTROL_EXPONENT,
                                         Constants.Drive.ROTATION_CONTROL_DEADBAND))
-                        .withName("Drive Teleop"),
-                Commands.run(this::periodic)));
+                        .withName("Drive Teleop")));
 
         primaryController.a().onTrue(
                 new InstantCommand(() -> {
@@ -179,11 +166,9 @@ public class RobotContainer {
                         }))
                 .onFalse(Commands.runOnce(() -> revertToSafeDefaults()));
 
-        primaryController.rightTrigger(0.7)
-                .onTrue(Commands.runOnce(() -> {
-                    DriveSubsystem.setPIDPositionControl(true);
-                    DriveSubsystem.setPositionGoal(new Translation2d(2.5, 1.5));
-                })).onFalse(Commands.runOnce(() -> DriveSubsystem.setPIDPositionControl(false)));
+        primaryController.leftBumper()
+                .onTrue(DriveSubsystem.pathfindToPose(new Pose2d(2.5, 1.5, new Rotation2d(Math.toRadians(120)))));
+        // .onFalse(Commands.runOnce(() -> DriveSubsystem.cancelPathfind()));
     }
 
     /**

@@ -25,31 +25,59 @@ public class VisionCamera {
 
     private AprilTagFieldLayout m_fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
+    @Override
+    public String toString() {
+        return String.format("VisionCamera{name='%s', offset=%s, trustWeight=%.2f, hasTarget=%s}",
+                m_name, m_offset, m_trustWeight, m_mostRecent != null && m_mostRecent.hasTargets());
+    }
+
+    /*
+     * Return the PhotonCamera instance.
+     */
     public PhotonCamera getPhotonCamera() {
         return m_photonCamera;
     }
 
+    /*
+     * Returns the PhotonPoseEstimator instance we made in the constructor.
+     */
     public PhotonPoseEstimator getEstimator() {
         return m_estimator;
     }
 
+    /*
+     * Returns the camera name set in the Photon Vision dashboard.
+     */
     public String getSimpleName() {
         return m_name;
     }
 
+    /*
+     * Returns the capitalized version of the camera name set in the Photon Vision
+     * dashboard.
+     */
     public String getName() {
         return m_name.substring(0, 1).toUpperCase() + m_name.substring(1);
     }
 
+    /*
+     * Return the weight (trust) of this camera. Will be in the range [-1 (least
+     * trusting)
+     * to 1 (most trusting)]. Zero is no weighing.
+     */
     public Double getWeight() {
         return m_trustWeight;
     }
 
+    /*
+     * Get the camera's offset from the center of the robot.
+     */
     public Transform3d getOffset() {
         return m_offset;
     }
 
     /*
+     * Updates internal buffer and reads PhotonCamera results.
      * You should call this every tick exactly once. (Will probably be fine if
      * called more often)
      */
@@ -60,14 +88,13 @@ public class VisionCamera {
             return; // don't update the buffer if we get a null response. Could be incorrect.
         }
 
-        m_mostRecent = results.get(results.size() - 1); // get the most recent
+        m_mostRecent = results.get(results.size() - 1); // get the most recent result.
 
         m_targets = m_mostRecent.targets;
     }
 
     /*
      * Get the most recent result from this camera.
-     * Could potentially return null.
      */
     public PhotonPipelineResult getResult() {
         if (m_mostRecent == null) {
@@ -75,16 +102,22 @@ public class VisionCamera {
         }
 
         if (m_mostRecent == null) { // could still be null after the update, check again
-            m_mostRecent = new PhotonPipelineResult();
+            m_mostRecent = new PhotonPipelineResult(); // return an empty result.
         }
 
         return m_mostRecent;
     }
 
+    /*
+     * Get the list of all targets seen by this camera
+     */
     public List<PhotonTrackedTarget> getTargets() {
         return m_targets;
     }
 
+    /*
+     * Do we see any targets?
+     */
     public boolean seesTargets() {
         return getResult().hasTargets();
     }
@@ -92,7 +125,7 @@ public class VisionCamera {
     /*
      * Define a new camera.
      * 
-     * @param name is the camera name set in the photonvision dashboard.
+     * @param name is the camera name set in the Photon Vision dashboard.
      * 
      * @param offset is the offset from the center of the robot, positive x towards
      * the battery.
@@ -114,7 +147,7 @@ public class VisionCamera {
     /*
      * Define a new camera.
      * 
-     * @param name is the camera name set in the photonvision dashboard.
+     * @param name is the camera name set in the Photon Vision dashboard.
      * 
      * @param offset is the offset from the center of the robot, positive x towards
      * the battery.

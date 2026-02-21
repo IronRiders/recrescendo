@@ -20,12 +20,10 @@ import edu.wpi.first.wpilibj.Filesystem;
 
 public class Constants {
     public class Robot {
-
         public static final double COMPENSATED_VOLTAGE = 10.0;
     }
 
     public class Identifiers {
-
         public static final int CONTROLLER_PRIMARY_PORT = 0;
         public static final int CONTROLLER_SECONDARY_PORT = 1;
 
@@ -55,10 +53,6 @@ public class Constants {
         public static final double ROTATE_TO_TARGET_I = 0;
         public static final double ROTATE_TO_TARGET_D = 0;
 
-        public static final double POSITION_P = 6;
-        public static final double POSITION_I = 0;
-        public static final double POSITION_D = 0;
-
         public static final Constraints ROTATION_CONSTRAINTS = new Constraints(Math.PI, Math.PI / 1.2); // Radians
 
         public static final double TRANSLATION_CONTROL_EXPONENT = 3.0;
@@ -74,9 +68,6 @@ public class Constants {
 
         public static final double SWERVE_MAX_TRANSLATION_ACCEL_PATHFIND = SWERVE_MAX_TRANSLATION_PATHFIND / 1.2;
         public static final double SWERVE_MAX_ANGULAR_ACCEL_PATHFIND = SWERVE_MAX_ANGULAR_PATHFIND / 1.2;
-
-        public static final Constraints TRANSLATION_CONSTRAINTS = new Constraints(SWERVE_MAX_TRANSLATION_PATHFIND,
-                SWERVE_MAX_TRANSLATION_ACCEL_PATHFIND);
 
         public static final PathConstraints PATHFIND_CONSTRAINTS = new PathConstraints(SWERVE_MAX_TRANSLATION_PATHFIND,
                 SWERVE_MAX_TRANSLATION_ACCEL_PATHFIND, SWERVE_MAX_ANGULAR_PATHFIND, SWERVE_MAX_ANGULAR_ACCEL_PATHFIND);

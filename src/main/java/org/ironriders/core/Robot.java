@@ -5,6 +5,7 @@
 package org.ironriders.core;
 
 import org.ironriders.drive.DriveSubsystem;
+import org.ironriders.lib.field.FieldPositions;
 import org.ironriders.vision.VisionSubsystem;
 import org.photonvision.PhotonCamera;
 
@@ -14,7 +15,6 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import swervelib.simulation.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 
 public class Robot extends TimedRobot {
 
@@ -101,6 +101,10 @@ public class Robot extends TimedRobot {
     @Override
     public void simulationInit() {
         PhotonCamera.setVersionCheckEnabled(false); // Silence camera not found warnings.
+
+        // teleport to the center of the field on startup
+        DriveSubsystem.getSwerveDrive().getMapleSimDrive().orElseThrow().setSimulationWorldPose(FieldPositions.Field.CENTER);
+
         generalInit();
     }
 
