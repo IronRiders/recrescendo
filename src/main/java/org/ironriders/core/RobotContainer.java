@@ -173,8 +173,9 @@ public class RobotContainer {
             DriveSubsystem.pathfindToPose(new Pose2d(2.5, 1.5, new Rotation2d(Math.toRadians(120)))).schedule();
         }));
 
+        // Line up to score
         primaryController.rightBumper().onTrue(Commands.runOnce(() -> {
-            DriveSubsystem.pathfindToPose(new Pose2d(14, 4.5, new Rotation2d(Math.toRadians(120)))).schedule();
+            DriveSubsystem.pathfindToPose(scoringZone.centerPoint()).schedule();
         }));
     }
 

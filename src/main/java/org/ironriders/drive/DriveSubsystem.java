@@ -193,7 +193,6 @@ public class DriveSubsystem extends IronSubsystem {
      * Command to pathfind to a given pose.
      */
     public static Command pathfindToPose(Pose2d target) {
-        //cancelPathfind();
         pathfindingCommand = AutoBuilder.pathfindToPose(target, Constants.Drive.PATHFIND_CONSTRAINTS);
         return pathfindingCommand;
     }
