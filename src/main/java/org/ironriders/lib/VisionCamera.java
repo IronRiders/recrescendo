@@ -62,8 +62,7 @@ public class VisionCamera {
 
     /*
      * Return the weight (trust) of this camera. Will be in the range [-1 (least
-     * trusting)
-     * to 1 (most trusting)]. Zero is no weighing.
+     * trusting) to 1 (most trusting)]. Zero is no weighing.
      */
     public Double getWeight() {
         return m_trustWeight;
@@ -131,8 +130,8 @@ public class VisionCamera {
      * the battery.
      * 
      * @param trustWeight is the weight on the trust we have in estimations made
-     * by this camera. Useful if you have one crapy camera and one good one or
-     * something similar. Should be in the range [-1 (least trusting) to 1 (most
+     * by this camera. Useful if you have one poor camera and one good one or
+     * the like. Should be in the range [-1 (least trusting) to 1 (most
      * trusting)]. Zero is no weighing.
      */
     public VisionCamera(String name, Transform3d offset, Double trustWeight) {

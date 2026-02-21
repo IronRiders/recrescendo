@@ -79,53 +79,74 @@ public class Constants {
         public static final List<VisionCamera> CAMERAS = new ArrayList<VisionCamera>();
 
         static {
-            CAMERAS.add(new VisionCamera("main", new Transform3d(
+            // CAMERAS.add(new VisionCamera("main", new Transform3d(
+            // new Translation3d(
+            // -0.25, // forward (meters)
+            // 0.0, // left (meters)
+            // 0.5 // up (meters)
+            // ),
+            // new Rotation3d(
+            // 0.0, // roll
+            // 0.0, // pitch
+            // Math.PI // yaw
+            // ))));
+            CAMERAS.add(new VisionCamera("launcher-back", new Transform3d(
                     new Translation3d(
-                            -0.25, // forward (meters)
-                            0.0, // left (meters)
-                            0.5 // up (meters)
+                            0.45, // forward (meters)
+                            -0.26, // left (meters)
+                            0.19 // up (meters)
                     ),
                     new Rotation3d(
                             0.0, // roll
-                            0.0, // pitch
-                            Math.PI // yaw
-                    ))));
-
-            CAMERAS.add(new VisionCamera("sim-testing-0", new Transform3d(
-                    new Translation3d(
-                            0.25, // forward (meters)
-                            0.0, // left (meters)
-                            0.5 // up (meters)
-                    ),
-                    new Rotation3d(
-                            0.0, // roll
-                            0.0, // pitch
+                            -Math.toRadians(15), // pitch
                             0.0 // yaw
                     ))));
 
-            CAMERAS.add(new VisionCamera("sim-testing-1", new Transform3d(
+            CAMERAS.add(new VisionCamera("launcher-back-high", new Transform3d(
                     new Translation3d(
-                            0.0, // forward (meters)
-                            0.25, // left (meters)
-                            0.5 // up (meters)
+                            0.45, // forward (meters)
+                            -0.26, // left (meters)
+                            0.19 // up (meters)
                     ),
                     new Rotation3d(
                             0.0, // roll
-                            0.0, // pitch
-                            Math.PI / 2 // yaw
+                            -Math.toRadians(30), // pitch
+                            0.0 // yaw
                     ))));
 
-            CAMERAS.add(new VisionCamera("sim-testing-2", new Transform3d(
+            CAMERAS.add(new VisionCamera("launcher-hood", new Transform3d(
                     new Translation3d(
-                            0.0, // forward (meters)
-                            -0.25, // left (meters)
-                            0.5 // up (meters)
+                            0.25, // forward (meters)
+                            0, // left (meters)
+                            0.618 // up (meters)
                     ),
                     new Rotation3d(
                             0.0, // roll
-                            0.0, // pitch
-                            -(Math.PI / 2) // yaw
+                            Math.toRadians(5), // pitch
+                            Math.PI // yaw
                     ))));
+
+            CAMERAS.add(new VisionCamera("swerve-back-left", new Transform3d(
+                    new Translation3d(
+                            0.212, // forward (meters)
+                            0.218, // left (meters)
+                            0.16 // up (meters)
+                    ),
+                    new Rotation3d(
+                            0.0, // roll
+                            -Math.toRadians(25), // pitch
+                            Math.toRadians(45)))));
+
+            CAMERAS.add(new VisionCamera("swerve-back-right", new Transform3d(
+                    new Translation3d(
+                            0.212, // forward (meters)
+                            -0.218, // left (meters)
+                            0.16 // up (meters)
+                    ),
+                    new Rotation3d(
+                            0.0, // roll
+                            -Math.toRadians(25), // pitch
+                            -Math.toRadians(45)))));
         }
 
         public static final Double SKEW_THROWAWAY_THRESHOLD = 15d; // deg,
