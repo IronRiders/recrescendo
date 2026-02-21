@@ -62,9 +62,10 @@
     "feedforwards",
     "HOLONOMIC",
     "ironriders",
+    "Issy",
     "pathfind",
     "Pathfinding",
     "TELEOP",
     "YAGSL"
-  ]
+]
 }

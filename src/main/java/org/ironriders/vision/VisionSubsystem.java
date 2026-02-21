@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants;
@@ -46,7 +47,7 @@ public class VisionSubsystem extends IronSubsystem {
 
         SimCameraProperties cameraProp = new SimCameraProperties();
 
-        cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(60));
+        cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(90));
 
         // cameraProp.setCalibError(4, 0.1);
         cameraProp.setCalibError(0.25, 0.08);
@@ -55,8 +56,9 @@ public class VisionSubsystem extends IronSubsystem {
 
         cameraProp.setAvgLatencyMs(35);
         cameraProp.setLatencyStdDevMs(5);
+        final AtomicInteger i = new AtomicInteger(1);
 
-        Vision.CAMERAS.parallelStream().forEach((camera) -> {
+        Vision.CAMERAS.stream().forEach((camera) -> {
             PhotonCameraSim cameraSim = new PhotonCameraSim(camera.getPhotonCamera(), cameraProp);
 
             cameraSim.enableRawStream(true);
@@ -65,6 +67,11 @@ public class VisionSubsystem extends IronSubsystem {
             cameraSim.enableDrawWireframe(true);
 
             visionSim.addCamera(cameraSim, camera.getOffset());
+
+            System.out.printf(
+                    "Camera %s's processed stream is at http://localhost:118%d, it's raw stream is at http://localhost:118%d\n",
+                    camera.getSimpleName(), i.get() * 2, ((i.get() * 2) - 1));
+            i.getAndIncrement();
         });
     }
 
