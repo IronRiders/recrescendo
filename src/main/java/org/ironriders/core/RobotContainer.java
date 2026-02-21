@@ -4,6 +4,7 @@
 
 package org.ironriders.core;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import org.ironriders.climber.ClimberCommands;
@@ -27,8 +28,11 @@ import org.ironriders.manipulation.pivot.PivotCommands;
 import org.ironriders.manipulation.pivot.PivotSubsystem;
 import org.ironriders.vision.VisionCommands;
 import org.ironriders.vision.VisionSubsystem;
+import org.json.simple.parser.ParseException;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -164,11 +168,12 @@ public class RobotContainer {
                         }))
                 .onFalse(Commands.runOnce(() -> revertToSafeDefaults()));
 
-        // Create and schedule the pathfind command when the bumper is pressed
-        // (constructing the command at configure-time can cause lifecycle/reuse
-        // issues). We schedule a fresh pathfind command on each button press.
-        primaryController.leftBumper().onTrue(Commands.runOnce(() -> {
-            CommandScheduler.getInstance().schedule(DriveSubsystem.pathfindToPose(passingZone.centerPoint()));
+        primaryController.leftBumper().onTrue(Commands.runOnce(()->{
+            try {
+                CommandScheduler.getInstance().schedule(DriveSubsystem.pathfindThenFlipPathIfBetterThenFollow(PathPlannerPath.fromPathFile("Center Sweep")));
+            } catch (FileVersionException | IOException | ParseException e) {
+                e.printStackTrace();
+            }
         }));
 
         // Line up to score

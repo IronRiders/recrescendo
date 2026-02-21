@@ -1,77 +1,94 @@
 package org.ironriders.core;
 
+import java.io.IOException;
 import java.util.function.DoubleSupplier;
 
 import org.ironriders.climber.ClimberCommands;
 import org.ironriders.drive.DriveCommands;
+import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants.Intake;
 import org.ironriders.lib.Constants.Launcher;
 import org.ironriders.lib.Constants.Pivot;
 import org.ironriders.manipulation.intake.IntakeCommands;
 import org.ironriders.manipulation.launcher.LauncherCommands;
 import org.ironriders.manipulation.pivot.PivotCommands;
+import org.json.simple.parser.ParseException;
+
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 public class RobotCommands {
 
-  private final DriveCommands driveCommands;
+    private final DriveCommands driveCommands;
 
-  private final PivotCommands pivotCommands;
-  private final IntakeCommands intakeCommands;
-  private final LauncherCommands launcherCommands;
+    private final PivotCommands pivotCommands;
+    private final IntakeCommands intakeCommands;
+    private final LauncherCommands launcherCommands;
 
-  public RobotCommands(
-      DriveCommands driveCommands,
-      LauncherCommands launcherCommands,
-      PivotCommands pivotCommands,
-      IntakeCommands intakeCommands,
-      ClimberCommands climberCommands) {
+    public RobotCommands(
+            DriveCommands driveCommands,
+            LauncherCommands launcherCommands,
+            PivotCommands pivotCommands,
+            IntakeCommands intakeCommands,
+            ClimberCommands climberCommands) {
 
-    this.driveCommands = driveCommands;
-    this.launcherCommands = launcherCommands;
-    this.pivotCommands = pivotCommands;
-    this.intakeCommands = intakeCommands;
-  }
+        this.driveCommands = driveCommands;
+        this.launcherCommands = launcherCommands;
+        this.pivotCommands = pivotCommands;
+        this.intakeCommands = intakeCommands;
+    }
 
-  public Command driveTeleop(
-      DoubleSupplier inputTranslationX,
-      DoubleSupplier inputTranslationY,
-      DoubleSupplier inputRotation) {
-    return driveCommands.driveTeleop(inputTranslationX, inputTranslationY, inputRotation, true);
-  }
+    public Command driveTeleop(
+            DoubleSupplier inputTranslationX,
+            DoubleSupplier inputTranslationY,
+            DoubleSupplier inputRotation) {
+        return driveCommands.driveTeleop(inputTranslationX, inputTranslationY, inputRotation, true);
+    }
 
-  public Command intake() {
-    return Commands.sequence(
-        pivotCommands.set(Pivot.State.GROUND),
-        intakeCommands.intake(),
-        Commands.parallel(
-            launcherCommands.set(Launcher.State.LAUNCH),
-            intakeCommands.center(),
-            pivotCommands.set(Pivot.State.LAUNCHER)).withName("Intake Parallel"))
-        .withName("Intake");
-  }
+    public Command intake() {
+        return Commands.sequence(
+                pivotCommands.set(Pivot.State.GROUND),
+                intakeCommands.intake(),
+                Commands.parallel(
+                        launcherCommands.set(Launcher.State.LAUNCH),
+                        intakeCommands.center(),
+                        pivotCommands.set(Pivot.State.LAUNCHER)).withName("Intake Parallel"))
+                .withName("Intake");
+    }
 
-  public Command launch() {
-    return Commands.sequence(
-        launcherCommands.set(Launcher.State.LAUNCH), // should already be true but anyway
-        pivotCommands.set(Pivot.State.LAUNCHER), // same with this
-        intakeCommands.eject(),
-        launcherCommands.launch()).withName("Launch"); // launches with timeout
-  }
+    public Command launch() {
+        return Commands.sequence(
+                launcherCommands.set(Launcher.State.LAUNCH), // should already be true but anyway
+                pivotCommands.set(Pivot.State.LAUNCHER), // same with this
+                intakeCommands.eject(),
+                launcherCommands.launch()).withName("Launch"); // launches with timeout
+    }
 
-  public Command eject() {
-    return Commands.sequence(
-        launcherCommands.set(Launcher.State.STOP),
-        pivotCommands.set(Pivot.State.GROUND),
-        intakeCommands.eject()).withName("Eject");
-  }
+    public Command eject() {
+        return Commands.sequence(
+                launcherCommands.set(Launcher.State.STOP),
+                pivotCommands.set(Pivot.State.GROUND),
+                intakeCommands.eject()).withName("Eject");
+    }
 
-  public Command reset() {
-    return Commands.parallel(
-        pivotCommands.set(Pivot.State.LAUNCHER),
-        intakeCommands.set(Intake.State.STOP),
-        launcherCommands.stop()).withName("Reset");
-  }
+    public Command reset() {
+        return Commands.parallel(
+                pivotCommands.set(Pivot.State.LAUNCHER),
+                intakeCommands.set(Intake.State.STOP),
+                launcherCommands.stop()).withName("Reset");
+    }
+
+    public Command centerSweep() {
+        try {
+            return //Commands.parallel(TargetingControl.targetPassing(), launch(),
+                    DriveSubsystem.pathfindThenFlipPathIfBetterThenFollow(PathPlannerPath.fromPathFile("Center Sweep"));//);
+        } catch (FileVersionException | IOException | ParseException e) {
+            e.printStackTrace();
+            return new InstantCommand();
+        }
+    }
 }

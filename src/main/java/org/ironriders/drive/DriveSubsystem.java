@@ -12,6 +12,7 @@ import org.ironriders.lib.Utils;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -199,6 +200,41 @@ public class DriveSubsystem extends IronSubsystem {
     }
 
     /*
+     * Command to pathfind to the start of a given path then follow that path.
+     */
+    public static Command pathfindThenFollowPath(PathPlannerPath path) {
+        pathfindingCommand = AutoBuilder.pathfindThenFollowPath(path, Constants.Drive.PATHFIND_CONSTRAINTS);
+        return pathfindingCommand;
+    }
+
+    /*
+     * Command to pathfind to the start of a given path then follow the flipped
+     * version of that path.
+     */
+    public static Command pathfindThenFollowFlippedPath(PathPlannerPath path) {
+        path = path.flipPath();
+        pathfindingCommand = AutoBuilder.pathfindThenFollowPath(path, Constants.Drive.PATHFIND_CONSTRAINTS);
+        return pathfindingCommand;
+    }
+
+    /*
+     * Command to figure out if the distance to the start point of the flipped
+     * version of the provided path is closer than the normal version, and if so
+     * follow the flipped version.
+     * 
+     * TODO: !Uses distance as the crow flies, not path distance to start point!
+     */
+    public static Command pathfindThenFlipPathIfBetterThenFollow(PathPlannerPath path) {
+        if (Utils.distanceToPose2d(path.getPathPoses().get(0), getPose()) < Utils
+                .distanceToPose2d(path.flipPath().getPathPoses().get(0), getPose())) {
+            path = path.flipPath();
+        }
+
+        pathfindingCommand = AutoBuilder.pathfindThenFollowPath(path, Constants.Drive.PATHFIND_CONSTRAINTS);
+        return pathfindingCommand;
+    }
+
+    /*
      * Cancel the current pathfinding operation.
      */
     public static void cancelPathfind() {
@@ -224,11 +260,6 @@ public class DriveSubsystem extends IronSubsystem {
         swerveDrive.setMaximumAllowableSpeeds(max, Constants.Drive.SWERVE_MAX_ANGULAR_TELEOP);
     }
 
-    /**
-     * Opens a {@link Pidgeon2} sensor and gets yaw, waits 1 second or until the
-     * signal updates, then gets that
-     * value as double.
-     */
     public static void resetRotation() {
         pigeon.reset();
         resetOdometry(swerveDrive.getPose());
