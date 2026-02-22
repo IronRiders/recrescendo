@@ -8,6 +8,7 @@ import org.ironriders.lib.DriverRequest;
 import org.ironriders.lib.DriverRequest.AlignTargetingMode;
 import org.ironriders.lib.DriverRequest.LauncherTargetingMode;
 import org.ironriders.lib.DriverRequest.PriorityMode;
+import org.ironriders.lib.Utils;
 import org.ironriders.lib.field.FieldPositions;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -89,7 +90,7 @@ public class TargetingControl {
             case ALIGN_PRIORITY:
             case LAUNCHER_PRIORITY:
                 DriveSubsystem.setPIDRotationControl(true);
-
+                
                 return;
         }
     }
@@ -98,10 +99,8 @@ public class TargetingControl {
         switch (request.r_alignTargetingMode) {
             default:
             case LAUNCHER:
-                //return Utils.getAngleToPoint(DriveSubsystem.getPose(),
-                  //      FieldPositions.prepareInchesPose(new Pose2d(FieldPositions.Field.FIELD_LENGTH / 2,
-                    //            FieldPositions.Field.FIELD_WIDTH / 2, new Rotation2d())));
-                return 0;
+                return Utils.getAngleToPoint(DriveSubsystem.getPose(),
+                        FieldPositions.Field.CENTER);
 
             case OUTPOST:
                 return 180;

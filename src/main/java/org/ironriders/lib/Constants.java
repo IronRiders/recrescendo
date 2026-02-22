@@ -53,6 +53,10 @@ public class Constants {
         public static final double ROTATE_TO_TARGET_I = 0;
         public static final double ROTATE_TO_TARGET_D = 0;
 
+        public static final double SIM_ROTATE_TO_TARGET_P = 3;
+        public static final double SIM_ROTATE_TO_TARGET_I = 0;
+        public static final double SIM_ROTATE_TO_TARGET_D = 0;
+
         public static final Constraints ROTATION_CONSTRAINTS = new Constraints(Math.PI, Math.PI / 1.2); // Radians
 
         public static final double TRANSLATION_CONTROL_EXPONENT = 3.0;

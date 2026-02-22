@@ -1,6 +1,8 @@
 package org.ironriders.drive;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.ironriders.core.RobotContainer;
@@ -8,11 +10,13 @@ import org.ironriders.core.TargetingControl;
 import org.ironriders.lib.Constants;
 import org.ironriders.lib.IronSubsystem;
 import org.ironriders.lib.Utils;
+import org.json.simple.parser.ParseException;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -47,11 +51,9 @@ public class DriveSubsystem extends IronSubsystem {
 
     public static Command pathfindingCommand = new InstantCommand();
 
-    public static Pigeon2 pigeon = new Pigeon2(11);
+    private static ProfiledPIDController rotationPid;
 
-    private static ProfiledPIDController rotationPid = new ProfiledPIDController(Constants.Drive.ROTATE_TO_TARGET_P,
-            Constants.Drive.ROTATE_TO_TARGET_I,
-            Constants.Drive.ROTATE_TO_TARGET_D, Constants.Drive.ROTATION_CONSTRAINTS);
+    public static Pigeon2 pigeon = new Pigeon2(11);
 
     public DriveSubsystem() throws RuntimeException {
         try {
@@ -74,15 +76,23 @@ public class DriveSubsystem extends IronSubsystem {
             throw new RuntimeException("Could not load path planner config", e);
         }
 
+        if (SwerveDriveTelemetry.isSimulation) {
+            rotationPid = new ProfiledPIDController(
+                    Constants.Drive.SIM_ROTATE_TO_TARGET_P,
+                    Constants.Drive.SIM_ROTATE_TO_TARGET_I,
+                    Constants.Drive.SIM_ROTATE_TO_TARGET_D, Constants.Drive.ROTATION_CONSTRAINTS);
+        } else {
+            rotationPid = new ProfiledPIDController(
+                    Constants.Drive.ROTATE_TO_TARGET_P,
+                    Constants.Drive.ROTATE_TO_TARGET_I,
+                    Constants.Drive.ROTATE_TO_TARGET_D, Constants.Drive.ROTATION_CONSTRAINTS);
+        }
+
         AutoBuilder.configure(
                 swerveDrive::getPose,
                 swerveDrive::resetOdometry,
                 swerveDrive::getRobotVelocity,
                 (speeds, feedforwards) -> {
-                    // System.out.println("PathPlanner calling drive: vx=" +
-                    // speeds.vxMetersPerSecond +
-                    // " vy=" + speeds.vyMetersPerSecond +
-                    // " omega=" + speeds.omegaRadiansPerSecond);
                     speeds.omegaRadiansPerSecond = rotationPid.calculate(getRotation());
                     swerveDrive.drive(speeds);
                 },
@@ -134,7 +144,7 @@ public class DriveSubsystem extends IronSubsystem {
 
         if (PIDRotation) {
             swerveDrive.drive(translation.times(driveInvert ? -1 : 1),
-                    -rotationPid.calculate(getRotation()),
+                    rotationPid.calculate(getRotation()) * (SwerveDriveTelemetry.isSimulation ? 1 : -1),
                     fieldRelative,
                     false);
         } else {
@@ -239,6 +249,16 @@ public class DriveSubsystem extends IronSubsystem {
      */
     public static void cancelPathfind() {
         pathfindingCommand.cancel();
+    }
+
+    public static Optional<PathPlannerPath> loadPath(String fileName) {
+        try {
+            return Optional.of(PathPlannerPath.fromPathFile(fileName));
+        } catch (FileVersionException | IOException | ParseException e) {
+            System.out.printf("Error loading path %s: ", fileName);
+            e.printStackTrace();
+            return Optional.empty();
+        }
     }
 
     /** Fetch the DriveCommands instance */

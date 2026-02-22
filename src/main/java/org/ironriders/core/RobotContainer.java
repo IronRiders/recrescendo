@@ -168,12 +168,9 @@ public class RobotContainer {
                         }))
                 .onFalse(Commands.runOnce(() -> revertToSafeDefaults()));
 
-        primaryController.leftBumper().onTrue(Commands.runOnce(()->{
-            try {
-                CommandScheduler.getInstance().schedule(DriveSubsystem.pathfindThenFlipPathIfBetterThenFollow(PathPlannerPath.fromPathFile("Center Sweep")));
-            } catch (FileVersionException | IOException | ParseException e) {
-                e.printStackTrace();
-            }
+        primaryController.leftBumper().onTrue(Commands.runOnce(() -> {
+            CommandScheduler.getInstance().schedule(DriveSubsystem
+                    .pathfindThenFlipPathIfBetterThenFollow(DriveSubsystem.loadPath("Center Sweep").get()));
         }));
 
         // Line up to score
