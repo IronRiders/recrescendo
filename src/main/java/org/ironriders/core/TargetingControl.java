@@ -90,7 +90,7 @@ public class TargetingControl {
             case ALIGN_PRIORITY:
             case LAUNCHER_PRIORITY:
                 DriveSubsystem.setPIDRotationControl(true);
-                
+
                 return;
         }
     }
@@ -100,7 +100,7 @@ public class TargetingControl {
             default:
             case LAUNCHER:
                 return Utils.getAngleToPoint(DriveSubsystem.getPose(),
-                        FieldPositions.Field.CENTER);
+                        RobotContainer.scoringZone.closestPoint());
 
             case OUTPOST:
                 return 180;
