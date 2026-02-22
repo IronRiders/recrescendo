@@ -1,17 +1,12 @@
 package org.ironriders.core;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.DriverRequest;
 import org.ironriders.lib.DriverRequest.AlignTargetingMode;
 import org.ironriders.lib.DriverRequest.LauncherTargetingMode;
 import org.ironriders.lib.DriverRequest.PriorityMode;
 import org.ironriders.lib.Utils;
-import org.ironriders.lib.field.FieldPositions;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -25,17 +20,6 @@ public class TargetingControl {
     private static DriverRequest lastDriverRequest = request;
 
     private static double alignTarget;
-
-    private static List<Pose2d> points = new ArrayList<Pose2d>();
-
-    public static void init() {
-        for (Pose2d point : FieldPositions.Zones.PASSING_POINTS) {
-            points.add(FieldPositions.prepareMetersPose(point));
-        }
-
-        RobotContainer.scoringZone.printPolygon();
-        RobotContainer.passingZone.printPolygon();
-    }
 
     public static void receiveRequest(DriverRequest driverRequest) {
         lastDriverRequest = request;

@@ -4,7 +4,6 @@
 
 package org.ironriders.core;
 
-import java.io.IOException;
 import java.util.Optional;
 
 import org.ironriders.climber.ClimberCommands;
@@ -28,11 +27,8 @@ import org.ironriders.manipulation.pivot.PivotCommands;
 import org.ironriders.manipulation.pivot.PivotSubsystem;
 import org.ironriders.vision.VisionCommands;
 import org.ironriders.vision.VisionSubsystem;
-import org.json.simple.parser.ParseException;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;

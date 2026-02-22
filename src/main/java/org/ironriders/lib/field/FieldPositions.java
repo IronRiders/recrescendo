@@ -1,5 +1,8 @@
 package org.ironriders.lib.field;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.ironriders.lib.Utils;
 import org.ironriders.lib.field.FieldElement.ElementType;
 import org.ironriders.lib.field.Zone.ZoneType;
@@ -220,9 +223,17 @@ public class FieldPositions {
                 new Pose2d(SCORING_ZONE_HEIGHT, FIELD_WIDTH_METERS, new Rotation2d()))
                 .getPoints();
 
-        public static final Pose2d[] PASSING_POINTS = {
+        public static final Pose2d[] PASSING_POINTS_ARRAY = {
                 new Pose2d((SCORING_ZONE_HEIGHT / 2), FIELD_WIDTH_METERS - 1.5, new Rotation2d()),
                 new Pose2d((SCORING_ZONE_HEIGHT / 2), 1.5, new Rotation2d()) };
+
+        public static final List<Pose2d> PASSING_POINTS = new ArrayList<>();
+
+        static {
+            for (Pose2d point : FieldPositions.Zones.PASSING_POINTS_ARRAY) {
+                PASSING_POINTS.add(FieldPositions.prepareMetersPose(point));
+            }
+        }
     }
 
     /**

@@ -114,7 +114,6 @@ public class Robot extends TimedRobot {
     }
 
     private void generalInit() {
-        TargetingControl.init();
         RobotContainer.init();
     }
 }
