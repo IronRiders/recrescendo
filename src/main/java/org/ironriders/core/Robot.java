@@ -9,9 +9,11 @@ import org.ironriders.lib.field.FieldPositions;
 import org.ironriders.vision.VisionSubsystem;
 import org.photonvision.PhotonCamera;
 
+import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.net.WebServer;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -104,6 +106,8 @@ public class Robot extends TimedRobot {
 
         // teleport to the center of the field on startup
         DriveSubsystem.getSwerveDrive().getMapleSimDrive().orElseThrow().setSimulationWorldPose(FieldPositions.Field.CENTER);
+
+        DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
 
         generalInit();
     }
