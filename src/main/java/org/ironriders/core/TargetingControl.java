@@ -5,6 +5,8 @@ import org.ironriders.lib.DriverRequest;
 import org.ironriders.lib.DriverRequest.AlignTargetingMode;
 import org.ironriders.lib.DriverRequest.LauncherTargetingMode;
 import org.ironriders.lib.DriverRequest.PriorityMode;
+import org.ironriders.lib.field.FieldPositions;
+import org.ironriders.lib.field.FieldElement.ElementType;
 import org.ironriders.lib.Utils;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -87,7 +89,8 @@ public class TargetingControl {
                         RobotContainer.scoringZone.closestPoint());
 
             case OUTPOST:
-                return 180;
+                return Utils.getAngleToPoint(DriveSubsystem.getPose(),
+                        FieldPositions.get(ElementType.HUB).toPose2d());
 
             case BUMP:
                 return Math.toDegrees(
