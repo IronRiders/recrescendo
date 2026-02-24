@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -201,7 +202,7 @@ public class VisionSubsystem extends IronSubsystem {
 
         // construct a new result
         PhotonPipelineResult validResult = new PhotonPipelineResult(camera.getResult().metadata,
-                validTargets, camera.getResult().getMultiTagResult());
+                validTargets, Optional.empty());
 
         EstimatedRobotPose estimatedPose;
 
