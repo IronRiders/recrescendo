@@ -86,7 +86,7 @@ public class TargetingControl {
             default:
             case LAUNCHER:
                 return Utils.getAngleToPoint(DriveSubsystem.getPose(),
-                        FieldPositions.get(ElementType.HUB).toPose2d());
+                        FieldPositions.get(ElementType.HUB).toPose2d()) + 180;
 
             case OUTPOST:
                 return 180;
