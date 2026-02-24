@@ -80,77 +80,93 @@ public class Constants {
     }
 
     public class Vision {
+        private enum CameraMode {
+            SIM,
+            REAL;
+        }
+
         public static final List<VisionCamera> CAMERAS = new ArrayList<VisionCamera>();
 
+        public static final CameraMode CAMERA_MODE = CameraMode.REAL;
+
         static {
-            // CAMERAS.add(new VisionCamera("main", new Transform3d(
-            // new Translation3d(
-            // -0.25, // forward (meters)
-            // 0.0, // left (meters)
-            // 0.5 // up (meters)
-            // ),
-            // new Rotation3d(
-            // 0.0, // roll
-            // 0.0, // pitch
-            // Math.PI // yaw
-            // ))));
-            CAMERAS.add(new VisionCamera("launcher-back", new Transform3d(
-                    new Translation3d(
-                            0.45, // forward (meters)
-                            -0.26, // left (meters)
-                            0.19 // up (meters)
-                    ),
-                    new Rotation3d(
-                            0.0, // roll
-                            -Math.toRadians(15), // pitch
-                            0.0 // yaw
-                    ))));
+            switch (CAMERA_MODE) {
+                case REAL:
+                    CAMERAS.add(new VisionCamera("main", new Transform3d(
+                            new Translation3d(
+                                    -0.25, // forward (meters)
+                                    0.0, // left (meters)
+                                    0.5 // up (meters)
+                            ),
+                            new Rotation3d(
+                                    0.0, // roll
+                                    0.0, // pitch
+                                    Math.PI // yaw
+                            ))));
+                    break;
 
-            CAMERAS.add(new VisionCamera("launcher-back-high", new Transform3d(
-                    new Translation3d(
-                            0.45, // forward (meters)
-                            -0.26, // left (meters)
-                            0.19 // up (meters)
-                    ),
-                    new Rotation3d(
-                            0.0, // roll
-                            -Math.toRadians(30), // pitch
-                            0.0 // yaw
-                    ))));
+                case SIM:
+                    CAMERAS.add(new VisionCamera("launcher-back", new Transform3d(
+                            new Translation3d(
+                                    0.45, // forward (meters)
+                                    -0.26, // left (meters)
+                                    0.19 // up (meters)
+                            ),
+                            new Rotation3d(
+                                    0.0, // roll
+                                    -Math.toRadians(15), // pitch
+                                    0.0 // yaw
+                            ))));
 
-            CAMERAS.add(new VisionCamera("launcher-hood", new Transform3d(
-                    new Translation3d(
-                            0.25, // forward (meters)
-                            0, // left (meters)
-                            0.618 // up (meters)
-                    ),
-                    new Rotation3d(
-                            0.0, // roll
-                            Math.toRadians(5), // pitch
-                            Math.PI // yaw
-                    ))));
+                    CAMERAS.add(new VisionCamera("launcher-back-high", new Transform3d(
+                            new Translation3d(
+                                    0.45, // forward (meters)
+                                    -0.26, // left (meters)
+                                    0.19 // up (meters)
+                            ),
+                            new Rotation3d(
+                                    0.0, // roll
+                                    -Math.toRadians(30), // pitch
+                                    0.0 // yaw
+                            ))));
 
-            CAMERAS.add(new VisionCamera("swerve-back-left", new Transform3d(
-                    new Translation3d(
-                            0.212, // forward (meters)
-                            0.218, // left (meters)
-                            0.16 // up (meters)
-                    ),
-                    new Rotation3d(
-                            0.0, // roll
-                            -Math.toRadians(25), // pitch
-                            Math.toRadians(45)))));
+                    CAMERAS.add(new VisionCamera("launcher-hood", new Transform3d(
+                            new Translation3d(
+                                    0.25, // forward (meters)
+                                    0, // left (meters)
+                                    0.618 // up (meters)
+                            ),
+                            new Rotation3d(
+                                    0.0, // roll
+                                    Math.toRadians(5), // pitch
+                                    Math.PI // yaw
+                            ))));
 
-            CAMERAS.add(new VisionCamera("swerve-back-right", new Transform3d(
-                    new Translation3d(
-                            0.212, // forward (meters)
-                            -0.218, // left (meters)
-                            0.16 // up (meters)
-                    ),
-                    new Rotation3d(
-                            0.0, // roll
-                            -Math.toRadians(25), // pitch
-                            -Math.toRadians(45)))));
+                    CAMERAS.add(new VisionCamera("swerve-back-left", new Transform3d(
+                            new Translation3d(
+                                    0.212, // forward (meters)
+                                    0.218, // left (meters)
+                                    0.16 // up (meters)
+                            ),
+                            new Rotation3d(
+                                    0.0, // roll
+                                    -Math.toRadians(25), // pitch
+                                    Math.toRadians(45)))));
+
+                    CAMERAS.add(new VisionCamera("swerve-back-right", new Transform3d(
+                            new Translation3d(
+                                    0.212, // forward (meters)
+                                    -0.218, // left (meters)
+                                    0.16 // up (meters)
+                            ),
+                            new Rotation3d(
+                                    0.0, // roll
+                                    -Math.toRadians(25), // pitch
+                                    -Math.toRadians(45)))));
+
+                default:
+                    break;
+            }
         }
 
         public static final Double SKEW_THROWAWAY_THRESHOLD = 15d; // deg,
