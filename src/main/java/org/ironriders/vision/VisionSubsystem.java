@@ -28,6 +28,9 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 
+/**
+ * Subsystem for doing machine vision and calculating location based on that.
+ */
 public class VisionSubsystem extends IronSubsystem {
     public enum TagInvalidReason {
         NO_SKEW,
@@ -92,7 +95,7 @@ public class VisionSubsystem extends IronSubsystem {
         });
     }
 
-    /*
+    /**
      * Try to estimate how much we should trust the opinion of this camera. Higher
      * numbers mean less trust.
      */
@@ -131,7 +134,7 @@ public class VisionSubsystem extends IronSubsystem {
         return VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev);
     }
 
-    /*
+    /**
      * Try to estimate the position of the robot using the visible tags.
      * This function should be called for every camera.
      */
