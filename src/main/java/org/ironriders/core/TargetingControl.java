@@ -86,11 +86,10 @@ public class TargetingControl {
             default:
             case LAUNCHER:
                 return Utils.getAngleToPoint(DriveSubsystem.getPose(),
-                        RobotContainer.scoringZone.closestPoint());
+                        FieldPositions.get(ElementType.HUB).toPose2d());
 
             case OUTPOST:
-                return Utils.getAngleToPoint(DriveSubsystem.getPose(),
-                        FieldPositions.get(ElementType.HUB).toPose2d());
+                return 180;
 
             case BUMP:
                 return Math.toDegrees(

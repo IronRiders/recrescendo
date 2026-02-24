@@ -109,7 +109,7 @@ public class FieldPositions {
      * @return The prepared pose, in meters
      */
     private static Pose2d preparePose(Pose2d pose, boolean isMeters) {
-        boolean blue = DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue;
+        boolean blue = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
 
         if (blue) {
             if (!isMeters) {
