@@ -26,7 +26,6 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 
 public class VisionSubsystem extends IronSubsystem {
     public enum TagInvalidReason {
@@ -96,17 +95,17 @@ public class VisionSubsystem extends IronSubsystem {
      * Try to estimate how much we should trust the opinion of this camera. Higher
      * numbers mean less trust.
      */
-    public Vector<N3> estimateStdDevVector(VisionCamera camera) {
+    public Vector<N3> estimateStdDevVector(VisionCamera camera, List<PhotonTrackedTarget> validTargets) {
         double xyStdDev;
         double thetaStdDev;
 
-        double avgDistance = camera.getTargets().stream()
+        double avgDistance = validTargets.stream()
                 .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
                 .average()
                 .orElse(-1);
 
         // TODO: These numbers are mostly arbitrary.
-        if (camera.getTargets().size() > 1) { // Multi target
+        if (validTargets.size() > 1) { // Multi target
             xyStdDev = 0.02 + (avgDistance * 0.03);
             thetaStdDev = Math.toRadians(1 + avgDistance);
         } else { // Single Target
@@ -114,7 +113,7 @@ public class VisionSubsystem extends IronSubsystem {
             thetaStdDev = Math.toRadians(10 + avgDistance * 5); // Really don't trust single tag rotation
         }
 
-        double ambiguity = camera.getTargets().stream()
+        double ambiguity = validTargets.stream()
                 .mapToDouble(t -> t.getPoseAmbiguity())
                 .average()
                 .orElse(Double.POSITIVE_INFINITY) + 1d; // Make sure we really don't like this pose if the optional is
@@ -187,7 +186,7 @@ public class VisionSubsystem extends IronSubsystem {
             validTargets.add(target);
         }
 
-        List<PhotonTrackedTarget> invalidTargets = camera.getTargets();
+        List<PhotonTrackedTarget> invalidTargets = new ArrayList<>(camera.getTargets());
         invalidTargets.removeAll(validTargets);
 
         publish("Invalid targets",
@@ -206,10 +205,13 @@ public class VisionSubsystem extends IronSubsystem {
 
         EstimatedRobotPose estimatedPose;
 
-        if (camera.getTargets().size() > 1) {
-            // if we have more than one tag, do multi-tag estimation,
-            estimatedPose = camera.getEstimator().estimateCoprocMultiTagPose(validResult).orElse(null);
-        } else if (camera.getTargets().size() == 1) {
+        if (validTargets.size() > 1) {
+            // if we have more than one valid tag, do multi-tag estimation using only valid
+            // targets.
+            // update() respects the MULTI_TAG_PNP_ON_COPROCESSOR strategy set on the
+            // estimator.
+            estimatedPose = camera.getEstimator().update(validResult).orElse(null);
+        } else if (validTargets.size() == 1) {
             // if we only have one, do single tag.
             estimatedPose = camera.getEstimator().estimateLowestAmbiguityPose(validResult).orElse(null);
         } else {
@@ -224,14 +226,15 @@ public class VisionSubsystem extends IronSubsystem {
 
         // Throw away the new pose if it is too far away.
         if (estimatedPose.estimatedPose.getTranslation()
-                .getDistance(DriveSubsystem.getPose3d().getTranslation()) > Vision.POSE_DISTANCE_THROWAWAY_THRESHOLD && DriverStation.isTeleopEnabled()) {
+                .getDistance(DriveSubsystem.getPose3d().getTranslation()) > Vision.POSE_DISTANCE_THROWAWAY_THRESHOLD
+                && DriverStation.isTeleopEnabled()) {
             return;
         }
 
         // Actually add the estimate.
-        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(camera));
+        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(camera, validTargets));
         DriveSubsystem.getSwerveDrive().addVisionMeasurement(estimatedPose.estimatedPose.toPose2d(),
-                Timer.getFPGATimestamp());
+                estimatedPose.timestampSeconds); // Use capture time, not now, for latency compensation
     }
 
     // debugging helper functions

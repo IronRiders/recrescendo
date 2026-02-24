@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -140,7 +141,7 @@ public class VisionCamera {
         m_trustWeight = Utils.clamp(-1, 1, trustWeight);
 
         m_photonCamera = new PhotonCamera(name);
-        m_estimator = new PhotonPoseEstimator(m_fieldLayout, offset);
+        m_estimator = new PhotonPoseEstimator(m_fieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, offset);
     }
 
     /*
@@ -157,6 +158,6 @@ public class VisionCamera {
         m_trustWeight = 0d;
 
         m_photonCamera = new PhotonCamera(name);
-        m_estimator = new PhotonPoseEstimator(m_fieldLayout, offset);
+        m_estimator = new PhotonPoseEstimator(m_fieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, offset);
     }
 }
