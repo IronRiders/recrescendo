@@ -78,6 +78,8 @@ public class RobotContainer {
     public RobotContainer() {
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Select", autoChooser);
+        SmartDashboard.putData("Target Hub", TargetingControl.targetHub());
+        SmartDashboard.putData("revert Targeting",  Commands.runOnce(()->RobotContainer.revertToSafeDefaults())); //this might cause subsystem conflicts
 
         DriverStation.silenceJoystickConnectionWarning(true);
 
