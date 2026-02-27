@@ -14,10 +14,10 @@ public class ClimberSubsystem extends IronSubsystem {
   private final ClimberCommands commands = new ClimberCommands(this);
 
  public enum State {
-      FORWARD(0.25),
-      FAST(1),
-      BACK(-0.25),
-      BACKFAST(-1),
+      FORWARD(0.15),
+      FAST(.25),
+      BACK(-0.15),
+      BACKFAST(-.25),
       OFF(0)
       ;
 
