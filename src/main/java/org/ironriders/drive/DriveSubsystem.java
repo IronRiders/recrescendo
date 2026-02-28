@@ -93,7 +93,7 @@ public class DriveSubsystem extends IronSubsystem {
                 swerveDrive::resetOdometry,
                 swerveDrive::getRobotVelocity,
                 (speeds, feedforwards) -> {
-                    speeds.omegaRadiansPerSecond = rotationPid.calculate(getRotation());
+                    //speeds.omegaRadiansPerSecond = rotationPid.calculate(getRotation());
                     swerveDrive.drive(speeds);
                 },
                 Constants.Drive.HOLONOMIC_CONFIG,
