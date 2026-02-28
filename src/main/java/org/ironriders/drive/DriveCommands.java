@@ -4,9 +4,11 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import org.ironriders.core.RobotContainer;
 import org.ironriders.lib.Constants;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -20,6 +22,8 @@ public class DriveCommands {
 
         driveSubsystem.publish("Reset rotation", resetGyro());
         driveSubsystem.publish("Reset odometry", resetOdometry());
+        driveSubsystem.publish("Reset odometry tower", resetOdometryTo(new Pose2d(2, 2, new Rotation2d())));
+
     }
 
     /**
@@ -80,4 +84,8 @@ public class DriveCommands {
     public Command resetOdometry() {
         return Commands.runOnce(()->DriveSubsystem.resetOdometry(new Pose2d()));
     }
+
+       public Command resetOdometryTo(Pose2d pose) {
+        return Commands.runOnce(()->DriveSubsystem.resetOdometry(pose));
+    } 
 }

@@ -12,17 +12,34 @@ public class ClimberCommands {
   public ClimberCommands(ClimberSubsystem climber) {
    this.climber = climber;
 
-   climber.publish("set OFF", set(State.OFF));
-   climber.publish("set Forward", set(State.FORWARD));
-   climber.publish("set Back", set(State.BACK));
-   climber.publish("set FAST Forward", set(State.FAST));
-   climber.publish("set FAST Backward", set(State.BACKFAST));
-    
+   climber.publish("zero", zeroClimber());
+   climber.publish("set goal 60", setGoal(-60));
+   climber.publish("set goal 0", setGoal(0));
+
+   climber.publish("down", setManual(1));
+   climber.publish("up", setManual(-1));
+
+   climber.publish("up slow", setManual(-0.1));
+   climber.publish("down slow", setManual(0.1));
+
+    climber.publish("stop", setManual(0));
+
+   climber.publish("PID enabled", setPIDallowed());
   }
 
+  public Command zeroClimber() {
+    return Commands.runOnce(()->climber.setHomed());
+  }
 
-public Command set(State goal){
-    return Commands.runOnce(()->climber.set(goal));
-}
+  public Command setGoal(double goal) {
+    return Commands.runOnce(()->climber.setGoal(goal));
+  }
 
+  public Command setManual(double speed) {
+    return Commands.runOnce(()->climber.setMotor(speed));
+  }
+
+  public Command setPIDallowed() {
+    return Commands.runOnce(()->climber.setPIDAllowed());
+  }
 }

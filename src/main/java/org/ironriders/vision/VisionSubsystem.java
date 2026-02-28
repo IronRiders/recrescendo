@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.ironriders.core.RobotContainer;
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants;
 import org.ironriders.lib.Constants.Vision;
@@ -22,6 +23,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -159,7 +161,8 @@ public class VisionSubsystem extends IronSubsystem {
             // if we are too normal to the tag, we can't trust the result. this is for
             // complicated reasons involving how photon vision sees tags. ask Issy in
             // discord if you really need to know (you probably don't)
-            if (Math.abs(skew) < Constants.Vision.SKEW_THROWAWAY_THRESHOLD) {
+            if (Math.abs(skew) < Constants.Vision.SKEW_THROWAWAY_THRESHOLD
+                    || Math.abs(skew) > 360 - Constants.Vision.SKEW_THROWAWAY_THRESHOLD) {
                 addBadTagToString(TagInvalidReason.NO_SKEW, String.valueOf(skew));
                 tagStrings.put(target, debugString);
 
@@ -183,7 +186,7 @@ public class VisionSubsystem extends IronSubsystem {
                 continue;
             }
 
-            addGoodTagToString(distanceString);
+            addGoodTagToString(distanceString + " " + String.valueOf(skew));
             tagStrings.put(target, debugString);
 
             // tag is valid! yay :3
@@ -231,12 +234,17 @@ public class VisionSubsystem extends IronSubsystem {
         // Throw away the new pose if it is too far away.
         if (estimatedPose.estimatedPose.getTranslation()
                 .getDistance(DriveSubsystem.getPose3d().getTranslation()) > Vision.POSE_DISTANCE_THROWAWAY_THRESHOLD
-                && DriverStation.isTeleopEnabled()) {
+                && (DriverStation.isTeleopEnabled() || DriverStation.isAutonomousEnabled())) {
             return;
         }
 
+        if (DriverStation.isAutonomous() && !RobotContainer.scoringZone.inside()) {
+            DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(VecBuilder.fill(20, 20, 50));
+        } else {
+            DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(camera, validTargets));
+        }
+        //DriveSubsystem.getSwerveDrive().field.getObject("est Pose").setPose(estimatedPose.estimatedPose.toPose2d());
         // Actually add the estimate.
-        DriveSubsystem.getSwerveDrive().setVisionMeasurementStdDevs(estimateStdDevVector(camera, validTargets));
         DriveSubsystem.getSwerveDrive().addVisionMeasurement(estimatedPose.estimatedPose.toPose2d(),
                 estimatedPose.timestampSeconds); // Use capture time, not now, for latency compensation
     }

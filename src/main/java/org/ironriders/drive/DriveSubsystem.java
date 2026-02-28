@@ -94,7 +94,6 @@ public class DriveSubsystem extends IronSubsystem {
                 swerveDrive::resetOdometry,
                 swerveDrive::getRobotVelocity,
                 (speeds, feedforwards) -> {
-                    //speeds.omegaRadiansPerSecond = rotationPid.calculate(getRotation());
                     swerveDrive.drive(speeds);
                 },
                 Constants.Drive.HOLONOMIC_CONFIG,
@@ -102,7 +101,7 @@ public class DriveSubsystem extends IronSubsystem {
                 () -> {
                     var alliance = DriverStation.getAlliance();
                     if (alliance.isPresent()) {
-                        return alliance.get() == DriverStation.Alliance.Red;
+                        return alliance.get() == DriverStation.Alliance.Blue;
                     }
                     return false;
                 },
@@ -227,6 +226,7 @@ public class DriveSubsystem extends IronSubsystem {
                 .andThen(resetPID());
 
         setRotationGoal(Utils.getAngleToPoint(pose, target));
+        setPIDRotationControl(true);
 
         return pathfindingCommand;
     }
@@ -249,7 +249,7 @@ public class DriveSubsystem extends IronSubsystem {
      * TODO: !Uses distance as the crow flies, not path distance to start point!
      */
     public static Command pathfindThenFlipPathIfBetterThenFollow(PathPlannerPath path) {
-        if (Utils.distanceToPose2d(path.getPathPoses().get(0), getPose()) < Utils
+        if (Utils.distanceToPose2d(path.getPathPoses().get(0), getPose()) > Utils
                 .distanceToPose2d(path.flipPath().getPathPoses().get(0), getPose())) {
             path = path.flipPath();
         }

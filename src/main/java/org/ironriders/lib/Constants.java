@@ -46,7 +46,7 @@ public class Constants {
 
         public static final PPHolonomicDriveController HOLONOMIC_CONFIG = new PPHolonomicDriveController(
                 new PIDConstants(10.0, 0.0, 0.0), // Translation PID
-                new PIDConstants(0.6, 0.0, 0.0) // Rotation PID
+                new PIDConstants(0.4, 0.0, 0.0) // Rotation PID
         );
 
         public static final double ROTATE_TO_TARGET_P = 8;
@@ -99,7 +99,7 @@ public class Constants {
                                     0.5 // up (meters)
                             ),
                             new Rotation3d(
-                                    0.0, // roll
+                                    Math.toRadians(3), // roll
                                     0.0, // pitch
                                     Math.PI // yaw
                             ))));
@@ -171,7 +171,7 @@ public class Constants {
 
         public static final Double SKEW_THROWAWAY_THRESHOLD = 15d; // deg,
         public static final Double POSE_DISTANCE_THROWAWAY_THRESHOLD = 6d; // meters, TODO: Tune
-        public static final Double TARGET_DISTANCE_THROWAWAY_THRESHOLD = 5d; // meters, TODO: Tune
+        public static final Double TARGET_DISTANCE_THROWAWAY_THRESHOLD = 4d; // meters, TODO: Tune
 
         public static final Double WEIGHT_SCALE = 5d;
     }
