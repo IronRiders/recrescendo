@@ -30,6 +30,8 @@ import org.ironriders.vision.VisionSubsystem;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -42,6 +44,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 public class RobotContainer {
     public static Zone passingZone = new Zone(ZoneType.PASSING);
     public static Zone scoringZone = new Zone(ZoneType.SCORING);
+
+    public static Pose2d ClimbingOutpostPose = new Pose2d(0,0, new Rotation2d(0));
+    public static Pose2d ClimbingDepotPose = new Pose2d();
 
     public static DriveSubsystem driveSubsystem = new DriveSubsystem();
     public static DriveCommands driveCommands = driveSubsystem.getCommands();
@@ -175,6 +180,14 @@ public class RobotContainer {
         // Line up to score
         primaryController.rightBumper().onTrue(Commands.runOnce(() -> {
             CommandScheduler.getInstance().schedule(DriveSubsystem.pathfindToPose(scoringZone.centerPoint()));
+        }));
+
+        primaryController.povRight().onTrue(Commands.runOnce(()-> {
+            CommandScheduler.getInstance().schedule(DriveSubsystem.pathfindToPose(ClimbingOutpostPose));
+        }));
+        
+        primaryController.povDownLeft().onTrue(Commands.runOnce(()-> {
+            CommandScheduler.getInstance().schedule(DriveSubsystem.pathfindToPose(ClimbingOutpostPose));
         }));
     }
 
