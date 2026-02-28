@@ -25,6 +25,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;
@@ -127,6 +128,8 @@ public class DriveSubsystem extends IronSubsystem {
         if (leftMag > Constants.Drive.DRIVE_OVERRIDE_THRESHOLD) {
             cancelPathfind();
         }
+
+        publish("Pose", getPose().toString());
     }
 
     /**
@@ -205,7 +208,7 @@ public class DriveSubsystem extends IronSubsystem {
      * Command to pathfind to a given pose.
      */
     public static Command pathfindToPose(Pose2d target) {
-        pathfindingCommand = AutoBuilder.pathfindToPose(target, Constants.Drive.PATHFIND_CONSTRAINTS);
+        pathfindingCommand = AutoBuilder.pathfindToPose(target, Constants.Drive.PATHFIND_CONSTRAINTS).andThen(resetPID());
         return pathfindingCommand;
     }
 
@@ -213,7 +216,18 @@ public class DriveSubsystem extends IronSubsystem {
      * Command to pathfind to the start of a given path then follow that path.
      */
     public static Command pathfindThenFollowPath(PathPlannerPath path) {
-        pathfindingCommand = AutoBuilder.pathfindThenFollowPath(path, Constants.Drive.PATHFIND_CONSTRAINTS);
+        pathfindingCommand = AutoBuilder.pathfindThenFollowPath(path, Constants.Drive.PATHFIND_CONSTRAINTS).andThen(resetPID());
+        return pathfindingCommand;
+    }
+
+    public static Command pathfindToPoseThenAimAt(Pose2d pose, Pose2d target) {
+        pathfindingCommand = AutoBuilder.pathfindToPose(
+                new Pose2d(pose.getTranslation(), new Rotation2d(Utils.getAngleToPointRadians(pose, target))),
+                Constants.Drive.PATHFIND_CONSTRAINTS)
+                .andThen(resetPID());
+
+        setRotationGoal(Utils.getAngleToPoint(pose, target));
+
         return pathfindingCommand;
     }
 
@@ -223,7 +237,7 @@ public class DriveSubsystem extends IronSubsystem {
      */
     public static Command pathfindThenFollowFlippedPath(PathPlannerPath path) {
         path = path.flipPath();
-        pathfindingCommand = AutoBuilder.pathfindThenFollowPath(path, Constants.Drive.PATHFIND_CONSTRAINTS);
+        pathfindingCommand = AutoBuilder.pathfindThenFollowPath(path, Constants.Drive.PATHFIND_CONSTRAINTS).andThen(resetPID());
         return pathfindingCommand;
     }
 
@@ -240,8 +254,13 @@ public class DriveSubsystem extends IronSubsystem {
             path = path.flipPath();
         }
 
-        pathfindingCommand = AutoBuilder.pathfindThenFollowPath(path, Constants.Drive.PATHFIND_CONSTRAINTS);
+        pathfindingCommand = AutoBuilder.pathfindThenFollowPath(path, Constants.Drive.PATHFIND_CONSTRAINTS).andThen(resetPID());
         return pathfindingCommand;
+    }
+
+
+    public static Command resetPID() {
+        return Commands.runOnce(()->rotationPid.reset(getRotation()));
     }
 
     /*

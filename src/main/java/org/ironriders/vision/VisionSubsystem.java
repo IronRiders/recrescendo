@@ -83,7 +83,7 @@ public class VisionSubsystem extends IronSubsystem {
     @Override
     public void periodic() {
         // for every camera...
-        Vision.CAMERAS.parallelStream().forEach((camera) -> {
+        Vision.CAMERAS.stream().forEach((camera) -> {
             camera.updateResultBuffer();
 
             if (!camera.seesTargets()) {

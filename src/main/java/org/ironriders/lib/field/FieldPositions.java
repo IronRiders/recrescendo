@@ -163,9 +163,9 @@ public class FieldPositions {
     /** A position for the hub, Measurements in INCHES! */
     public class Hub {
         // Default red
-        public static final Pose3d HUB_TOP = new Pose3d(new Translation3d(182.11, 158.84, 72.00),
+        public static final Pose3d HUB_TOP = new Pose3d(new Translation3d(469.11, 158.84, 72.00),
                 new Rotation3d());
-        public static final Pose3d HUB_CENTER = new Pose3d(new Translation3d(182.11, 158.84, 44.25),
+        public static final Pose3d HUB_CENTER = new Pose3d(new Translation3d(469.11, 158.84, 44.25),
                 new Rotation3d());
     }
 
