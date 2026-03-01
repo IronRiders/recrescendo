@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.ironriders.core.RobotContainer;
 import org.ironriders.drive.DriveSubsystem;
@@ -23,7 +23,6 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -213,11 +212,7 @@ public class VisionSubsystem extends IronSubsystem {
         EstimatedRobotPose estimatedPose;
 
         if (validTargets.size() > 1) {
-            // if we have more than one valid tag, do multi-tag estimation using only valid
-            // targets.
-            // update() respects the MULTI_TAG_PNP_ON_COPROCESSOR strategy set on the
-            // estimator.
-            estimatedPose = camera.getEstimator().update(validResult).orElse(null);
+            estimatedPose = camera.getEstimator().estimateCoprocMultiTagPose(validResult).orElse(null);
         } else if (validTargets.size() == 1) {
             // if we only have one, do single tag.
             estimatedPose = camera.getEstimator().estimateLowestAmbiguityPose(validResult).orElse(null);
