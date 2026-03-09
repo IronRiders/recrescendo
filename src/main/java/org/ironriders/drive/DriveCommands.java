@@ -5,7 +5,6 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.ironriders.lib.Constants.Drive;
-import org.ironriders.lib.Constants.Drive.Controller;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -19,16 +18,14 @@ public class DriveCommands {
 		this.driveSubsystem = driveSubsystem;
 	}
 
-	public Command setController(Controller controller) {
-		return Commands.runOnce(() -> DriveSubsystem.setController(controller));
-	}
+
 
 	public Command drive(
 			Supplier<Translation2d> translation, DoubleSupplier rotation, BooleanSupplier fieldRelative) {
 		return Commands.run(
 				() -> {
-					DriveSubsystem.requestDriveMovement(
-							Controller.DRIVER, translation.get(), rotation.getAsDouble(), fieldRelative.getAsBoolean());
+					DriveSubsystem.drive(
+							translation.get(), rotation.getAsDouble(), fieldRelative.getAsBoolean());
 				},
 				driveSubsystem);
 	}

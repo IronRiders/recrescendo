@@ -7,13 +7,12 @@ import org.ironriders.lib.Constants.Robot;
 import org.ironriders.lib.IronSubsystem;
 import org.ironriders.lib.Utils;
 
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkMaxConfig.Presets;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -44,11 +43,10 @@ public class PivotSubsystem extends IronSubsystem {
 
   public PivotSubsystem() {
     SparkBaseConfig config = new SparkMaxConfig()
-        .smartCurrentLimit(Pivot.MOTOR_CURRENT_LIMIT)
         .voltageCompensation(Robot.COMPENSATED_VOLTAGE)
         .idleMode(IdleMode.kBrake);
 
-    motor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    motor.configure(Presets.REV_NEO.apply(config), com.revrobotics.ResetMode.kNoResetSafeParameters, com.revrobotics.PersistMode.kPersistParameters);
 
     profile = new TrapezoidProfile(Pivot.CONTROL_CONSTRAINTS);
 

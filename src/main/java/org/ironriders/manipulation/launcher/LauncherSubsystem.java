@@ -1,15 +1,16 @@
 package org.ironriders.manipulation.launcher;
 
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
+import org.ironriders.lib.Constants;
+import org.ironriders.lib.IronSubsystem;
+import org.ironriders.lib.Utils;
+
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkMaxConfig.Presets;
+
 import edu.wpi.first.math.controller.PIDController;
-import org.ironriders.lib.Constants;
-import org.ironriders.lib.IronSubsystem;
-import org.ironriders.lib.Utils;
 
 public class LauncherSubsystem extends IronSubsystem {
 
@@ -45,12 +46,10 @@ public class LauncherSubsystem extends IronSubsystem {
         .smartCurrentLimit(Constants.Launcher.LAUNCHER_MOTOR_STALL_LIMIT)
         .inverted(true);
 
-    primaryMotor.configure(
-        primaryConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    followerMotor.configure(
-        followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    primaryMotor.configure(Presets.REV_NEO.apply(primaryConfig), com.revrobotics.ResetMode.kNoResetSafeParameters, com.revrobotics.PersistMode.kPersistParameters);
+    followerMotor.configure(Presets.REV_NEO.apply(followerConfig), com.revrobotics.ResetMode.kNoResetSafeParameters, com.revrobotics.PersistMode.kPersistParameters);
   }
-
+ 
   public void setMotors(double speed) {
     primaryMotor.set(speed);
     followerMotor.set(speed);

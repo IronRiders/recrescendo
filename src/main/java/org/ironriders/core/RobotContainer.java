@@ -9,8 +9,6 @@ import org.ironriders.climber.ClimberSubsystem;
 import org.ironriders.drive.DriveCommands;
 import org.ironriders.drive.DriveSubsystem;
 import org.ironriders.lib.Constants;
-import org.ironriders.lib.Constants.Drive;
-import org.ironriders.lib.Constants.Drive.Controller;
 import org.ironriders.lib.Utils;
 import org.ironriders.lights.LightsCommands;
 import org.ironriders.lights.LightsSubsystem;
@@ -20,8 +18,6 @@ import org.ironriders.manipulation.launcher.LauncherCommands;
 import org.ironriders.manipulation.launcher.LauncherSubsystem;
 import org.ironriders.manipulation.pivot.PivotCommands;
 import org.ironriders.manipulation.pivot.PivotSubsystem;
-import org.ironriders.vision.VisionCommands;
-import org.ironriders.vision.VisionSubsystem;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
@@ -51,9 +47,6 @@ public class RobotContainer {
     public LightsSubsystem lightsSubsystem = new LightsSubsystem();
     public LightsCommands lightsCommands = lightsSubsystem.getCommands();
 
-    public VisionSubsystem visionSubsystem = new VisionSubsystem();
-    public VisionCommands visionCommands = visionSubsystem.getCommands();
-
     public Command activeCommand;
 
     public double speedMultiplier = 1;
@@ -75,22 +68,8 @@ public class RobotContainer {
         configureBindings();
     }
 
-    private void checkControl() {
-        double average = (Math.abs(primaryController.getLeftY())
-                + Math.abs(primaryController.getLeftX())
-                + Math.abs(primaryController.getRightX()))
-                / 3d;
-
-        SmartDashboard.putNumber("RobotContainer/average", average);
-
-        if (average > Drive.DRIVE_OVERRIDE_THRESHOLD) {
-            DriveSubsystem.setController(Controller.DRIVER);
-            DriveSubsystem.cancelPathfind();
-        }
-    }
-
     private void configureBindings() {
-        driveSubsystem.setDefaultCommand(Commands.parallel(
+        driveSubsystem.setDefaultCommand(
                 robotCommands
                         .driveTeleop(
                                 () -> Utils.controlCurve(primaryController.getLeftY(),
@@ -105,8 +84,7 @@ public class RobotContainer {
                                         Constants.Drive.ROTATION_CONTROL_EXPONENT,
                                         Constants.Drive.ROTATION_CONTROL_DEADBAND)
                                         * angleMultiplier)
-                        .withName("Drive Teleop"),
-                Commands.run(this::checkControl)));
+                        .withName("Drive Teleop"));
 
         primaryController.rightTrigger()
                 .onTrue(activeCommand = robotCommands.intake())
@@ -126,10 +104,6 @@ public class RobotContainer {
 
         primaryController.y().onTrue(robotCommands.eject().unless(
                 () -> !intakeSubsystem.hasNote())); // eject unless we don't have a note
-
-        primaryController.a()
-                .onTrue(DriveSubsystem.pathfindToTag(9).get())
-                .onFalse(Commands.runOnce(() -> DriveSubsystem.cancelPathfind()));
 
         primaryController.povUp().onTrue(launcherCommands.upTargetVelocity());
         primaryController.povDown().onTrue(launcherCommands.downTargetVelocity());

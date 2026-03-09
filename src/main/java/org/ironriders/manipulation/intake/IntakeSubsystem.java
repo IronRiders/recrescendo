@@ -3,14 +3,13 @@ package org.ironriders.manipulation.intake;
 import org.ironriders.lib.Constants;
 import org.ironriders.lib.IronSubsystem;
 
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.LimitSwitchConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkMaxConfig.Presets;
 
 public class IntakeSubsystem extends IronSubsystem {
 
@@ -27,13 +26,12 @@ public class IntakeSubsystem extends IronSubsystem {
 
     motorConfig
         .idleMode(IdleMode.kCoast)
-        .smartCurrentLimit(Constants.Intake.INTAKE_MOTOR_STALL_LIMIT)
         .inverted(true);
 
-    limitSwitchConfig.forwardLimitSwitchEnabled(false);
+    limitSwitchConfig.forwardLimitSwitchType(LimitSwitchConfig.Type.kNormallyOpen);
 
     motorConfig.apply(limitSwitchConfig);
-    motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    motor.configure(Presets.REV_NEO.apply(motorConfig), com.revrobotics.ResetMode.kNoResetSafeParameters, com.revrobotics.PersistMode.kPersistParameters);
   }
 
   @Override
